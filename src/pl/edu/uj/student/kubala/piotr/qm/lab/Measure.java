@@ -8,7 +8,9 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
-public class Measure
+import pl.edu.uj.student.kubala.piotr.qm.Model;
+
+public class Measure extends Model
 {
     private double value;               // Wartość pomiaru
     private double calibrationError;    // Niepewność wzorcowania przyrządu pomiarowego

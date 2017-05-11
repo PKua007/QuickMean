@@ -9,12 +9,13 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
+import pl.edu.uj.student.kubala.piotr.qm.Model;
 import pl.edu.uj.student.kubala.piotr.qm.converters.Converter;
 
 import java.io.File;
 import java.util.ArrayList;
 
-public class LabProject
+public class LabProject extends Model
 {
     private ArrayList<SeriesGroup>      seriesGroups;   // Tablica z grupami serii pomiarów
 

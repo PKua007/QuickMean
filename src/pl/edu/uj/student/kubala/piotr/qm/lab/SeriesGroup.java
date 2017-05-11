@@ -9,10 +9,12 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
+import pl.edu.uj.student.kubala.piotr.qm.Model;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class SeriesGroup
+public class SeriesGroup extends Model
 {
     public static final String  DEFAULT_LABEL_HEADER = "Nazwa serii";
 

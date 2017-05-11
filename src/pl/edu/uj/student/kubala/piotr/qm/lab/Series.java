@@ -9,10 +9,12 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
+import pl.edu.uj.student.kubala.piotr.qm.Model;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Series
+public class Series extends Model
 {
     public static final int DEFAULT_SIGNIFICANT_DIGITS = 2;
 
