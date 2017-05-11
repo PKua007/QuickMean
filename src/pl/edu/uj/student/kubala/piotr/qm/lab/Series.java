@@ -11,6 +11,7 @@ package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.Model;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -126,19 +127,85 @@ public class Series extends Model
     /* Pozostałe metody */
 
     /**
-     * Metoda oblicza średnią z przechowywanych pomiarów
+     * Metoda aktualizuje średnią z przechowywanych pomiarów i ich niepewności. Wywołuje zdarzenie mean_change dla
+     * zarejestrowanych obserwatorów
      */
-    public void calculateMean()
+    public void updateMean()
     {
+        // Stare wartości
+        double [] oldValues = new double[]{ this.mean, this.calculatedStandardError, this.calculatedMaxError };
 
-    }
+        switch (this.measures.size()) {
+            // 0 pomiarów, brak wartości
+            case 0:
+                this.mean = 0;
+                this.calculatedStandardError = 0;
+                this.calculatedMaxError = 0;
 
-    /**
-     * Metoda przelicza niepewności przechowywanych pomiarów
-     */
-    public void calculateErrors()
-    {
+            // 1 pomiar, przepisz wartości z pojedynczego pomiaru
+            case 1:
+                Measure measure = this.measures.get(0);
+                this.mean = measure.getValue();
 
+                if (separateErrors) {   // Rozdzielanie niepewności wg starej konwencji
+                    this.calculatedMaxError = measure.getCalibrationError() + measure.getHumanError();
+                    this.calculatedStandardError = measure.getStandardError();
+                } else {                // Sumowanie niepewności wg nowej konwencji
+                    this.calculatedMaxError = 0;
+                    this.calculatedStandardError = Math.sqrt(
+                            Math.pow(measure.getStandardError(), 2) +
+                            Math.pow(measure.getCalibrationError(), 2) / 3 +
+                            Math.pow(measure.getHumanError(), 2) / 3);
+                }
+
+            // 2 lub więcej pomiarów - trzeba już się pomęczyć z przeliczeniem ;)
+            default:
+                this.mean = this.measures.stream()                  // Średnia pomiarów
+                        .mapToDouble(Measure::getValue)
+                        .average()
+                        .orElse(0);
+                double diffSquareSum = this.measures.stream()       // Suma kwadratów odchyleń od średniej
+                        .mapToDouble(Measure::getValue)
+                        .reduce(0, (sum, m) -> sum + Math.pow(this.mean - m, 2));
+                double measureStdDev = Math.sqrt(                   // Odchylenie standardowe pojedynczego pomiaru
+                        diffSquareSum / (this.measures.size() - 1));
+                double stdErrSquareSum = this.measures.stream()     // Suma kwardatów niepewności standardowych
+                        .mapToDouble((m) ->
+                                (m.getStandardError() == 0 ? measureStdDev : m.getStandardError()))
+                        .reduce(0, (sum, m) ->  sum + m * m);
+
+                if (separateErrors) {   // Rozdzielanie niepewności wg starej konwencji
+                    this.calculatedMaxError = this.measures.stream()
+                            .mapToDouble((m) ->
+                                    (m.getHumanError() == 0 ? this.humanError : m.getHumanError()) +
+                                    (m.getCalibrationError() == 0 ? this.calibrationError : m.getCalibrationError()))
+                            .average()
+                            .orElse(0);
+                    this.calculatedStandardError = Math.sqrt(stdErrSquareSum) / this.measures.size();
+                } else {                // Sumowanie niepewności wg nowej konwencji
+                    double meanCalibration = this.measures.stream()     // Średni błąd wzorcowania
+                            .mapToDouble((m) ->
+                                    (m.getCalibrationError() == 0 ? this.calibrationError : m.getCalibrationError()))
+                            .average()
+                            .orElse(0);
+                    double meanHumanError = this.measures.stream()      // Średni błąd człowieka
+                            .mapToDouble((m) ->
+                                    (m.getHumanError() == 0 ? this.calibrationError : m.getHumanError()))
+                            .average()
+                            .orElse(0);
+
+                    this.calculatedMaxError = 0;
+                    this.calculatedStandardError = Math.sqrt(
+                            stdErrSquareSum / Math.pow(this.measures.size(), 2) +
+                            Math.pow(meanCalibration, 2) / 3 +
+                            Math.pow(meanHumanError, 2) / 3);
+                }
+        }
+
+        // Nowe wartości
+        double [] newValues = new double[]{ this.mean, this.calculatedStandardError, this.calculatedMaxError };
+        // Odpal wiadomość o zmianie średniej i niepewności dla listenerów
+        this.propertyFirer.firePropertyChange(new PropertyChangeEvent(this, "mean_change", oldValues, newValues));
     }
 
     /**
