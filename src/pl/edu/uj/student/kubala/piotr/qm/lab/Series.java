@@ -14,6 +14,7 @@ import pl.edu.uj.student.kubala.piotr.qm.Model;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class Series extends Model
 {
@@ -41,7 +42,7 @@ public class Series extends Model
     public Series(SeriesGroup parentGroup, String label)
     {
         this.parentGroup = parentGroup;
-        this.label = label;
+        this.label = Objects.requireNonNull(label);
 
         this.measures = new ArrayList<>();
         this.selectedMeasures = new int[0];
@@ -141,6 +142,7 @@ public class Series extends Model
                 this.mean = 0;
                 this.calculatedStandardError = 0;
                 this.calculatedMaxError = 0;
+                break;
 
             // 1 pomiar, przepisz wartości z pojedynczego pomiaru
             case 1:
@@ -148,15 +150,18 @@ public class Series extends Model
                 this.mean = measure.getValue();
 
                 if (separateErrors) {   // Rozdzielanie niepewności wg starej konwencji
-                    this.calculatedMaxError = measure.getCalibrationError() + measure.getHumanError();
+                    this.calculatedMaxError =
+                            defClibration(measure) +
+                            defHuman(measure);
                     this.calculatedStandardError = measure.getStandardError();
                 } else {                // Sumowanie niepewności wg nowej konwencji
                     this.calculatedMaxError = 0;
                     this.calculatedStandardError = Math.sqrt(
                             Math.pow(measure.getStandardError(), 2) +
-                            Math.pow(measure.getCalibrationError(), 2) / 3 +
-                            Math.pow(measure.getHumanError(), 2) / 3);
+                            Math.pow(defClibration(measure), 2) / 3 +
+                            Math.pow(defHuman(measure), 2) / 3);
                 }
+                break;
 
             // 2 lub więcej pomiarów - trzeba już się pomęczyć z przeliczeniem ;)
             default:
@@ -171,26 +176,24 @@ public class Series extends Model
                         diffSquareSum / (this.measures.size() - 1));
                 double stdErrSquareSum = this.measures.stream()     // Suma kwardatów niepewności standardowych
                         .mapToDouble((m) ->
-                                (m.getStandardError() == 0 ? measureStdDev : m.getStandardError()))
+                                defStandard(m, measureStdDev))
                         .reduce(0, (sum, m) ->  sum + m * m);
 
                 if (separateErrors) {   // Rozdzielanie niepewności wg starej konwencji
                     this.calculatedMaxError = this.measures.stream()
                             .mapToDouble((m) ->
-                                    (m.getHumanError() == 0 ? this.humanError : m.getHumanError()) +
-                                    (m.getCalibrationError() == 0 ? this.calibrationError : m.getCalibrationError()))
+                                    defHuman(m) +
+                                    defClibration(m))
                             .average()
                             .orElse(0);
                     this.calculatedStandardError = Math.sqrt(stdErrSquareSum) / this.measures.size();
                 } else {                // Sumowanie niepewności wg nowej konwencji
                     double meanCalibration = this.measures.stream()     // Średni błąd wzorcowania
-                            .mapToDouble((m) ->
-                                    (m.getCalibrationError() == 0 ? this.calibrationError : m.getCalibrationError()))
+                            .mapToDouble(this::defClibration)
                             .average()
                             .orElse(0);
                     double meanHumanError = this.measures.stream()      // Średni błąd człowieka
-                            .mapToDouble((m) ->
-                                    (m.getHumanError() == 0 ? this.calibrationError : m.getHumanError()))
+                            .mapToDouble(this::defHuman)
                             .average()
                             .orElse(0);
 
@@ -200,6 +203,7 @@ public class Series extends Model
                             Math.pow(meanCalibration, 2) / 3 +
                             Math.pow(meanHumanError, 2) / 3);
                 }
+                break;
         }
 
         // Nowe wartości
@@ -208,19 +212,44 @@ public class Series extends Model
         this.propertyFirer.firePropertyChange(new PropertyChangeEvent(this, "mean_change", oldValues, newValues));
     }
 
-    /**
-     * Metoda dodaje pomiar do listy pomiarów
-     * @param measure pomiar do dodania
-     * @param pos pozyzja, na której ma być dodany. -1, jeśli na końcu
-     */
-    public void addMeasure(Measure measure, int pos)
+    /* Pomocnicza metoda - zwraca measure.getStandardError(), jeśli niezerowy, albo domyślny def, jeśli zerowy */
+    private double defStandard(Measure measure, double def)
     {
+        return measure.getStandardError() == 0 ? def : measure.getStandardError();
+    }
 
+    /* Pomocnicza metoda - zwraca measure.getCalibrationError(), jeśli niezerowy, albo domyślny this.calibrationError, jeśli zerowy */
+    private double defClibration(Measure measure)
+    {
+        return measure.getCalibrationError() == 0 ? this.calibrationError : measure.getCalibrationError();
+    }
+
+    /* Pomocnicza metoda - zwraca measure.gethumanError(), jeśli niezerowy, albo domyślny this.humanError, jeśli zerowy */
+    private double defHuman(Measure measure)
+    {
+        return measure.getHumanError() == 0 ? this.humanError : measure.getHumanError();
     }
 
     /**
-     * Metoda dodaje pomiar na końcu listy pomiarów
+     * Metoda dodaje pomiar do listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
      * @param measure pomiar do dodania
+     * @param index pozyzja, na której ma być dodany. -1, jeśli na końcu
+     * @throws NullPointerException jeśli measure == null
+     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfMeasures()}]
+     */
+    public void addMeasure(Measure measure, int index)
+    {
+        Objects.requireNonNull(measure);
+        if (index == -1)
+            this.measures.add(measure);
+        else
+            this.measures.add(index, measure);
+    }
+
+    /**
+     * Metoda dodaje pomiar na końcu listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
+     * @param measure pomiar do dodania
+     * @throws NullPointerException jeśli measure == null
      */
     public void addMeasure(Measure measure)
     {
@@ -238,23 +267,29 @@ public class Series extends Model
     }
 
     /**
-     * Metoda usuwa pomiar z listy po indeksie
+     * Metoda usuwa pomiar z listy po indeksie i ustawia w nim rodzica na null.
      * @param pos pozycja pomiaru
      * @return liczba pomiarów pozostałych po usunięciu
+     * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      */
     public int deleteMeasure(int pos)
     {
-        return 0;
+        Measure measure = this.measures.get(pos);
+        this.measures.remove(pos);
+        measure.setParentSeries(null);
+        return this.measures.size();
     }
 
     /**
-     * Metoda usuwa pomiar z listy
+     * Metoda usuwa pomiar z listy i ustawia w nim rodzica na null
      * @param measure pomiar do usunięcia
      * @return liczba pomiarów pozostałych po usunięciu
      */
     public int deleteMeasure(Measure measure)
     {
-        return 0;
+        if (this.measures.remove(measure))
+            measure.setParentSeries(null);
+        return this.measures.size();
     }
 
     /**
