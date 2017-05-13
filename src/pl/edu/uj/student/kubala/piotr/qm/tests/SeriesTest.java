@@ -37,19 +37,35 @@ class SeriesTest {
     }
 
     @Test
-    void emptySizeTest()
+    void emptySize()
     {
         assertEquals(0, series.getNumberOfMeasures());
     }
 
     @Test
-    void nullLabelTest()
+    void nullLabel()
     {
         assertThrows(NullPointerException.class, () -> new Series(null, null));
     }
 
     @Test
-    void addLastTest()
+    void setBadSeriesErrors()
+    {
+        IllegalArgumentException e;
+        e = assertThrows(IllegalArgumentException.class, () -> series.setCalibrationError(-3));
+        assertEquals("błąd wzorcowania musi być nieujemny i skończony: -3.0", e.getMessage());
+        e = assertThrows(IllegalArgumentException.class, () -> series.setHumanError(-2));
+        assertEquals("błąd człowieka musi być nieujemny i skończony: -2.0", e.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> series.setCalibrationError(Double.POSITIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class, () -> series.setHumanError(Double.POSITIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class, () -> series.setCalibrationError(Double.NEGATIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class, () -> series.setHumanError(Double.NEGATIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class, () -> series.setCalibrationError(Double.NaN));
+        assertThrows(IllegalArgumentException.class, () -> series.setHumanError(Double.NaN));
+    }
+    
+    @Test
+    void addLast()
     {
         Measure measure1 = new Measure();
         Measure measure4 = new Measure();
@@ -63,13 +79,13 @@ class SeriesTest {
     }
 
     @Test
-    void addNullTest()
+    void addNull()
     {
         assertThrows(NullPointerException.class, () -> series.addMeasure(null));
     }
 
     @Test
-    void addLastByMinusOneTest()
+    void addLastByMinusOne()
     {
         series.addMeasure(measure[0], -1);
         series.addMeasure(measure[1], -1);
@@ -82,7 +98,7 @@ class SeriesTest {
     }
 
     @Test
-    void addInMiddleTest()
+    void addInMiddle()
     {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
@@ -97,7 +113,7 @@ class SeriesTest {
     }
 
     @Test
-    void addLastByIndexTest()
+    void addLastByIndex()
     {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1], 1);
@@ -145,7 +161,7 @@ class SeriesTest {
     }
 
     @Test
-    void deleteByRefTest()
+    void deleteByRef()
     {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
@@ -159,7 +175,7 @@ class SeriesTest {
     }
 
     @Test
-    void deleteByBadRefTest()
+    void deleteByBadRef()
     {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
@@ -188,7 +204,7 @@ class SeriesTest {
     }
 
     @Test
-    void emptyMeanTest()
+    void emptyMean()
     {
         series.setSeparateErrors(true);
         series.updateMean();
@@ -204,7 +220,7 @@ class SeriesTest {
     }
 
     @Test
-    void singleMeanAllErrorsTest()
+    void singleMeanAllErrors()
     {
         Measure measure = new Measure(30, 3, 2, 1);
         series.addMeasure(measure);
@@ -223,7 +239,7 @@ class SeriesTest {
     }
 
     @Test
-    void singleMeanNoStdErrorTest()
+    void singleMeanNoStdError()
     {
         Measure measure = new Measure(30, 3, 2, 0);
         series.addMeasure(measure);
@@ -312,5 +328,83 @@ class SeriesTest {
         assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
         assertEquals(1.37519324554225, series.getCalculatedStandardError(), 0.00000000000001);
         assertEquals(1.8, series.getCalculatedMaxError());
+    }
+
+    @Test
+    void specifiedStandardErrors()
+    {
+        series.addMeasure(new Measure(30, 0, 0, 1));
+        series.addMeasure(new Measure(31, 0, 0, 1.5));
+        series.addMeasure(new Measure(28, 0, 0, 1.3));
+        series.addMeasure(new Measure(35, 0, 0, 0.7));
+        series.addMeasure(new Measure(34, 0, 0, 1.1));
+        series.addMeasure(new Measure(29, 0, 0, 1.3));
+        series.addMeasure(new Measure(32, 0, 0, 1.2));
+        series.setCalibrationError(2);
+        series.setHumanError(1);
+
+        series.setSeparateErrors(false);
+        series.updateMean();
+        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
+        assertEquals(1.36603602506256, series.getCalculatedStandardError(), 0.00000000000001);
+        assertEquals(0, series.getCalculatedMaxError());
+
+        series.setSeparateErrors(true);
+        series.updateMean();
+        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
+        assertEquals(0.44652856023108, series.getCalculatedStandardError(), 0.00000000000001);
+        assertEquals(3, series.getCalculatedMaxError());
+    }
+
+    @Test
+    void specifiedMaxErrors()
+    {
+        series.addMeasure(new Measure(30, 1, 0.2, 0));
+        series.addMeasure(new Measure(31, 2, 0.5, 0));
+        series.addMeasure(new Measure(28, 0.3, 0.5, 0));
+        series.addMeasure(new Measure(35, 4, 1.3, 0));
+        series.addMeasure(new Measure(34, 1.5, 1.3, 0));
+        series.addMeasure(new Measure(29, 0.7, 2, 0));
+        series.addMeasure(new Measure(32, 2, 2, 0));
+        series.setCalibrationError(0);
+        series.setHumanError(0);
+
+        series.setSeparateErrors(false);
+        series.updateMean();
+        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
+        assertEquals(1.50077077702428, series.getCalculatedStandardError(), 0.00000000000001);
+        assertEquals(0, series.getCalculatedMaxError());
+
+        series.setSeparateErrors(true);
+        series.updateMean();
+        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
+        assertEquals(0.96890428330361, series.getCalculatedStandardError(), 0.00000000000001);
+        assertEquals(2.75714285714286, series.getCalculatedMaxError(), 0.0000000000001);
+    }
+
+    @Test
+    void mixedSpecifiedAndUnspecifiedErrors()
+    {
+        series.addMeasure(new Measure(30, 0, 0.2, 0));
+        series.addMeasure(new Measure(31, 0, 0, 1.4));
+        series.addMeasure(new Measure(28, 0.3, 0.5, 2));
+        series.addMeasure(new Measure(35, 4, 0, 0));
+        series.addMeasure(new Measure(34, 0, 1.3, 1));
+        series.addMeasure(new Measure(29, 0.7, 2, 2));
+        series.addMeasure(new Measure(32, 2, 2, 0));
+        series.setCalibrationError(0.4);
+        series.setHumanError(1.4);
+
+        series.setSeparateErrors(false);
+        series.updateMean();
+        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
+        assertEquals(1.26894582941063, series.getCalculatedStandardError(), 0.00000000000001);
+        assertEquals(0, series.getCalculatedMaxError());
+
+        series.setSeparateErrors(true);
+        series.updateMean();
+        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
+        assertEquals(0.791205302626183, series.getCalculatedStandardError(), 0.00000000000001);
+        assertEquals(2.42857142857143, series.getCalculatedMaxError(), 0.0000000000001);
     }
 }

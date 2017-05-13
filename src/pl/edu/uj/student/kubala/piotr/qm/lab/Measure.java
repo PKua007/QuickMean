@@ -24,14 +24,48 @@ public class Measure extends Model
      * @param calibrationError błąd wzorcowania
      * @param humanError bład człowieka
      * @param standardError odchylanie standardowe
+     * @throws IllegalArgumentException jeśli którykolwiek z podanych błędów jest ujemny, nieokreślony lub nieskończony
      */
     public Measure(double value, double calibrationError, double humanError, double standardError)
     {
+        checkValue(value);
+        checkCalibrationError(calibrationError);
+        checkHumanError(humanError);
+        checkStandardError(standardError);
+
         this.value = value;
         this.calibrationError = calibrationError;
         this.humanError = humanError;
         this.standardError = standardError;
         this.parentSeries = null;
+    }
+
+    /* Pomocnicza metoda zrzucająca wyjątek, jeśli podana wartość jest zła */
+    private void checkValue(double value)
+    {
+        if (!Double.isFinite(value))
+            throw new IllegalArgumentException("wartość musi być skończona: " + value);
+    }
+
+    /* Pomocnicza metoda zrzucająca wyjątek, jeśli podany błąd jest zły */
+    private void checkCalibrationError(double calibrationError)
+    {
+        if (!Double.isFinite(calibrationError) || calibrationError < 0)
+            throw new IllegalArgumentException("błąd wzorcowania musi być nieujemny i skończony: " + calibrationError);
+    }
+
+    /* Pomocnicza metoda zrzucająca wyjątek, jeśli podany błąd jest zły */
+    private void checkHumanError(double humanError)
+    {
+        if (!Double.isFinite(humanError) || humanError < 0)
+            throw new IllegalArgumentException("błąd człowieka musi być nieujmeny i skończony: " + humanError);
+    }
+
+    /* Pomocnicza metoda zrzucająca wyjątek, jeśli podany błąd jest zły */
+    private void checkStandardError(double standardError)
+    {
+        if (!Double.isFinite(standardError) || standardError < 0)
+            throw new IllegalArgumentException("niepewność standardowa musi być nieujemna i skończona: " + standardError);
     }
 
     /**
@@ -57,7 +91,14 @@ public class Measure extends Model
         return value;
     }
 
-    public void setValue(double value) {
+    /**
+     * Ustawia wartość pomiaru na nową wartość.
+     * @param value nowa wartość wartości pomiaru
+     * @throws IllegalArgumentException jeśli wartość jest nieokreślona lub nieskończona
+     */
+    public void setValue(double value)
+    {
+        checkValue(value);
         this.value = value;
     }
 
@@ -65,7 +106,14 @@ public class Measure extends Model
         return calibrationError;
     }
 
-    public void setCalibrationError(double calibrationError) {
+    /**
+     * Ustawia błąd wzorcowania na nową wartość.
+     * @param calibrationError nowa wartość błędu wzorcowania
+     * @throws IllegalArgumentException jeśli podany błąd jest ujemny, nieokreślony lub nieskończony
+     */
+    public void setCalibrationError(double calibrationError)
+    {
+        checkCalibrationError(calibrationError);
         this.calibrationError = calibrationError;
     }
 
@@ -73,7 +121,14 @@ public class Measure extends Model
         return humanError;
     }
 
-    public void setHumanError(double humanError) {
+    /**
+     * Ustawia błąd człowieka na nową wartość.
+     * @param humanError nowa wartość błędu wzorcowania
+     * @throws IllegalArgumentException jeśli podany błąd jest ujemny, nieokreślony lub nieskończony
+     */
+    public void setHumanError(double humanError)
+    {
+        checkHumanError(humanError);
         this.humanError = humanError;
     }
 
@@ -81,7 +136,14 @@ public class Measure extends Model
         return standardError;
     }
 
-    public void setStandardError(double standardError) {
+    /**
+     * Ustawia niepewność standardową na nową wartość.
+     * @param standardError nowa wartość błędu wzorcowania
+     * @throws IllegalArgumentException jeśli podana niepewność jest ujemna, nieokreślona lub nieskończona
+     */
+    public void setStandardError(double standardError)
+    {
+        checkStandardError(standardError);
         this.standardError = standardError;
     }
 

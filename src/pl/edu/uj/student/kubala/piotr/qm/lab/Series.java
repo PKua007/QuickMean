@@ -63,7 +63,16 @@ public class Series extends Model
         return calibrationError;
     }
 
-    public void setCalibrationError(double calibrationError) {
+    /**
+     * Ustawia błąd wzorcowania dotyczący całej serii - nim podstawiane są nieokreślone wartości dla poszczególnych
+     * pomiarów
+     * @param calibrationError błąd wzorcowania w całej serii
+     * @throws IllegalArgumentException jeśli podany błąd jest ujemny, nieokreślony lub nieskończony
+     */
+    public void setCalibrationError(double calibrationError)
+    {
+        if (!Double.isFinite(calibrationError) || calibrationError < 0)
+            throw new IllegalArgumentException("błąd wzorcowania musi być nieujemny i skończony: " + calibrationError);
         this.calibrationError = calibrationError;
     }
 
@@ -71,7 +80,16 @@ public class Series extends Model
         return humanError;
     }
 
-    public void setHumanError(double humanError) {
+    /**
+     * Ustawia błąd człowieka dotyczący całej serii - nim podstawiane są nieokreślone wartości dla poszczególnych
+     * pomiarów
+     * @param humanError błąd człowieka w całej serii
+     * @throws IllegalArgumentException jeśli podany błąd jest ujemny, nieokreślony lub nieskończony
+     */
+    public void setHumanError(double humanError)
+    {
+        if (!Double.isFinite(humanError) || humanError < 0)
+            throw new IllegalArgumentException("błąd człowieka musi być nieujemny i skończony: " + humanError);
         this.humanError = humanError;
     }
 
