@@ -19,6 +19,10 @@ import java.util.Objects;
 public class Series extends Model
 {
     public static final int DEFAULT_SIGNIFICANT_DIGITS = 2;
+    public static final int MIN_SIGNIFICANT_DIGITS = 1;
+    public static final int MAX_SIGNIFICANT_DIGITS = 6;
+
+    private static int staticIdx = 0;
 
     private ArrayList<Measure>  measures;       // Tablica z pomiarami
     private double              mean;           // Średnia pomiarów
@@ -35,18 +39,24 @@ public class Series extends Model
     private boolean         separateErrors;     // Czy rozdzielać niepwność
 
     /**
-     * Konstruktor serii pomiarów. Inicjuje domyślne wartości dla serii.
-     * @param parentGroup grupa, do której należy seria pomiarów
+     * Konstruktor serii pomiarów. Inicjuje domyślne wartości dla serii
      * @param label nazwa serii
      */
-    public Series(SeriesGroup parentGroup, String label)
+    public Series(String label)
     {
-        this.parentGroup = parentGroup;
         this.label = Objects.requireNonNull(label);
 
         this.measures = new ArrayList<>();
         this.selectedMeasures = new int[0];
         this.significantDigits = DEFAULT_SIGNIFICANT_DIGITS;
+    }
+
+    /**
+     * Konstruktor domyślny serii pomiarów. Tworzy serie o nazwach "seria x", gdzie x to kolejne liczby dodatnie
+     */
+    public Series()
+    {
+        this("seria " + (++staticIdx));
     }
 
     /* Settery i gettery */
@@ -56,7 +66,7 @@ public class Series extends Model
     }
 
     public void setLabel(String label) {
-        this.label = label;
+        this.label = Objects.requireNonNull(label);
     }
 
     public double getCalibrationError() {
@@ -106,6 +116,9 @@ public class Series extends Model
     }
 
     public void setSignificantDigits(int significantDigits) {
+        if (significantDigits < MIN_SIGNIFICANT_DIGITS || significantDigits > MAX_SIGNIFICANT_DIGITS)
+            throw new IllegalArgumentException("Liczba cyfr znaczących musi być z przedziału [" + MIN_SIGNIFICANT_DIGITS +
+                    ", " + MAX_SIGNIFICANT_DIGITS + "]: " + significantDigits);
         this.significantDigits = significantDigits;
     }
 
@@ -125,11 +138,15 @@ public class Series extends Model
         this.selectedMeasures = Arrays.copyOf(selectedMeasures, selectedMeasures.length);
     }
 
-    /* Gettery solo */
-
     public SeriesGroup getParentGroup() {
         return parentGroup;
     }
+
+    public void setParentGroup(SeriesGroup parentGroup) {
+        this.parentGroup = parentGroup;
+    }
+
+    /* Gettery solo */
 
     public double getMean() {
         return mean;
@@ -254,10 +271,13 @@ public class Series extends Model
      * @param index pozyzja, na której ma być dodany. -1, jeśli na końcu
      * @throws NullPointerException jeśli measure == null
      * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfMeasures()}]
+     * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
     public void addMeasure(Measure measure, int index)
     {
         Objects.requireNonNull(measure);
+        if (this.measures.indexOf(measure) != -1)
+            throw new IllegalArgumentException("Pomiar już jest w serii");
         if (index == -1)
             this.measures.add(measure);
         else
@@ -268,6 +288,7 @@ public class Series extends Model
      * Metoda dodaje pomiar na końcu listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
      * @param measure pomiar do dodania
      * @throws NullPointerException jeśli measure == null
+     * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
     public void addMeasure(Measure measure)
     {
@@ -277,6 +298,7 @@ public class Series extends Model
     /**
      * Metoda pobiera pomiar
      * @param pos pozycja pomiaru
+     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link Series#getNumberOfMeasures() - 1}]
      * @return pomiar z podanej pozycji
      */
     public Measure getMeasure(int pos)

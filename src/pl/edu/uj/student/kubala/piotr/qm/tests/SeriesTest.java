@@ -21,36 +21,33 @@ import static org.junit.jupiter.api.Assertions.*;
 class SeriesTest {
 
     private Series series;
-    private static Measure [] measure;
+    private static Measure[] measure;
 
     @BeforeAll
-    static void setupAll()
-    {
+    static void setupAll() {
         // Generuj 5 świeżutkich Measurków
         measure = Stream.generate(Measure::new).limit(5).toArray(Measure[]::new);
     }
 
     @BeforeEach
-    void setupEach()
-    {
-        series = new Series(null, "test_series");
+    void setupEach() {
+        series = new Series();
     }
 
     @Test
-    void emptySize()
-    {
+    void emptySize() {
         assertEquals(0, series.getNumberOfMeasures());
     }
 
     @Test
-    void nullLabel()
-    {
-        assertThrows(NullPointerException.class, () -> new Series(null, null));
+    void nullSetters() {
+        assertThrows(NullPointerException.class, () -> new Series(null));
+        assertThrows(NullPointerException.class, () -> series.setLabel(null));
+        assertThrows(NullPointerException.class, () -> series.setSelectedMeasures(null));
     }
 
     @Test
-    void setBadSeriesErrors()
-    {
+    void setBadSeriesErrors() {
         IllegalArgumentException e;
         e = assertThrows(IllegalArgumentException.class, () -> series.setCalibrationError(-3));
         assertEquals("błąd wzorcowania musi być nieujemny i skończony: -3.0", e.getMessage());
@@ -63,25 +60,44 @@ class SeriesTest {
         assertThrows(IllegalArgumentException.class, () -> series.setCalibrationError(Double.NaN));
         assertThrows(IllegalArgumentException.class, () -> series.setHumanError(Double.NaN));
     }
+
+    @Test
+    void setBadSignificantDigits()
+    {
+        IllegalArgumentException e;
+        e = assertThrows(IllegalArgumentException.class, () -> series.setSignificantDigits(-1));
+        assertEquals("Liczba cyfr znaczących musi być z przedziału [1, 6]: -1", e.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> series.setSignificantDigits(0));
+        assertThrows(IllegalArgumentException.class, () -> series.setSignificantDigits(7));
+        series.setSignificantDigits(1);
+        series.setSignificantDigits(6);
+    }
     
     @Test
     void addLast()
     {
-        Measure measure1 = new Measure();
-        Measure measure4 = new Measure();
-        series.addMeasure(measure1);
-        series.addMeasure(new Measure());
-        series.addMeasure(new Measure());
-        series.addMeasure(measure4);
+        series.addMeasure(measure[0]);
+        series.addMeasure(measure[1]);
+        series.addMeasure(measure[2]);
+        series.addMeasure(measure[3]);
 
-        assertEquals(measure1, series.getMeasure(0));
-        assertEquals(measure4, series.getMeasure(3));
+        assertEquals(measure[0], series.getMeasure(0));
+        assertEquals(measure[3], series.getMeasure(3));
     }
 
     @Test
     void addNull()
     {
         assertThrows(NullPointerException.class, () -> series.addMeasure(null));
+    }
+
+    @Test
+    void addDuplicate()
+    {
+        IllegalArgumentException e;
+        series.addMeasure(measure[0]);
+        e = assertThrows(IllegalArgumentException.class, () -> series.addMeasure(measure[0]));
+        assertEquals("Pomiar już jest w serii", e.getMessage());
     }
 
     @Test

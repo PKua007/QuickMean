@@ -13,10 +13,13 @@ import pl.edu.uj.student.kubala.piotr.qm.Model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class SeriesGroup extends Model
 {
     public static final String  DEFAULT_LABEL_HEADER = "Nazwa serii";
+
+    private static int staticIdx = 0;
 
     private ArrayList<Series>   series;             // Tablica z seriami pomiarowymi
     private int []              selectedSeries;     // Indeksy w tablicy zaznaczonych serii grup
@@ -27,17 +30,20 @@ public class SeriesGroup extends Model
 
     /**
      * Konstruktor grupy inicjujący domyślne wartości
-     * @param parentLab laboratorium, do którego należy grupa
      * @param name nazwa grupy pomiarów
      */
-    public SeriesGroup(LabProject parentLab, String name)
+    public SeriesGroup(String name)
     {
-        this.parentLab = parentLab;
-        this.name = name;
+        this.name = Objects.requireNonNull(name);
 
         this.series = new ArrayList<>();
         this.selectedSeries = new int[0];
         this.labelHeader = DEFAULT_LABEL_HEADER;
+    }
+
+    public SeriesGroup()
+    {
+        this("grupa " + (++staticIdx));
     }
 
     /* Gettery i settery */
@@ -47,7 +53,7 @@ public class SeriesGroup extends Model
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = Objects.requireNonNull(name);
     }
 
     public String getLabelHeader() {
@@ -55,7 +61,7 @@ public class SeriesGroup extends Model
     }
 
     public void setLabelHeader(String labelHeader) {
-        this.labelHeader = labelHeader;
+        this.labelHeader = Objects.requireNonNull(labelHeader);
     }
 
     public int[] getSelectedSeries() {
@@ -77,16 +83,27 @@ public class SeriesGroup extends Model
     /**
      * Metoda dodaje serię do listy
      * @param series seria do dodania
-     * @param pos pozyzja, na której ma być dodana. -1, jeśli na końcu
+     * @param index pozyzja, na której ma być dodana. -1, jeśli na końcu
+     * @throws NullPointerException jeśli series == null
+     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link SeriesGroup#getNumberOfSeries() - 1}]
+     * @throws IllegalArgumentException jeśli seria jest już w grupie
      */
-    public void addSeries(Series series, int pos)
+    public void addSeries(Series series, int index)
     {
-
+        Objects.requireNonNull(series);
+        if (this.series.indexOf(series) != -1)
+            throw new IllegalArgumentException("Seria jest już w grupie");
+        if (index == -1)
+            this.series.add(series);
+        else
+            this.series.add(index, series);
     }
 
     /**
      * Metoda dodaje serię na końcu listy
      * @param series seria do dodania
+     * @throws NullPointerException jeśli series == null
+     * @throws IllegalArgumentException jeśli seria jest już w grupie
      */
     public void addSeries(Series series)
     {
@@ -96,6 +113,7 @@ public class SeriesGroup extends Model
     /**
      * Metoda pobiera serię
      * @param pos pozycja serii na liście
+     * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return seria z podanej pozycji
      */
     public Series getSeries(int pos)
@@ -106,11 +124,15 @@ public class SeriesGroup extends Model
     /**
      * Metoda usuwa serię z listy po indeksie
      * @param pos pozycja serii
+     * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return liczba serii pozostałych po usunięciu
      */
     public int deleteSeries(int pos)
     {
-        return 0;
+        Series series = this.series.get(pos);
+        this.series.remove(pos);
+        series.setParentGroup(null);
+        return this.series.size();
     }
 
     /**
@@ -120,7 +142,9 @@ public class SeriesGroup extends Model
      */
     public int deleteSeries(Series series)
     {
-        return 0;
+        if (this.series.remove(series))
+            series.setParentGroup(null);
+        return this.series.size();
     }
 
     /**
