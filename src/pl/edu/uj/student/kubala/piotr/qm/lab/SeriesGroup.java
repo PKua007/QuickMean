@@ -10,10 +10,11 @@
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.Model;
+import pl.edu.uj.student.kubala.piotr.qm.Utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.beans.PropertyChangeEvent;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SeriesGroup extends Model
 {
@@ -22,7 +23,7 @@ public class SeriesGroup extends Model
     private static int staticIdx = 0;
 
     private ArrayList<Series>   series;             // Tablica z seriami pomiarowymi
-    private int []              selectedSeries;     // Indeksy w tablicy zaznaczonych serii grup
+    private ArrayList<Integer>  selectedSeries;     // Indeksy w tablicy zaznaczonych serii grup
     private LabProject          parentLab;          // Laboratorium, do którego należy grupa pomiarów
 
     private String          name;               // Nazwa serii pomiarów
@@ -37,7 +38,7 @@ public class SeriesGroup extends Model
         this.name = Objects.requireNonNull(name);
 
         this.series = new ArrayList<>();
-        this.selectedSeries = new int[0];
+        this.selectedSeries = new ArrayList<>();
         this.labelHeader = DEFAULT_LABEL_HEADER;
     }
 
@@ -52,30 +53,60 @@ public class SeriesGroup extends Model
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name)
+    {
+        String oldValue = this.name;
         this.name = Objects.requireNonNull(name);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "name", oldValue, this.name);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public String getLabelHeader() {
         return labelHeader;
     }
 
-    public void setLabelHeader(String labelHeader) {
+    public void setLabelHeader(String labelHeader)
+    {
+        String oldValue = this.labelHeader;
         this.labelHeader = Objects.requireNonNull(labelHeader);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "labelHeader", oldValue, this.labelHeader);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public int[] getSelectedSeries() {
-        return Arrays.copyOf(this.selectedSeries, selectedSeries.length);
+        return selectedSeries.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
     }
 
-    public void setSelectedSeries(int[] selectedSeries) {
-        this.selectedSeries = Arrays.copyOf(selectedSeries, selectedSeries.length);
+    /**
+     * Ustawia nową listę indeksów wybranych serii pomiarów. Powiadamia listenerów wysyłając starą i nową listę REFERENCJI
+     * do zaznaczonych serii
+     * @param selectedSeries nowe indeksy zaznaczonych serii
+     * @throws IndexOutOfBoundsException jeśli któryś z indeksów jest niepoprawny
+     */
+    public void setSelectedSeries(int[] selectedSeries)
+    {
+        Arrays.stream(selectedSeries).forEach(this.series::get);        // Sprawdź poprawność indeksów
+        Series [] oldSelected = this.selectedSeries.stream()
+                .map((i) -> this.series.get(i)).
+                toArray(Series[]::new);
+        Series [] newSelected = Arrays.stream(selectedSeries).
+                mapToObj((i) -> this.series.get(i)).
+                toArray(Series[]::new);
+        this.selectedSeries = Arrays.stream(selectedSeries)
+                .boxed()
+                .collect(Collectors.toCollection(ArrayList::new));
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "selectedSeries", oldSelected, newSelected);
+        this.propertyFirer.firePropertyChange(evt);
     }
-
-    /* Gettery solo */
 
     public LabProject getParentLab() {
         return parentLab;
+    }
+
+    public void setParentLab(LabProject parentLab) {
+        this.parentLab = Objects.requireNonNull(parentLab);
     }
 
     /* Pozostałe metody */
@@ -97,6 +128,8 @@ public class SeriesGroup extends Model
             this.series.add(series);
         else
             this.series.add(index, series);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "new_series", null, series);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     /**
@@ -132,6 +165,9 @@ public class SeriesGroup extends Model
         Series series = this.series.get(pos);
         this.series.remove(pos);
         series.setParentGroup(null);
+        Utils.removeElementFromIndicesList(pos, this.selectedSeries);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_series", series, null);
+        this.propertyFirer.firePropertyChange(evt);
         return this.series.size();
     }
 
@@ -142,8 +178,14 @@ public class SeriesGroup extends Model
      */
     public int deleteSeries(Series series)
     {
-        if (this.series.remove(series))
+        int index = this.series.indexOf(series);
+        if (index != -1) {
+            this.series.remove(index);
             series.setParentGroup(null);
+            Utils.removeElementFromIndicesList(index, this.selectedSeries);
+            PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_series", series, null);
+            this.propertyFirer.firePropertyChange(evt);
+        }
         return this.series.size();
     }
 

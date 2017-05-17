@@ -12,8 +12,10 @@ package pl.edu.uj.student.kubala.piotr.qm.lab;
 import pl.edu.uj.student.kubala.piotr.qm.Model;
 import pl.edu.uj.student.kubala.piotr.qm.converters.Converter;
 
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class LabProject extends Model
 {
@@ -55,16 +57,29 @@ public class LabProject extends Model
     /**
      * Metoda dodaje grupę serii do listy
      * @param seriesGroup grupa serii do dodania
-     * @param pos pozyzja, na której ma być dodana. -1, jeśli na końcu
+     * @param index pozyzja, na której ma być dodana. -1, jeśli na końcu
+     * @throws NullPointerException jeśli seriesGroup == null
+     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link LabProject#getNumberOfGroupSeries()}  - 1}]
+     * @throws IllegalArgumentException jeśli grupa jest już w projekcie
      */
-    public void addSeriesGroup(SeriesGroup seriesGroup, int pos)
+    public void addSeriesGroup(SeriesGroup seriesGroup, int index)
     {
-
+        Objects.requireNonNull(seriesGroup);
+        if (this.seriesGroups.indexOf(seriesGroup) != -1)
+            throw new IllegalArgumentException("Grupa jest już w projekcie");
+        if (index == -1)
+            this.seriesGroups.add(seriesGroup);
+        else
+            this.seriesGroups.add(index, seriesGroup);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "new_group", null, seriesGroup);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     /**
      * Metoda dodaje grupę serii na końcu listy
      * @param seriesGroup grupa serii do dodania
+     * @throws NullPointerException jeśli seriesGroup == null
+     * @throws IllegalArgumentException jeśli grupa jest już w projekcie
      */
     public void addSeriesGroup(SeriesGroup seriesGroup)
     {
@@ -74,6 +89,7 @@ public class LabProject extends Model
     /**
      * Metoda pobiera grupę serii
      * @param pos pozycja grupy serii na liście
+     * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return grupa serii z podanej pozycji
      */
     public SeriesGroup getSeriesGroup(int pos)
@@ -84,11 +100,17 @@ public class LabProject extends Model
     /**
      * Metoda usuwa grupę serii z listy po indeksie
      * @param pos pozycja grupy serii
+     * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return liczba grup serii pozostałych po usunięciu
      */
     public int deleteSeriesGroup(int pos)
     {
-        return 0;
+        SeriesGroup seriesGroup = this.seriesGroups.get(pos);
+        this.seriesGroups.remove(pos);
+        seriesGroup.setParentLab(null);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_group", seriesGroup, null);
+        this.propertyFirer.firePropertyChange(evt);
+        return this.seriesGroups.size();
     }
 
     /**
@@ -98,7 +120,16 @@ public class LabProject extends Model
      */
     public int deleteSeriesGroup(SeriesGroup seriesGroup)
     {
-        return 0;
+        int index = this.seriesGroups.indexOf(seriesGroup);
+        if (index != -1) {
+            this.seriesGroups.remove(index);
+            seriesGroup.setParentLab(null);
+            if (this.selectedSeriesGroup > index)       // Zaktualizuj indeks wybranej grupy
+                this.selectedSeriesGroup--;
+            PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_group", seriesGroup, null);
+            this.propertyFirer.firePropertyChange(evt);
+        }
+        return this.seriesGroups.size();
     }
 
     /**
@@ -120,12 +151,18 @@ public class LabProject extends Model
     }
 
     /**
-     * Metoda ustawia obecnie wybraną grupę serii
-     * @param seriesGroupIdx indeks wybranej serii grup
+     * Ustawia nowy indeks wybranej grupy serii. -1 oznacza brak zaznaczenia
+     * @param seriesGroupIdx indeks wybranej grupy serii
+     * @throws IndexOutOfBoundsException jeśli indeks jest niepoprawny
      */
     public void setSelectedSeriesGroup(int seriesGroupIdx)
     {
-
+        if (seriesGroupIdx != -1) // Sprawdź poprawność indeksu
+            this.seriesGroups.get(seriesGroupIdx);
+        SeriesGroup oldSelected = this.seriesGroups.get(this.selectedSeriesGroup);
+        this.selectedSeriesGroup = seriesGroupIdx;
+        SeriesGroup newSelected = this.seriesGroups.get(this.selectedSeriesGroup);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "selectedGroup", oldSelected, newSelected);
     }
 
     /**
@@ -134,7 +171,7 @@ public class LabProject extends Model
      */
     public int getSelectedSeriesGroupIdx()
     {
-        return 0;
+        return this.selectedSeriesGroup;
     }
 
     /* Metody zapisu i otwierania */

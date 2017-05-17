@@ -7,6 +7,7 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.Measure;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,8 +26,8 @@ class SeriesTest {
 
     @BeforeAll
     static void setupAll() {
-        // Generuj 5 świeżutkich Measurków
-        measure = Stream.generate(Measure::new).limit(5).toArray(Measure[]::new);
+        // Generuj 6 świeżutkich Measurków
+        measure = Stream.generate(Measure::new).limit(6).toArray(Measure[]::new);
     }
 
     @BeforeEach
@@ -62,8 +63,7 @@ class SeriesTest {
     }
 
     @Test
-    void setBadSignificantDigits()
-    {
+    void setBadSignificantDigits() {
         IllegalArgumentException e;
         e = assertThrows(IllegalArgumentException.class, () -> series.setSignificantDigits(-1));
         assertEquals("Liczba cyfr znaczących musi być z przedziału [1, 6]: -1", e.getMessage());
@@ -72,10 +72,9 @@ class SeriesTest {
         series.setSignificantDigits(1);
         series.setSignificantDigits(6);
     }
-    
+
     @Test
-    void addLast()
-    {
+    void addLast() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
         series.addMeasure(measure[2]);
@@ -86,14 +85,12 @@ class SeriesTest {
     }
 
     @Test
-    void addNull()
-    {
+    void addNull() {
         assertThrows(NullPointerException.class, () -> series.addMeasure(null));
     }
 
     @Test
-    void addDuplicate()
-    {
+    void addDuplicate() {
         IllegalArgumentException e;
         series.addMeasure(measure[0]);
         e = assertThrows(IllegalArgumentException.class, () -> series.addMeasure(measure[0]));
@@ -101,8 +98,7 @@ class SeriesTest {
     }
 
     @Test
-    void addLastByMinusOne()
-    {
+    void addLastByMinusOne() {
         series.addMeasure(measure[0], -1);
         series.addMeasure(measure[1], -1);
         series.addMeasure(measure[2], -1);
@@ -114,8 +110,7 @@ class SeriesTest {
     }
 
     @Test
-    void addInMiddle()
-    {
+    void addInMiddle() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
         series.addMeasure(measure[3]);
@@ -129,8 +124,7 @@ class SeriesTest {
     }
 
     @Test
-    void addLastByIndex()
-    {
+    void addLastByIndex() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1], 1);
 
@@ -139,8 +133,7 @@ class SeriesTest {
     }
 
     @Test
-    void getBadIndices()
-    {
+    void getBadIndices() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
         series.addMeasure(measure[2]);
@@ -152,8 +145,7 @@ class SeriesTest {
     }
 
     @Test
-    void addBadIndices()
-    {
+    void addBadIndices() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
         series.addMeasure(measure[2]);
@@ -163,8 +155,7 @@ class SeriesTest {
     }
 
     @Test
-    void deleteByIndex()
-    {
+    void deleteByIndex() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
         series.addMeasure(measure[2]);
@@ -177,8 +168,7 @@ class SeriesTest {
     }
 
     @Test
-    void deleteByRef()
-    {
+    void deleteByRef() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
         series.addMeasure(measure[2]);
@@ -191,8 +181,7 @@ class SeriesTest {
     }
 
     @Test
-    void deleteByBadRef()
-    {
+    void deleteByBadRef() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
         series.addMeasure(measure[2]);
@@ -206,8 +195,7 @@ class SeriesTest {
     }
 
     @Test
-    void deleteBadIndices()
-    {
+    void deleteBadIndices() {
         series.addMeasure(measure[0]);
         series.addMeasure(measure[1]);
         series.addMeasure(measure[2]);
@@ -220,8 +208,7 @@ class SeriesTest {
     }
 
     @Test
-    void emptyMean()
-    {
+    void emptyMean() {
         series.setSeparateErrors(true);
         series.updateMean();
         assertEquals(0, series.getMean());
@@ -236,8 +223,7 @@ class SeriesTest {
     }
 
     @Test
-    void singleMeanAllErrors()
-    {
+    void singleMeanAllErrors() {
         Measure measure = new Measure(30, 3, 2, 1);
         series.addMeasure(measure);
 
@@ -250,13 +236,12 @@ class SeriesTest {
         series.setSeparateErrors(false);
         series.updateMean();
         assertEquals(30, series.getMean());
-        assertEquals(2.3094010767585, series.getCalculatedStandardError(),0.00000000000001);
+        assertEquals(2.3094010767585, series.getCalculatedStandardError(), 0.00000000000001);
         assertEquals(0, series.getCalculatedMaxError());
     }
 
     @Test
-    void singleMeanNoStdError()
-    {
+    void singleMeanNoStdError() {
         Measure measure = new Measure(30, 3, 2, 0);
         series.addMeasure(measure);
 
@@ -274,8 +259,7 @@ class SeriesTest {
     }
 
     @Test
-    void singleMeanDefaultErrors()
-    {
+    void singleMeanDefaultErrors() {
         Measure measure = new Measure(30, 0, 0, 0);
         series.addMeasure(measure);
         series.setCalibrationError(3);
@@ -295,8 +279,7 @@ class SeriesTest {
     }
 
     @Test
-    void standardErrorWithoutMax()
-    {
+    void standardErrorWithoutMax() {
         series.addMeasure(new Measure(30));
         series.addMeasure(new Measure(34));
         series.addMeasure(new Measure(35));
@@ -321,8 +304,7 @@ class SeriesTest {
     }
 
     @Test
-    void standardErrorWithMax()
-    {
+    void standardErrorWithMax() {
         series.addMeasure(new Measure(30));
         series.addMeasure(new Measure(34));
         series.addMeasure(new Measure(35));
@@ -347,8 +329,7 @@ class SeriesTest {
     }
 
     @Test
-    void specifiedStandardErrors()
-    {
+    void specifiedStandardErrors() {
         series.addMeasure(new Measure(30, 0, 0, 1));
         series.addMeasure(new Measure(31, 0, 0, 1.5));
         series.addMeasure(new Measure(28, 0, 0, 1.3));
@@ -373,8 +354,7 @@ class SeriesTest {
     }
 
     @Test
-    void specifiedMaxErrors()
-    {
+    void specifiedMaxErrors() {
         series.addMeasure(new Measure(30, 1, 0.2, 0));
         series.addMeasure(new Measure(31, 2, 0.5, 0));
         series.addMeasure(new Measure(28, 0.3, 0.5, 0));
@@ -399,8 +379,7 @@ class SeriesTest {
     }
 
     @Test
-    void mixedSpecifiedAndUnspecifiedErrors()
-    {
+    void mixedSpecifiedAndUnspecifiedErrors() {
         series.addMeasure(new Measure(30, 0, 0.2, 0));
         series.addMeasure(new Measure(31, 0, 0, 1.4));
         series.addMeasure(new Measure(28, 0.3, 0.5, 2));
@@ -422,5 +401,32 @@ class SeriesTest {
         assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
         assertEquals(0.791205302626183, series.getCalculatedStandardError(), 0.00000000000001);
         assertEquals(2.42857142857143, series.getCalculatedMaxError(), 0.0000000000001);
+    }
+
+    @Test
+    void setBadSelectedMeasures() {
+        Arrays.stream(measure).
+                forEach(series::addMeasure);
+
+        assertThrows(NullPointerException.class, () -> series.setSelectedMeasures(null));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> series.setSelectedMeasures(new int[]{-1, 6}));
+        series.setSelectedMeasures(new int[0]);
+        series.setSelectedMeasures(new int[]{0, 1, 2, 3, 4, 5});
+    }
+
+    @Test
+    void deleteSelectedMeasures() {
+        Arrays.stream(measure).
+                forEach(series::addMeasure);
+
+        series.setSelectedMeasures(new int[]{1, 2, 4, 5});
+        series.deleteMeasure(2);
+        series.deleteMeasure(measure[4]);
+        series.deleteMeasure(measure[0]);
+        assertArrayEquals(new int[]{0, 2}, series.getSelectedMeasures(), Arrays.toString(series.getSelectedMeasures()));
+
+        series.deleteMeasure(measure[1]);
+        series.deleteMeasure(measure[5]);
+        assertArrayEquals(new int[0], series.getSelectedMeasures());
     }
 }

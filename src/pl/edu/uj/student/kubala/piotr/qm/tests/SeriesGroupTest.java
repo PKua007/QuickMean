@@ -7,6 +7,7 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.Measure;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,8 +26,8 @@ class SeriesGroupTest
 
     @BeforeAll
     static void setupAll() {
-        // Generuj 5 świeżutkich Seriesków
-        series = Stream.generate(Series::new).limit(5).toArray(Series[]::new);
+        // Generuj 6 świeżutkich Seriesków
+        series = Stream.generate(Series::new).limit(6).toArray(Series[]::new);
     }
 
     @BeforeEach
@@ -187,5 +188,32 @@ class SeriesGroupTest
         seriesGroup.deleteSeries(0);
         assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.deleteSeries(2));
         seriesGroup.deleteSeries(1);
+    }
+
+    @Test
+    void setBadSelectedSeries() {
+        Arrays.stream(series).
+                forEach(seriesGroup::addSeries);
+
+        assertThrows(NullPointerException.class, () -> seriesGroup.setSelectedSeries(null));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> seriesGroup.setSelectedSeries(new int[]{-1, 6}));
+        seriesGroup.setSelectedSeries(new int[0]);
+        seriesGroup.setSelectedSeries(new int[]{0, 1, 2, 3, 4, 5});
+    }
+
+    @Test
+    void deleteSelectedMeasures() {
+        Arrays.stream(series).
+                forEach(seriesGroup::addSeries);
+
+        seriesGroup.setSelectedSeries(new int[]{1, 2, 4, 5});
+        seriesGroup.deleteSeries(2);
+        seriesGroup.deleteSeries(series[4]);
+        seriesGroup.deleteSeries(series[0]);
+        assertArrayEquals(new int[]{0, 2}, seriesGroup.getSelectedSeries(), Arrays.toString(seriesGroup.getSelectedSeries()));
+
+        seriesGroup.deleteSeries(series[1]);
+        seriesGroup.deleteSeries(series[5]);
+        assertArrayEquals(new int[0], seriesGroup.getSelectedSeries());
     }
 }

@@ -10,7 +10,9 @@ package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.Model;
 
-public class Measure extends Model
+import java.beans.PropertyChangeEvent;
+
+public class Measure extends Model implements Cloneable
 {
     private double value;               // Wartość pomiaru
     private double calibrationError;    // Niepewność wzorcowania przyrządu pomiarowego
@@ -99,7 +101,9 @@ public class Measure extends Model
     public void setValue(double value)
     {
         checkValue(value);
-        this.value = value;
+        double oldValue = this.value;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "value", oldValue, this.value);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public double getCalibrationError() {
@@ -114,7 +118,10 @@ public class Measure extends Model
     public void setCalibrationError(double calibrationError)
     {
         checkCalibrationError(calibrationError);
+        double oldValue = this.calibrationError;
         this.calibrationError = calibrationError;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "calibrationError", oldValue, this.calibrationError);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public double getHumanError() {
@@ -129,7 +136,10 @@ public class Measure extends Model
     public void setHumanError(double humanError)
     {
         checkHumanError(humanError);
+        double oldValue = this.humanError;
         this.humanError = humanError;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "humanError", oldValue, this.humanError);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public double getStandardError() {
@@ -144,7 +154,10 @@ public class Measure extends Model
     public void setStandardError(double standardError)
     {
         checkStandardError(standardError);
+        double oldValue = this.standardError;
         this.standardError = standardError;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "standardError", oldValue, this.standardError);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public Series getParentSeries() {
@@ -153,5 +166,17 @@ public class Measure extends Model
 
     public void setParentSeries(Series parentSeries) {
         this.parentSeries = parentSeries;
+    }
+
+    @Override
+    public Object clone()
+    {
+        Measure measure;
+        try {
+            measure = (Measure) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+        return measure;
     }
 }

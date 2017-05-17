@@ -9,8 +9,9 @@
 package pl.edu.uj.student.kubala.piotr.qm;
 
 import javax.swing.event.SwingPropertyChangeSupport;
+import java.beans.PropertyChangeListener;
 
-public class Model
+public abstract class Model
 {
     protected SwingPropertyChangeSupport    propertyFirer;
 
@@ -19,7 +20,13 @@ public class Model
         propertyFirer = new SwingPropertyChangeSupport(this);
     }
 
-    public boolean test(Model model) {
-        return this == model;
+    public void addPropertyChangeListener(PropertyChangeListener listener)
+    {
+        propertyFirer.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener)
+    {
+        propertyFirer.removePropertyChangeListener(listener);
     }
 }

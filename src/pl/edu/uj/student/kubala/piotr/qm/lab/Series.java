@@ -10,11 +10,12 @@
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.Model;
+import pl.edu.uj.student.kubala.piotr.qm.Utils;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Series extends Model
 {
@@ -28,7 +29,7 @@ public class Series extends Model
     private double              mean;           // Średnia pomiarów
     private double              calculatedStandardError;    // Obliczona niepewność standarwoda
     private double              calculatedMaxError;         // Obliczony błąd maksymalny
-    private int []              selectedMeasures;           // Zaznaczone pomiary
+    private ArrayList<Integer>  selectedMeasures;           // Zaznaczone pomiary
     private SeriesGroup         parentGroup;    // Grupa, do której należy seria pomiarowa
 
     private String          label;              // Nazwa serii pomiarowej (może być również wartością powiązanej zmiennej)
@@ -47,7 +48,7 @@ public class Series extends Model
         this.label = Objects.requireNonNull(label);
 
         this.measures = new ArrayList<>();
-        this.selectedMeasures = new int[0];
+        this.selectedMeasures = new ArrayList<>();
         this.significantDigits = DEFAULT_SIGNIFICANT_DIGITS;
     }
 
@@ -66,7 +67,10 @@ public class Series extends Model
     }
 
     public void setLabel(String label) {
+        String oldValue = this.label;
         this.label = Objects.requireNonNull(label);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "label", oldValue, this.label);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public double getCalibrationError() {
@@ -83,7 +87,11 @@ public class Series extends Model
     {
         if (!Double.isFinite(calibrationError) || calibrationError < 0)
             throw new IllegalArgumentException("błąd wzorcowania musi być nieujemny i skończony: " + calibrationError);
+
+        double oldValue = this.calibrationError;
         this.calibrationError = calibrationError;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "calibrationError", oldValue, this.calibrationError);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public double getHumanError() {
@@ -100,42 +108,80 @@ public class Series extends Model
     {
         if (!Double.isFinite(humanError) || humanError < 0)
             throw new IllegalArgumentException("błąd człowieka musi być nieujemny i skończony: " + humanError);
+
+        double oldValue = this.humanError;
         this.humanError = humanError;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "humanError", oldValue, this.calibrationError);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public boolean isUseStudentFisher() {
         return useStudentFisher;
     }
 
-    public void setUseStudentFisher(boolean useStudentFisher) {
+    public void setUseStudentFisher(boolean useStudentFisher)
+    {
+        boolean oldValue = this.useStudentFisher;
         this.useStudentFisher = useStudentFisher;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "useStudentFisher", oldValue, this.useStudentFisher);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public int getSignificantDigits() {
         return significantDigits;
     }
 
-    public void setSignificantDigits(int significantDigits) {
+    public void setSignificantDigits(int significantDigits)
+    {
         if (significantDigits < MIN_SIGNIFICANT_DIGITS || significantDigits > MAX_SIGNIFICANT_DIGITS)
             throw new IllegalArgumentException("Liczba cyfr znaczących musi być z przedziału [" + MIN_SIGNIFICANT_DIGITS +
                     ", " + MAX_SIGNIFICANT_DIGITS + "]: " + significantDigits);
+
+        int oldValue = this.significantDigits;
         this.significantDigits = significantDigits;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "significantDigits", oldValue, this.significantDigits);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     public boolean isSeparateErrors() {
         return separateErrors;
     }
 
-    public void setSeparateErrors(boolean separateErrors) {
+    public void setSeparateErrors(boolean separateErrors)
+    {
+        boolean oldValue = this.separateErrors;
         this.separateErrors = separateErrors;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "separateErrors", oldValue, this.separateErrors);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
-    public int[] getSelectedMeasures() {
-        return Arrays.copyOf(this.selectedMeasures, this.selectedMeasures.length);
+    public int[] getSelectedMeasures()
+    {
+        return this.selectedMeasures.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
     }
 
-    public void setSelectedMeasures(int[] selectedMeasures) {
-        this.selectedMeasures = Arrays.copyOf(selectedMeasures, selectedMeasures.length);
+    /**
+     * Ustawia nową listę indeksów wybranych pomiarów. Powiadamia listenerów wysyłając starą i nową listę REFERENCJI
+     * do zaznaczonych pomiarów
+     * @param selectedMeasures nowe indeksy zaznaczonych pomiarów
+     * @throws IndexOutOfBoundsException jeśli któryś z indeksów jest niepoprawny
+     */
+    public void setSelectedMeasures(int[] selectedMeasures)
+    {
+        Arrays.stream(selectedMeasures).forEach(this.measures::get);        // Sprawdź poprawność indeksów
+        Measure [] oldValue = this.selectedMeasures.stream()
+                .map((i) -> this.measures.get(i))
+                .toArray(Measure[]::new);
+        Measure [] newValue = Arrays.stream(selectedMeasures).
+                mapToObj((i) -> this.measures.get(i)).
+                toArray(Measure[]::new);
+        this.selectedMeasures = Arrays.stream(selectedMeasures)
+                .boxed()
+                .collect(Collectors.toCollection(ArrayList::new));
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "selectedMeasures", oldValue, newValue);
+        propertyFirer.firePropertyChange(evt);
     }
 
     public SeriesGroup getParentGroup() {
@@ -244,7 +290,7 @@ public class Series extends Model
         // Nowe wartości
         double [] newValues = new double[]{ this.mean, this.calculatedStandardError, this.calculatedMaxError };
         // Odpal wiadomość o zmianie średniej i niepewności dla listenerów
-        this.propertyFirer.firePropertyChange(new PropertyChangeEvent(this, "mean_change", oldValues, newValues));
+        this.propertyFirer.firePropertyChange(new PropertyChangeEvent(this, "mean_err", oldValues, newValues));
     }
 
     /* Pomocnicza metoda - zwraca measure.getStandardError(), jeśli niezerowy, albo domyślny def, jeśli zerowy */
@@ -282,6 +328,9 @@ public class Series extends Model
             this.measures.add(measure);
         else
             this.measures.add(index, measure);
+
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "new_measure", null, measure);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     /**
@@ -317,6 +366,9 @@ public class Series extends Model
         Measure measure = this.measures.get(pos);
         this.measures.remove(pos);
         measure.setParentSeries(null);
+        Utils.removeElementFromIndicesList(pos, this.selectedMeasures);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_measure", measure, null);
+        this.propertyFirer.firePropertyChange(evt);
         return this.measures.size();
     }
 
@@ -327,8 +379,14 @@ public class Series extends Model
      */
     public int deleteMeasure(Measure measure)
     {
-        if (this.measures.remove(measure))
+        int index = this.measures.indexOf(measure);
+        if (index != -1) {
+            this.measures.remove(index);
             measure.setParentSeries(null);
+            Utils.removeElementFromIndicesList(index, this.selectedMeasures);
+            PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_measure", measure, null);
+            this.propertyFirer.firePropertyChange(evt);
+        }
         return this.measures.size();
     }
 
