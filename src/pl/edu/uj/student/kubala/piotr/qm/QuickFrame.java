@@ -13,6 +13,7 @@ package pl.edu.uj.student.kubala.piotr.qm;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -50,6 +51,18 @@ public class QuickFrame extends JFrame implements View
     public void init()
     {
         Arrays.stream(this.allViews).forEach(View::init);
+
+        this.setSize(new Dimension(360, 640));
+        this.setResizable(false);
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        this.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new BorderLayout(10, 0));
+        panel.add(this.measuresInput.getPanel(), BorderLayout.NORTH);
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        this.setContentPane(panel);
+        this.setVisible(true);
     }
 
     /* Gettery solo */

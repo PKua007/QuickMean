@@ -10,6 +10,10 @@ package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.Objects;
+
 public class MeanDisplay implements View
 {
     private LabProject      labProject;

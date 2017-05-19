@@ -254,7 +254,8 @@ public class Series extends Model
                         .mapToDouble(Measure::getValue)
                         .reduce(0, (sum, m) -> sum + Math.pow(this.mean - m, 2));
                 double measureStdDev = Math.sqrt(                   // Odchylenie standardowe pojedynczego pomiaru
-                        diffSquareSum / (this.measures.size() - 1));
+                        diffSquareSum / (this.measures.size() - 1)) *
+                        (useStudentFisher ? StudentFisherCache.get(this.measures.size() - 1) : 1);
                 double stdErrSquareSum = this.measures.stream()     // Suma kwardatów niepewności standardowych
                         .mapToDouble((m) ->
                                 defStandard(m, measureStdDev))

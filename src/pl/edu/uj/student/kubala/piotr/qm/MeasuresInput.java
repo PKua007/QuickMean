@@ -12,12 +12,24 @@ package pl.edu.uj.student.kubala.piotr.qm;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.Objects;
 
 public class MeasuresInput implements View
 {
-    private JTextPane   inputPane;      // Okienko z pomiarami
+    private static final String INDIVIDUAL_ERRORS = "<html><center>Indywidualne<br/>niepewności</center></html>";
+    private static final String DELETE_MEASURE = "<html><center>Usuń<br/>pomiar</center></html>";
+    private static final String NEXT_MEASURE = "<html><center>Następny<br/>pomiar</center></html>";
+    private static final Font EDITOR_FONT = new Font("DialogInput", Font.BOLD, 16);
+
     private LabProject  labProject;     // Projekt laboratorium
     private QuickFrame  parentFrame;    // Główka ramka
+
+    private JPanel          panel;
+    private JTextPane       inputPane;      // Okienko z pomiarami
+    private JButton         individualErrorsButton;
+    private JButton         deleteMeasureButton;
+    private JButton         nextMeasureButton;
 
     /**
      * Konstruktor okna z pomiarami. Tworzy JTextPane z zawartością i ustawia jego format.
@@ -31,14 +43,6 @@ public class MeasuresInput implements View
     }
 
     /**
-     * Metoda zwraca panel tekstowy z pomiarami
-     * @return panel tekstowy z pomiarami
-     */
-    public JTextPane getInputPane() {
-        return inputPane;
-    }
-
-    /**
      * MEtoda zwraca główną ramkę, do której należy okno
      * @return główna ramka
      */
@@ -48,6 +52,39 @@ public class MeasuresInput implements View
 
     @Override
     public void init() {
+        // Utwórz pole edycji i przyciski
+        this.inputPane = new JTextPane();
+        this.inputPane.setPreferredSize(new Dimension(0, 50));
+        this.inputPane.setFont(EDITOR_FONT);
+        this.individualErrorsButton = new JButton(INDIVIDUAL_ERRORS);
+        this.deleteMeasureButton = new JButton(DELETE_MEASURE);
+        this.nextMeasureButton = new JButton(NEXT_MEASURE);
 
+        // Utwórz panel na przyciski i je dodaj
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        buttonsPanel.add(this.individualErrorsButton);
+        buttonsPanel.add(this.deleteMeasureButton);
+        buttonsPanel.add(this.nextMeasureButton);
+
+        // Utwórz główny panel na wszystkie bajery i dodaj do niego pole z pomiarami i panel z przyciskami
+        this.panel = new JPanel(new BorderLayout(0, 15));
+        this.panel.add(this.inputPane, BorderLayout.CENTER);
+        this.panel.add(buttonsPanel, BorderLayout.SOUTH);
+    }
+
+    public JButton getIndividualErrorsButton() {
+        return Objects.requireNonNull(individualErrorsButton);
+    }
+
+    public JButton getDeleteMeasureButton() {
+        return Objects.requireNonNull(deleteMeasureButton);
+    }
+
+    public JButton getNextMeasureButton() {
+        return Objects.requireNonNull(nextMeasureButton);
+    }
+
+    public JPanel getPanel() {
+        return Objects.requireNonNull(panel);
     }
 }

@@ -304,6 +304,32 @@ class SeriesTest {
     }
 
     @Test
+    void standardErrorFisherWithoutMax() {
+        series.addMeasure(new Measure(30));
+        series.addMeasure(new Measure(34));
+        series.addMeasure(new Measure(35));
+        series.addMeasure(new Measure(29));
+        series.addMeasure(new Measure(30));
+        series.addMeasure(new Measure(37));
+        series.addMeasure(new Measure(38));
+        series.setCalibrationError(0);
+        series.setHumanError(0);
+        series.setUseStudentFisher(true);
+
+        series.setSeparateErrors(false);
+        series.updateMean();
+        assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
+        assertEquals(1.49974322135263, series.getCalculatedStandardError(), 0.00000000000001);
+        assertEquals(0, series.getCalculatedMaxError());
+
+        series.setSeparateErrors(true);
+        series.updateMean();
+        assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
+        assertEquals(1.49974322135263, series.getCalculatedStandardError(), 0.00000000000001);
+        assertEquals(0, series.getCalculatedMaxError());
+    }
+
+    @Test
     void standardErrorWithMax() {
         series.addMeasure(new Measure(30));
         series.addMeasure(new Measure(34));
