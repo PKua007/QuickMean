@@ -10,7 +10,7 @@
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.Model;
-import pl.edu.uj.student.kubala.piotr.qm.Utils;
+import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.*;

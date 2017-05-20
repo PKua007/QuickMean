@@ -9,15 +9,32 @@
 package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.utils.RoundedBorder;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.plaf.synth.ColorType;
 import java.awt.*;
 import java.util.Objects;
 
 public class MeanDisplay implements View
 {
+    private static final String     MEAN_OF_MEASURES = "X\u0305 ± σ(X\u0305) ± ΔX\u0305";
+    private static final Font       MEAN_FONT = new Font("Dialog", Font.PLAIN, 24);
+    private static final int        MEAN_MARGIN = 8;
+    private static final int        TOP_MARGIN_BIAS = -6;
+    private static final int        HEIGHT = 100;
+    private static final int        BORDER_RADIUS = 20;
+    private static final Color      BORDER_COLOR = new Color(0xB6B6B6);
+    private static final Color      TITLE_COLOR = new Color(0x697E8B);
+    private static final Color      MEAN_COLOR = new Color(0x324866);
+
     private LabProject      labProject;
     private QuickFrame      parentFrame;
+    private JPanel          panel;
+    private JLabel          meanLabel;
 
     /**
      * Konstruktor przyjmujący projekt laboratorium
@@ -39,6 +56,31 @@ public class MeanDisplay implements View
 
     @Override
     public void init() {
+        if (this.panel != null)
+            throw new RuntimeException("MeanDisplay::init wywołane drugi raz");
 
+        this.meanLabel = new JLabel("45.34 ± 0.45 ± 0.48", JLabel.CENTER);
+        this.meanLabel.setFont(MEAN_FONT);
+        this.meanLabel.setForeground(MEAN_COLOR);
+
+        Border roundBorder = new RoundedBorder(BORDER_RADIUS, BORDER_COLOR);
+        Border compoundBorder = BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(roundBorder, MEAN_OF_MEASURES, TitledBorder.CENTER, TitledBorder.TOP, null, TITLE_COLOR),
+                BorderFactory.createEmptyBorder(MEAN_MARGIN + TOP_MARGIN_BIAS, MEAN_MARGIN, MEAN_MARGIN, MEAN_MARGIN)
+        );
+
+        this.panel = new JPanel(new BorderLayout());
+        this.panel.setBorder(compoundBorder);
+        //this.panel.setPreferredSize(new Dimension(0, HEIGHT));
+        this.panel.add(this.meanLabel, BorderLayout.CENTER);
+    }
+
+    /**
+     * Zwraca panel z JLabelem ze średnią
+     * @return panel z JLabelem ze średnią
+     * @throws NullPointerException jeśli niezainicjowane
+     */
+    public JPanel getPanel() {
+        return Objects.requireNonNull(this.panel);
     }
 }

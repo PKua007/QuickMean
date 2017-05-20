@@ -19,6 +19,11 @@ import java.util.Objects;
 
 public class QuickFrame extends JFrame implements View
 {
+    private static final int        FRAME_WIDTH = 360;
+    private static final int        FRAME_HEIGHT = 640;
+    private static final int        PANELS_GAP = 20;
+    private static final int        FRAME_PADDING = 10;
+
     private MeasuresInput           measuresInput;      // Widok okna z pomiarami
     private MeanDisplay             meanDisplay;        // Widok okna ze średnią
     private GroupDisplay            groupDisplay;       // Widok okna z grupą serii
@@ -41,7 +46,7 @@ public class QuickFrame extends JFrame implements View
         this.groupDisplay = new GroupDisplay(this, this.labProject);
         this.optionsPane = new OptionsPane(this, this.labProject);
 
-        this.allViews = new View[]{this.measuresInput, this.measuresInput, this.groupDisplay, this.optionsPane};
+        this.allViews = new View[]{this.measuresInput, this.meanDisplay, this.groupDisplay, this.optionsPane};
     }
 
     /**
@@ -52,16 +57,31 @@ public class QuickFrame extends JFrame implements View
     {
         Arrays.stream(this.allViews).forEach(View::init);
 
-        this.setSize(new Dimension(360, 640));
-        this.setResizable(false);
+        this.setSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
+        this.setMinimumSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
+        //this.setResizable(false);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new BorderLayout(10, 0));
-        panel.add(this.measuresInput.getPanel(), BorderLayout.NORTH);
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Utwórz główny panel okna i panele na elementy powyżej i poniżej tabelki układane przez BoxLayout - elementy
+        // powyżej i poniżej będą rozciągnięte na całą szerokość i upakowane w pionie. Tabelka zajmie całą pozostałą
+        // przestrzeń
+        JPanel mainBorderPanel = new JPanel(new BorderLayout(PANELS_GAP, 0));
+        mainBorderPanel.setBorder(BorderFactory.createEmptyBorder(FRAME_PADDING, FRAME_PADDING, FRAME_PADDING, FRAME_PADDING));
+        JPanel upperContentPanel = new JPanel();
+        BoxLayout ucpBoxLayout = new BoxLayout(upperContentPanel, BoxLayout.PAGE_AXIS);
+        upperContentPanel.setLayout(ucpBoxLayout);
 
-        this.setContentPane(panel);
+        // Dodaj elementy górnego panelu - okienko pomiarów i okienko średniej
+        this.measuresInput.getPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
+        upperContentPanel.add(this.measuresInput.getPanel());
+        upperContentPanel.add(Box.createRigidArea(new Dimension(0, PANELS_GAP)));
+        this.meanDisplay.getPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
+        upperContentPanel.add(this.meanDisplay.getPanel());
+
+        // Dodaj panele do głównego panelu
+        mainBorderPanel.add(upperContentPanel, BorderLayout.PAGE_START);
+        this.setContentPane(mainBorderPanel);
         this.setVisible(true);
     }
 

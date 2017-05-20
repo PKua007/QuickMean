@@ -6,7 +6,7 @@
 // (C)PKua, wszystkie prawa zastrzeżone
 //---------------------------------------------------------------------
 
-package pl.edu.uj.student.kubala.piotr.qm;
+package pl.edu.uj.student.kubala.piotr.qm.utils;
 
 import java.util.ArrayList;
 import java.util.ListIterator;

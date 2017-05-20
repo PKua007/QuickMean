@@ -10,12 +10,11 @@
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.Model;
-import pl.edu.uj.student.kubala.piotr.qm.Utils;
+import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Series extends Model
 {
@@ -209,7 +208,7 @@ public class Series extends Model
     /* Pozostałe metody */
 
     /**
-     * Metoda aktualizuje średnią z przechowywanych pomiarów i ich niepewności. Wywołuje zdarzenie mean_change dla
+     * Metoda aktualizuje średnią z przechowywanych pomiarów i ich niepewności. Wywołuje zdarzenie mean_err dla
      * zarejestrowanych obserwatorów
      */
     public void updateMean()
