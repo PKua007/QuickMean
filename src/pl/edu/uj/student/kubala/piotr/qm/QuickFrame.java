@@ -19,6 +19,15 @@ import java.util.Objects;
 
 public class QuickFrame extends JFrame implements View
 {
+    /** Kolor standardowej zaokrąglonej ramki używanej przez kilka widoków */
+    public static final Color       BORDER_COLOR = new Color(0xB6B6B6);
+
+    /** Kolor tytułu standardowej zaokrąglonej ramki używanej przez kilka widoków */
+    public static final Color       TITLE_COLOR = new Color(0x565656);
+
+    /** Promień zaokrąglonej ramki używanej przez kilka widoków */
+    public static final int         BORDER_RADIUS = 14;
+
     private static final int        FRAME_WIDTH = 360;
     private static final int        FRAME_HEIGHT = 640;
     private static final int        PANELS_GAP = 20;
@@ -71,6 +80,9 @@ public class QuickFrame extends JFrame implements View
         JPanel upperContentPanel = new JPanel();
         BoxLayout ucpBoxLayout = new BoxLayout(upperContentPanel, BoxLayout.PAGE_AXIS);
         upperContentPanel.setLayout(ucpBoxLayout);
+        JPanel lowerContentPanel = new JPanel();
+        BoxLayout lcpBoxLayout = new BoxLayout(lowerContentPanel, BoxLayout.PAGE_AXIS);
+        lowerContentPanel.setLayout(lcpBoxLayout);
 
         // Dodaj elementy górnego panelu - okienko pomiarów i okienko średniej
         this.measuresInput.getPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -79,8 +91,13 @@ public class QuickFrame extends JFrame implements View
         this.meanDisplay.getPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
         upperContentPanel.add(this.meanDisplay.getPanel());
 
+        // Dodaj elementy dolnego panelu - okienko opcji
+        this.optionsPane.getPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
+        lowerContentPanel.add(this.optionsPane.getPanel());
+
         // Dodaj panele do głównego panelu
         mainBorderPanel.add(upperContentPanel, BorderLayout.PAGE_START);
+        mainBorderPanel.add(lowerContentPanel, BorderLayout.PAGE_END);
         this.setContentPane(mainBorderPanel);
         this.setVisible(true);
     }

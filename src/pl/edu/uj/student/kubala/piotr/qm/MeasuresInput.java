@@ -12,10 +12,6 @@ package pl.edu.uj.student.kubala.piotr.qm;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.util.Objects;
 
@@ -23,7 +19,7 @@ public class MeasuresInput implements View
 {
     private static final String     INDIVIDUAL_ERRORS = "<html><center>Indywidualne<br/>niepewności</center></html>";
     private static final String     DELETE_MEASURE = "<html><center>Usuń<br/>pomiar</center></html>";
-    private static final String     NEXT_MEASURE = "<html><center>Następny<br/>pomiar</center></html>";
+    private static final String     NEXT_SERIES = "<html><center>Następna<br/>seria</center></html>";
     private static final Font       EDITOR_FONT = new Font("DialogInput", Font.BOLD, 12);
 
     private static final int        INPUT_BUTTONS_GAP = 7;     // Odstęp między okienkiem i przyciskami
@@ -69,7 +65,7 @@ public class MeasuresInput implements View
         this.inputPane.setFont(EDITOR_FONT);
         this.individualErrorsButton = new JButton(INDIVIDUAL_ERRORS);
         this.deleteMeasureButton = new JButton(DELETE_MEASURE);
-        this.nextMeasureButton = new JButton(NEXT_MEASURE);
+        this.nextMeasureButton = new JButton(NEXT_SERIES);
 
         // Utwórz scroll panel na edytor i dodaj go do niego
         JScrollPane scrollPane = new JScrollPane(inputPane);

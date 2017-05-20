@@ -13,11 +13,13 @@ import pl.edu.uj.student.kubala.piotr.qm.utils.RoundedBorder;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.plaf.synth.ColorType;
 import java.awt.*;
 import java.util.Objects;
+
+import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_COLOR;
+import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.TITLE_COLOR;
+import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_RADIUS;
 
 public class MeanDisplay implements View
 {
@@ -26,10 +28,7 @@ public class MeanDisplay implements View
     private static final int        MEAN_MARGIN = 8;
     private static final int        TOP_MARGIN_BIAS = -6;
     private static final int        HEIGHT = 100;
-    private static final int        BORDER_RADIUS = 20;
-    private static final Color      BORDER_COLOR = new Color(0xB6B6B6);
-    private static final Color      TITLE_COLOR = new Color(0x697E8B);
-    private static final Color      MEAN_COLOR = new Color(0x324866);
+    private static final Color      MEAN_COLOR = new Color(0x5A83BF);
 
     private LabProject      labProject;
     private QuickFrame      parentFrame;
