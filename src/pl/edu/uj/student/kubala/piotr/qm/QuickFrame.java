@@ -30,7 +30,7 @@ public class QuickFrame extends JFrame implements View
 
     private static final int        FRAME_WIDTH = 360;
     private static final int        FRAME_HEIGHT = 640;
-    private static final int        PANELS_GAP = 20;
+    private static final int        PANELS_GAP = 25;
     private static final int        FRAME_PADDING = 10;
 
     private MeasuresInput           measuresInput;      // Widok okna z pomiarami
@@ -76,7 +76,9 @@ public class QuickFrame extends JFrame implements View
         // powyżej i poniżej będą rozciągnięte na całą szerokość i upakowane w pionie. Tabelka zajmie całą pozostałą
         // przestrzeń
         JPanel mainBorderPanel = new JPanel(new BorderLayout(PANELS_GAP, 0));
-        mainBorderPanel.setBorder(BorderFactory.createEmptyBorder(FRAME_PADDING, FRAME_PADDING, FRAME_PADDING, FRAME_PADDING));
+        mainBorderPanel.setBorder(
+                BorderFactory.createEmptyBorder(FRAME_PADDING, FRAME_PADDING, FRAME_PADDING, FRAME_PADDING)
+        );
         JPanel upperContentPanel = new JPanel();
         BoxLayout ucpBoxLayout = new BoxLayout(upperContentPanel, BoxLayout.PAGE_AXIS);
         upperContentPanel.setLayout(ucpBoxLayout);
@@ -84,19 +86,31 @@ public class QuickFrame extends JFrame implements View
         BoxLayout lcpBoxLayout = new BoxLayout(lowerContentPanel, BoxLayout.PAGE_AXIS);
         lowerContentPanel.setLayout(lcpBoxLayout);
 
-        // Dodaj elementy górnego panelu - okienko pomiarów i okienko średniej
+        // Dodaj elementy górnego panelu - okienko pomiarów, okienko średniej i listę z grupami
         this.measuresInput.getPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
         upperContentPanel.add(this.measuresInput.getPanel());
         upperContentPanel.add(Box.createRigidArea(new Dimension(0, PANELS_GAP)));
         this.meanDisplay.getPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
         upperContentPanel.add(this.meanDisplay.getPanel());
+        upperContentPanel.add(Box.createRigidArea(new Dimension(0, PANELS_GAP)));
+        this.groupDisplay.getGroupListPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
+        upperContentPanel.add(this.groupDisplay.getGroupListPanel());
 
         // Dodaj elementy dolnego panelu - okienko opcji
         this.optionsPane.getPanel().setAlignmentX(Component.CENTER_ALIGNMENT);
         lowerContentPanel.add(this.optionsPane.getPanel());
 
+        // Dodaj przerwy (pustą ramkę) między tabelką a listą z grupami nad i panelem opcji pod
+        this.groupDisplay.getGroupTablePanel().setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createEmptyBorder(GroupDisplay.LIST_TABLE_GAP, 0, PANELS_GAP, 0),
+                        BorderFactory.createLineBorder(BORDER_COLOR)
+                )
+        );
+
         // Dodaj panele do głównego panelu
         mainBorderPanel.add(upperContentPanel, BorderLayout.PAGE_START);
+        mainBorderPanel.add(this.groupDisplay.getGroupTablePanel(), BorderLayout.CENTER);
         mainBorderPanel.add(lowerContentPanel, BorderLayout.PAGE_END);
         this.setContentPane(mainBorderPanel);
         this.setVisible(true);

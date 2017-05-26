@@ -13,6 +13,7 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
 import java.util.Objects;
 
 public class MeasuresInput implements View
@@ -98,5 +99,10 @@ public class MeasuresInput implements View
 
     public JPanel getPanel() {
         return Objects.requireNonNull(panel);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
     }
 }

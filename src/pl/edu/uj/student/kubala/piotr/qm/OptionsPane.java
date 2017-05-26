@@ -16,6 +16,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
 import java.util.Objects;
 
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.TITLE_COLOR;
@@ -31,11 +32,11 @@ public class OptionsPane implements View
     private static final String     SEPARATE_ERRORS = "Rozdzielaj niepewności";
     private static final String     SERIES_OPTIONS = "Opcje serii";
 
-    private static final int        GRID_X_PADDING = 10;
+    private static final int        GRID_X_PADDING = 5;
     private static final int        GRID_Y_PADDING = 4;
     private static final int        SIGNIFICANT_DIGITS_COMBO_BOX_HEIGHT = 18;
     private static final int        PANEL_TOP_PADDING = 3;
-    private static final int        PANEL_LEFT_PADDING = 5;
+    private static final int        PANEL_LEFT_PADDING = 2;
     private static final int        PANEL_BOTTOM_PADDING = 0;
     private static final int        PANEL_RIGHT_PADDING = 0;
 
@@ -134,5 +135,10 @@ public class OptionsPane implements View
 
     public JComboBox<Integer> getSignificantDigitsComboBox() {
         return Objects.requireNonNull(significantDigitsComboBox);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
     }
 }

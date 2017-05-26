@@ -15,6 +15,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
 import java.util.Objects;
 
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_COLOR;
@@ -81,5 +82,10 @@ public class MeanDisplay implements View
      */
     public JPanel getPanel() {
         return Objects.requireNonNull(this.panel);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
     }
 }
