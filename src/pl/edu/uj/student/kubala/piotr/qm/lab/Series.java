@@ -9,14 +9,14 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
-import pl.edu.uj.student.kubala.piotr.qm.Model;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Series extends Model
+public class Series extends PropagatingModel
 {
     public static final int DEFAULT_SIGNIFICANT_DIGITS = 2;
     public static final int MIN_SIGNIFICANT_DIGITS = 1;
@@ -68,7 +68,7 @@ public class Series extends Model
     public void setLabel(String label) {
         String oldValue = this.label;
         this.label = Objects.requireNonNull(label);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "label", oldValue, this.label);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.label", oldValue, this.label);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -89,7 +89,7 @@ public class Series extends Model
 
         double oldValue = this.calibrationError;
         this.calibrationError = calibrationError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "calibrationError", oldValue, this.calibrationError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.calibrationError", oldValue, this.calibrationError);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -110,7 +110,7 @@ public class Series extends Model
 
         double oldValue = this.humanError;
         this.humanError = humanError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "humanError", oldValue, this.calibrationError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.humanError", oldValue, this.calibrationError);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -122,7 +122,7 @@ public class Series extends Model
     {
         boolean oldValue = this.useStudentFisher;
         this.useStudentFisher = useStudentFisher;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "useStudentFisher", oldValue, this.useStudentFisher);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.useStudentFisher", oldValue, this.useStudentFisher);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -138,7 +138,7 @@ public class Series extends Model
 
         int oldValue = this.significantDigits;
         this.significantDigits = significantDigits;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "significantDigits", oldValue, this.significantDigits);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.significantDigits", oldValue, this.significantDigits);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -150,7 +150,7 @@ public class Series extends Model
     {
         boolean oldValue = this.separateErrors;
         this.separateErrors = separateErrors;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "separateErrors", oldValue, this.separateErrors);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.separateErrors", oldValue, this.separateErrors);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -179,7 +179,7 @@ public class Series extends Model
         this.selectedMeasures = Arrays.stream(selectedMeasures)
                 .boxed()
                 .collect(Collectors.toCollection(ArrayList::new));
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "selectedMeasures", oldValue, newValue);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.selectedMeasures", oldValue, newValue);
         propertyFirer.firePropertyChange(evt);
     }
 
@@ -290,7 +290,7 @@ public class Series extends Model
         // Nowe wartości
         double [] newValues = new double[]{ this.mean, this.calculatedStandardError, this.calculatedMaxError };
         // Odpal wiadomość o zmianie średniej i niepewności dla listenerów
-        this.propertyFirer.firePropertyChange(new PropertyChangeEvent(this, "mean_err", oldValues, newValues));
+        this.propertyFirer.firePropertyChange(new PropertyChangeEvent(this, "series.mean_err", oldValues, newValues));
     }
 
     /* Pomocnicza metoda - zwraca measure.getStandardError(), jeśli niezerowy, albo domyślny def, jeśli zerowy */
@@ -329,7 +329,9 @@ public class Series extends Model
         else
             this.measures.add(index, measure);
 
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "new_measure", null, measure);
+        measure.setParentSeries(this);
+        measure.addPropertyChangeListener(this);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.new_measure", null, measure);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -366,8 +368,9 @@ public class Series extends Model
         Measure measure = this.measures.get(pos);
         this.measures.remove(pos);
         measure.setParentSeries(null);
+        measure.removePropertyChangeListener(this);
         Utils.removeElementFromIndicesList(pos, this.selectedMeasures);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_measure", measure, null);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.del_measure", measure, null);
         this.propertyFirer.firePropertyChange(evt);
         return this.measures.size();
     }
@@ -383,8 +386,9 @@ public class Series extends Model
         if (index != -1) {
             this.measures.remove(index);
             measure.setParentSeries(null);
+            measure.removePropertyChangeListener(this);
             Utils.removeElementFromIndicesList(index, this.selectedMeasures);
-            PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_measure", measure, null);
+            PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.del_measure", measure, null);
             this.propertyFirer.firePropertyChange(evt);
         }
         return this.measures.size();

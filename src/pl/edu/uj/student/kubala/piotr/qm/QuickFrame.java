@@ -14,6 +14,7 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -160,5 +161,10 @@ public class QuickFrame extends JFrame implements View
      */
     public LabProject getLabProject() {
         return this.labProject;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
     }
 }

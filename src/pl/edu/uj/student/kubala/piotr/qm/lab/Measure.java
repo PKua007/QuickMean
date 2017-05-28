@@ -8,8 +8,6 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
-import pl.edu.uj.student.kubala.piotr.qm.Model;
-
 import java.beans.PropertyChangeEvent;
 
 public class Measure extends Model implements Cloneable
@@ -102,7 +100,8 @@ public class Measure extends Model implements Cloneable
     {
         checkValue(value);
         double oldValue = this.value;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "value", oldValue, this.value);
+        this.value = value;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "measure.value", oldValue, this.value);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -120,7 +119,7 @@ public class Measure extends Model implements Cloneable
         checkCalibrationError(calibrationError);
         double oldValue = this.calibrationError;
         this.calibrationError = calibrationError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "calibrationError", oldValue, this.calibrationError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "measure.calibrationError", oldValue, this.calibrationError);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -138,7 +137,7 @@ public class Measure extends Model implements Cloneable
         checkHumanError(humanError);
         double oldValue = this.humanError;
         this.humanError = humanError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "humanError", oldValue, this.humanError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "measure.humanError", oldValue, this.humanError);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -156,7 +155,7 @@ public class Measure extends Model implements Cloneable
         checkStandardError(standardError);
         double oldValue = this.standardError;
         this.standardError = standardError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "standardError", oldValue, this.standardError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "measure.standardError", oldValue, this.standardError);
         this.propertyFirer.firePropertyChange(evt);
     }
 

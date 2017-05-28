@@ -9,14 +9,14 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
-import pl.edu.uj.student.kubala.piotr.qm.Model;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SeriesGroup extends Model
+public class SeriesGroup extends PropagatingModel
 {
     public static final String  DEFAULT_LABEL_HEADER = "Nazwa serii";
 
@@ -57,7 +57,7 @@ public class SeriesGroup extends Model
     {
         String oldValue = this.name;
         this.name = Objects.requireNonNull(name);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "name", oldValue, this.name);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.name", oldValue, this.name);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -69,7 +69,7 @@ public class SeriesGroup extends Model
     {
         String oldValue = this.labelHeader;
         this.labelHeader = Objects.requireNonNull(labelHeader);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "labelHeader", oldValue, this.labelHeader);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.labelHeader", oldValue, this.labelHeader);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -97,7 +97,7 @@ public class SeriesGroup extends Model
         this.selectedSeries = Arrays.stream(selectedSeries)
                 .boxed()
                 .collect(Collectors.toCollection(ArrayList::new));
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "selectedSeries", oldSelected, newSelected);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.selectedSeries", oldSelected, newSelected);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -128,7 +128,9 @@ public class SeriesGroup extends Model
             this.series.add(series);
         else
             this.series.add(index, series);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "new_series", null, series);
+        series.setParentGroup(this);
+        series.addPropertyChangeListener(this);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.new_series", null, series);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -165,8 +167,9 @@ public class SeriesGroup extends Model
         Series series = this.series.get(pos);
         this.series.remove(pos);
         series.setParentGroup(null);
+        series.removePropertyChangeListener(this);
         Utils.removeElementFromIndicesList(pos, this.selectedSeries);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_series", series, null);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.del_series", series, null);
         this.propertyFirer.firePropertyChange(evt);
         return this.series.size();
     }
@@ -182,8 +185,9 @@ public class SeriesGroup extends Model
         if (index != -1) {
             this.series.remove(index);
             series.setParentGroup(null);
+            series.removePropertyChangeListener(this);
             Utils.removeElementFromIndicesList(index, this.selectedSeries);
-            PropertyChangeEvent evt = new PropertyChangeEvent(this, "del_series", series, null);
+            PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.del_series", series, null);
             this.propertyFirer.firePropertyChange(evt);
         }
         return this.series.size();
