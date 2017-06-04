@@ -66,12 +66,15 @@ public class LabProject extends PropagatingModel
     public void addSeriesGroup(SeriesGroup seriesGroup, int index)
     {
         Objects.requireNonNull(seriesGroup);
-        if (this.seriesGroups.indexOf(seriesGroup) != -1)
+        if (this.seriesGroups.indexOf(seriesGroup) != -1) {
             throw new IllegalArgumentException("Grupa jest już w projekcie");
-        if (index == -1)
+        } if (index == -1) {
             this.seriesGroups.add(seriesGroup);
-        else
+        } else {
             this.seriesGroups.add(index, seriesGroup);
+            if (index <= this.selectedSeriesGroup)
+                this.selectedSeriesGroup++;
+        }
         seriesGroup.setParentLab(this);
         seriesGroup.addPropertyChangeListener(this);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, "lab.new_group", null, seriesGroup);
@@ -165,7 +168,7 @@ public class LabProject extends PropagatingModel
         if (seriesGroupIdx != -1) // Sprawdź poprawność indeksu
             this.seriesGroups.get(seriesGroupIdx);
         SeriesGroup oldSelected = this.seriesGroups.get(this.selectedSeriesGroup);
-        oldSelected.setSelectedSeries(new int[0]);
+        //oldSelected.setSelectedSeries0(new int[0], true);     // Usuń zaznaczenie serii w starej grupie bez wyzwalania zdarzenia
         this.selectedSeriesGroup = seriesGroupIdx;
         SeriesGroup newSelected = this.seriesGroups.get(this.selectedSeriesGroup);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, "lab.selectedGroup", oldSelected, newSelected);

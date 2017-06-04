@@ -216,4 +216,29 @@ class SeriesGroupTest
         seriesGroup.deleteSeries(series[5]);
         assertArrayEquals(new int[0], seriesGroup.getSelectedSeries());
     }
+
+    @Test
+    void setBadHighlightedSeries() {
+        Arrays.stream(series).
+                forEach(seriesGroup::addSeries);
+
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.setHighlightedSeries(-2));
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.setHighlightedSeries(6));
+        seriesGroup.setHighlightedSeries(-1);
+        seriesGroup.setHighlightedSeries(5);
+    }
+
+    @Test
+    void deletionHighlightedSeriesShift() {
+        Arrays.stream(series).
+                forEach(seriesGroup::addSeries);
+
+        seriesGroup.setHighlightedSeries(3);
+        seriesGroup.deleteSeries(4);
+        assertEquals(3, seriesGroup.getHighlightedSeries());
+        seriesGroup.deleteSeries(2);
+        assertEquals(2, seriesGroup.getHighlightedSeries());
+        seriesGroup.deleteSeries(2);
+        assertEquals(-1, seriesGroup.getHighlightedSeries());
+    }
 }

@@ -12,7 +12,6 @@ package pl.edu.uj.student.kubala.piotr.qm.lab;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,6 +23,7 @@ public class SeriesGroup extends PropagatingModel
 
     private ArrayList<Series>   series;             // Tablica z seriami pomiarowymi
     private ArrayList<Integer>  selectedSeries;     // Indeksy w tablicy zaznaczonych serii grup
+    private int                 highlightedSeries;  // Indeks podświetlonej serii ("bieżącej")
     private LabProject          parentLab;          // Laboratorium, do którego należy grupa pomiarów
 
     private String          name;               // Nazwa serii pomiarów
@@ -84,19 +84,21 @@ public class SeriesGroup extends PropagatingModel
      * do zaznaczonych serii
      * @param selectedSeries nowe indeksy zaznaczonych serii
      * @throws IndexOutOfBoundsException jeśli któryś z indeksów jest niepoprawny
+     * @throws NullPointerException jeśli {@code selectedMeasures == null}
      */
     public void setSelectedSeries(int[] selectedSeries)
     {
         Arrays.stream(selectedSeries).forEach(this.series::get);        // Sprawdź poprawność indeksów
         Series [] oldSelected = this.selectedSeries.stream()
                 .map((i) -> this.series.get(i)).
-                toArray(Series[]::new);
+                        toArray(Series[]::new);
         Series [] newSelected = Arrays.stream(selectedSeries).
                 mapToObj((i) -> this.series.get(i)).
                 toArray(Series[]::new);
         this.selectedSeries = Arrays.stream(selectedSeries)
                 .boxed()
                 .collect(Collectors.toCollection(ArrayList::new));
+
         PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.selectedSeries", oldSelected, newSelected);
         this.propertyFirer.firePropertyChange(evt);
     }
@@ -107,6 +109,17 @@ public class SeriesGroup extends PropagatingModel
 
     public void setParentLab(LabProject parentLab) {
         this.parentLab = Objects.requireNonNull(parentLab);
+    }
+
+    public int getHighlightedSeries() {
+        return highlightedSeries;
+    }
+
+    public void setHighlightedSeries(int highlightedSeries) {
+        // Sprawdź poprawność indeksu
+        if (highlightedSeries != -1)
+            this.series.get(highlightedSeries);
+        this.highlightedSeries = highlightedSeries;
     }
 
     /* Pozostałe metody */
@@ -122,12 +135,14 @@ public class SeriesGroup extends PropagatingModel
     public void addSeries(Series series, int index)
     {
         Objects.requireNonNull(series);
-        if (this.series.indexOf(series) != -1)
+        if (this.series.indexOf(series) != -1) {
             throw new IllegalArgumentException("Seria jest już w grupie");
-        if (index == -1)
+        } if (index == -1) {
             this.series.add(series);
-        else
+        } else {
             this.series.add(index, series);
+            Utils.shiftIndicesAfterAddition(index, this.selectedSeries);
+        }
         series.setParentGroup(this);
         series.addPropertyChangeListener(this);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.new_series", null, series);
@@ -157,7 +172,8 @@ public class SeriesGroup extends PropagatingModel
     }
 
     /**
-     * Metoda usuwa serię z listy po indeksie
+     * Metoda usuwa serię z listy po indeksie. Jeśli usuwana seria jest właśnie podświetlona, ustawia podświetlenie na
+     * -1 i wyzwalane jest zdarzenia zmiany podświetlenia
      * @param pos pozycja serii
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return liczba serii pozostałych po usunięciu
@@ -171,11 +187,16 @@ public class SeriesGroup extends PropagatingModel
         Utils.removeElementFromIndicesList(pos, this.selectedSeries);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.del_series", series, null);
         this.propertyFirer.firePropertyChange(evt);
+        if (this.highlightedSeries == pos)
+            this.setHighlightedSeries(-1);
+        else if (this.highlightedSeries > pos)
+            this.highlightedSeries--;
         return this.series.size();
     }
 
     /**
-     * Metoda usuwa serię z listy
+     * Metoda usuwa serię z listy. Jeśli usuwana seria jest właśnie podświetlona, ustawia podświetlenie na
+     * -1 i wyzwalane jest zdarzenia zmiany podświetlenia
      * @param series seria do usunięcia
      * @return liczba serii pozostałych po usunięciu
      */
@@ -189,6 +210,10 @@ public class SeriesGroup extends PropagatingModel
             Utils.removeElementFromIndicesList(index, this.selectedSeries);
             PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.del_series", series, null);
             this.propertyFirer.firePropertyChange(evt);
+            if (this.highlightedSeries == index)
+                this.setHighlightedSeries(-1);
+            else if (this.highlightedSeries > index)
+                this.highlightedSeries--;
         }
         return this.series.size();
     }

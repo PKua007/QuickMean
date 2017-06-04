@@ -12,7 +12,6 @@ package pl.edu.uj.student.kubala.piotr.qm.lab;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -110,7 +109,7 @@ public class Series extends PropagatingModel
 
         double oldValue = this.humanError;
         this.humanError = humanError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.humanError", oldValue, this.calibrationError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.humanError", oldValue, this.humanError);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -166,6 +165,7 @@ public class Series extends PropagatingModel
      * do zaznaczonych pomiarów
      * @param selectedMeasures nowe indeksy zaznaczonych pomiarów
      * @throws IndexOutOfBoundsException jeśli któryś z indeksów jest niepoprawny
+     * @throws NullPointerException jeśli {@code selectedMeasures == null}
      */
     public void setSelectedMeasures(int[] selectedMeasures)
     {
@@ -174,11 +174,12 @@ public class Series extends PropagatingModel
                 .map((i) -> this.measures.get(i))
                 .toArray(Measure[]::new);
         Measure [] newValue = Arrays.stream(selectedMeasures).
-                mapToObj((i) -> this.measures.get(i)).
-                toArray(Measure[]::new);
+                mapToObj((i) -> this.measures.get(i))
+                .toArray(Measure[]::new);
         this.selectedMeasures = Arrays.stream(selectedMeasures)
                 .boxed()
                 .collect(Collectors.toCollection(ArrayList::new));
+
         PropertyChangeEvent evt = new PropertyChangeEvent(this, "series.selectedMeasures", oldValue, newValue);
         propertyFirer.firePropertyChange(evt);
     }
@@ -322,12 +323,14 @@ public class Series extends PropagatingModel
     public void addMeasure(Measure measure, int index)
     {
         Objects.requireNonNull(measure);
-        if (this.measures.indexOf(measure) != -1)
+        if (this.measures.indexOf(measure) != -1) {
             throw new IllegalArgumentException("Pomiar już jest w serii");
-        if (index == -1)
+        } if (index == -1) {
             this.measures.add(measure);
-        else
+        } else {
             this.measures.add(index, measure);
+            Utils.shiftIndicesAfterAddition(index, this.selectedMeasures);
+        }
 
         measure.setParentSeries(this);
         measure.addPropertyChangeListener(this);

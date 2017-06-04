@@ -32,4 +32,22 @@ public class Utils
                 it.set(value - 1);
         }
     }
+
+    /**
+     * Aktualizuje indeksy na liście  {@code list} po dodaniu nowego elementu do wyjściowej listy - zwiększa o jeden
+     * wszystkie indeksy większe lub równe niż podany. Funkcja przydatna, jeśli przechowujemy na liście indeksy
+     * elementów w kolekcji, a zostanie dodany nowy element i trzeba  indeksy w {@code list}.
+     * @param index indeks na wyjściowej liście, na który został wstawiony nowy element
+     * @param list lista indeksów
+     */
+    public static void shiftIndicesAfterAddition(int index, ArrayList<Integer> list)
+    {
+        ListIterator<Integer> it = list.listIterator();
+        Integer value;
+        while(it.hasNext()) {
+            value = it.next();
+            if (value >= index)
+                it.set(value + 1);
+        }
+    }
 }

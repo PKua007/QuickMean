@@ -455,4 +455,16 @@ class SeriesTest {
         series.deleteMeasure(measure[5]);
         assertArrayEquals(new int[0], series.getSelectedMeasures());
     }
+
+    @Test
+    void checkSelectedMeasuresAfterAddition() {
+        Arrays.stream(measure).
+                forEach(series::addMeasure);
+
+        series.setSelectedMeasures(new int[]{1, 2, 4, 5});
+        series.addMeasure(new Measure());
+        assertArrayEquals(new int[]{1, 2, 4, 5}, series.getSelectedMeasures());
+        series.addMeasure(new Measure(), 2);
+        assertArrayEquals(new int[]{1, 3, 5, 6}, series.getSelectedMeasures());
+    }
 }
