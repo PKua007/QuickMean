@@ -19,6 +19,11 @@ import java.util.Objects;
 
 public class LabProject extends PropagatingModel
 {
+    /* Etykiety właściwości */
+    public static final String  NEW_GROUP = "lp.new_group";
+    public static final String  DEL_GROUP = "lp.del_group";
+    public static final String  SELECTED_GROUP = "lp.selected_group";
+
     private ArrayList<SeriesGroup>      seriesGroups;   // Tablica z grupami serii pomiarów
 
     private File        file;           // Plik, w którym jest zapisane laboratorium (zawiera nazwę)
@@ -37,6 +42,7 @@ public class LabProject extends PropagatingModel
         this.seriesGroups = new ArrayList<>();
         this.saved = false;
         this.everSaved = false;
+        this.selectedSeriesGroup = -1;
     }
 
     /* Gettery solo */
@@ -77,7 +83,7 @@ public class LabProject extends PropagatingModel
         }
         seriesGroup.setParentLab(this);
         seriesGroup.addPropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "lab.new_group", null, seriesGroup);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, NEW_GROUP, null, seriesGroup);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -115,7 +121,7 @@ public class LabProject extends PropagatingModel
         this.seriesGroups.remove(pos);
         seriesGroup.setParentLab(null);
         seriesGroup.removePropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "lab.del_group", seriesGroup, null);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_GROUP, seriesGroup, null);
         this.propertyFirer.firePropertyChange(evt);
         return this.seriesGroups.size();
     }
@@ -134,7 +140,7 @@ public class LabProject extends PropagatingModel
             seriesGroup.removePropertyChangeListener(this);
             if (this.selectedSeriesGroup > index)       // Zaktualizuj indeks wybranej grupy
                 this.selectedSeriesGroup--;
-            PropertyChangeEvent evt = new PropertyChangeEvent(this, "lab.del_group", seriesGroup, null);
+            PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_GROUP, seriesGroup, null);
             this.propertyFirer.firePropertyChange(evt);
         }
         return this.seriesGroups.size();
@@ -167,11 +173,11 @@ public class LabProject extends PropagatingModel
     {
         if (seriesGroupIdx != -1) // Sprawdź poprawność indeksu
             this.seriesGroups.get(seriesGroupIdx);
-        SeriesGroup oldSelected = this.seriesGroups.get(this.selectedSeriesGroup);
-        //oldSelected.setSelectedSeries0(new int[0], true);     // Usuń zaznaczenie serii w starej grupie bez wyzwalania zdarzenia
+        SeriesGroup oldSelected = (this.selectedSeriesGroup != -1 ? this.seriesGroups.get(this.selectedSeriesGroup) : null);
         this.selectedSeriesGroup = seriesGroupIdx;
-        SeriesGroup newSelected = this.seriesGroups.get(this.selectedSeriesGroup);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "lab.selectedGroup", oldSelected, newSelected);
+        SeriesGroup newSelected = (seriesGroupIdx != -1 ? this.seriesGroups.get(this.selectedSeriesGroup) : null);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, SELECTED_GROUP, oldSelected, newSelected);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     /**
@@ -181,6 +187,16 @@ public class LabProject extends PropagatingModel
     public int getSelectedSeriesGroupIdx()
     {
         return this.selectedSeriesGroup;
+    }
+
+    /**
+     * Metoda zwraca indeks podanej grupy serii, lub -1, jeśli nie znaleziono
+     * @param seriesGroup poszukiwana grupa serii
+     * @return indeks podanej grupy serii, lub -1, jeśli nie znaleziono
+     */
+    public int getSeriesGroupIdx(SeriesGroup seriesGroup)
+    {
+        return this.seriesGroups.indexOf(seriesGroup);
     }
 
     /* Metody zapisu i otwierania */
@@ -219,5 +235,43 @@ public class LabProject extends PropagatingModel
     public void exportLab(Converter converter)
     {
 
+    }
+
+    /**
+     * Metoda ustawia w projekcje domyślne dane
+     */
+    public void setupDefault()
+    {
+        Series          defaultSeries;
+        SeriesGroup     defaultSeriesGroup;
+
+        /*defaultSeriesGroup = new SeriesGroup();
+        defaultSeries = new Series();
+        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.setHighlightedSeries(0);
+        this.addSeriesGroup(defaultSeriesGroup);
+        this.setSelectedSeriesGroup(0);*/
+
+        defaultSeriesGroup = new SeriesGroup();
+        defaultSeries = new Series();
+        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeries = new Series();
+        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeries = new Series();
+        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.setHighlightedSeries(1);
+        this.addSeriesGroup(defaultSeriesGroup);
+        defaultSeriesGroup = new SeriesGroup();
+        defaultSeries = new Series();
+        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeries = new Series();
+        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeries = new Series();
+        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeries = new Series();
+        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.setHighlightedSeries(2);
+        this.addSeriesGroup(defaultSeriesGroup);
+        this.setSelectedSeriesGroup(0);
     }
 }

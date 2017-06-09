@@ -111,6 +111,9 @@ public class OptionsPane implements View
         this.panel.add(Box.createRigidArea(new Dimension(0,0)));
 
         SpringUtilities.makeCompactGrid(this.panel, 5, 3, 0,0, GRID_X_PADDING, GRID_Y_PADDING);
+
+        // Nasłuchuj projektu
+        this.labProject.addPropertyChangeListener(this);
     }
 
     public JPanel getPanel() {

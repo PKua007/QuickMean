@@ -59,7 +59,7 @@ public class MeanDisplay implements View
         if (this.panel != null)
             throw new RuntimeException("MeanDisplay::init wywołane drugi raz");
 
-        this.meanLabel = new JLabel("45.34 ± 0.45 ± 0.48", JLabel.CENTER);
+        this.meanLabel = new JLabel("", JLabel.CENTER);
         this.meanLabel.setFont(MEAN_FONT);
         this.meanLabel.setForeground(MEAN_COLOR);
 
@@ -73,6 +73,9 @@ public class MeanDisplay implements View
         this.panel.setBorder(compoundBorder);
         //this.panel.setPreferredSize(new Dimension(0, HEIGHT));
         this.panel.add(this.meanLabel, BorderLayout.CENTER);
+
+        // Nasłuchuj projektu
+        this.labProject.addPropertyChangeListener(this);
     }
 
     /**

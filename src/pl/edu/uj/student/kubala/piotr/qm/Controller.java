@@ -8,9 +8,12 @@
 
 package pl.edu.uj.student.kubala.piotr.qm;
 
-import java.beans.PropertyChangeListener;
+import java.awt.event.ActionListener;
 
-public interface Controller extends PropertyChangeListener
+public interface Controller extends ActionListener
 {
+    default void setup()
+    {
 
+    }
 }

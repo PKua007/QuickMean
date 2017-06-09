@@ -15,6 +15,7 @@ import javax.swing.*;
 public class Main
 {
     public static final String  TITLE = "QuickMean 1.0";
+    public static final boolean DEBUG = true;
 
     private static LabProject   labProject;
     private static QuickFrame   quickFrame;
@@ -32,7 +33,12 @@ public class Main
         groupController = new GroupController(labProject, quickFrame.getGroupDisplay());
         optionsController = new OptionsController(labProject, quickFrame.getOptionsPane());
 
-        // Umieść inicjację okna na EDT
+        // Umieść inicjację okna i kontolerów na EDT
         SwingUtilities.invokeLater(quickFrame::init);
+        SwingUtilities.invokeLater(measuresInputController::setup);
+        SwingUtilities.invokeLater(groupController::setup);
+        SwingUtilities.invokeLater(optionsController::setup);
+
+
     }
 }

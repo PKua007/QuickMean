@@ -115,6 +115,9 @@ public class QuickFrame extends JFrame implements View
         mainBorderPanel.add(lowerContentPanel, BorderLayout.PAGE_END);
         this.setContentPane(mainBorderPanel);
         this.setVisible(true);
+
+        // Rozkazuje modelowi ustawić domyślne dane
+        this.labProject.setupDefault();
     }
 
     /* Gettery solo */

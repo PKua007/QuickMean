@@ -10,8 +10,13 @@
 package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
+import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
+import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.util.Objects;
@@ -53,8 +58,8 @@ public class GroupDisplay implements View
             throw new RuntimeException("GroupDisplay::init wywołane drugi raz");
 
         // Utwórz tabelę z grupami
-        this.groupTable = new JTable(new Object[][]{
-                new Object[]{"Seria 1", "3.09 ± 0.16 ± 0.12"},
+        DefaultTableModel tableModel = new DefaultTableModel(new Object[][]{
+                /*new Object[]{"Seria 1", "3.09 ± 0.16 ± 0.12"},
                 new Object[]{"Seria 2", "4.12 ± 0.58 ± 0.15"},
                 new Object[]{"Seria 3", "5.53 ± 0.65 ± 0.72"},
                 new Object[]{"Seria 4", "8.06 ± 1.27 ± 0.92"},
@@ -62,16 +67,17 @@ public class GroupDisplay implements View
                 new Object[]{"Seria 6", "12.23 ± 1.56 ± 0.12"},
                 new Object[]{"Seria 7", "14.42 ± 3.64 ± 0.17"},
                 new Object[]{"Seria 8", "18.14 ± 5.23 ± 0.52"},
-                new Object[]{"Seria 9", "20.85 ± 5.57 ± 0.92"}
+                new Object[]{"Seria 9", "20.85 ± 5.57 ± 0.92"}*/
         }, new Object[]{
                 DEFAULT_LABEL_HEADER,
                 MEAN_OF_MEASURES
         });
+        this.groupTable = new JTable(tableModel);
         this.groupTable.getColumnModel().getColumn(0).setPreferredWidth(LABEL_COLUMN_WIDTH);
         this.groupTable.getColumnModel().getColumn(1).setPreferredWidth(MEAN_COLUMN_WIDTH);
 
         // Utwórz listę z grupami
-        this.groupList = new JComboBox<>(new String[]{"Grupa 1", "Grupa 2", "Grupa 3", "Grupa 4"});
+        this.groupList = new JComboBox<>(/*new String[]{"Grupa 1", "Grupa 2", "Grupa 3", "Grupa 4"}*/);
         this.groupList.setEditable(true);
 
         // Utwórz przyciski dodawania i usuwania grup
@@ -97,6 +103,9 @@ public class GroupDisplay implements View
         this.groupTablePanel = new JScrollPane(this.groupTable);
         this.groupTablePanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.groupTablePanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        // Nasłuchuj projektu
+        this.labProject.addPropertyChangeListener(this);
     }
 
     public JScrollPane getGroupTablePanel()
@@ -109,8 +118,61 @@ public class GroupDisplay implements View
         return Objects.requireNonNull(this.groupListPanel);
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public JComboBox<String> getGroupList() {
+        return Objects.requireNonNull(groupList);
+    }
 
+    public JTable getGroupTable() {
+        return Objects.requireNonNull(groupTable);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        int idx;
+        switch (evt.getPropertyName()) {
+            // Dodanie nowej grupy - uzupełnij listę
+            case LabProject.NEW_GROUP:
+                SeriesGroup newGroup = (SeriesGroup) evt.getNewValue();
+                idx = this.labProject.getSeriesGroupIdx(newGroup);
+                if (idx == -1)
+                    throw new AssertionError();
+
+                DefaultComboBoxModel<String> comboBoxModel = (DefaultComboBoxModel<String>) this.groupList.getModel();
+                comboBoxModel.insertElementAt(newGroup.getName(), idx);
+                break;
+
+            // Zmiana wybranej grupy - zmień wybraną pozycję na liście i zaktualizuj tabelę
+            case LabProject.SELECTED_GROUP:
+                // Zmień pozycję na liście
+                SeriesGroup selectedGroup = (SeriesGroup) evt.getNewValue();
+                this.groupList.setSelectedIndex(this.labProject.getSeriesGroupIdx(selectedGroup));
+
+                // Zmień nagłówek w tabeli
+                TableColumn seriesHeader = this.groupTable.getColumnModel().getColumn(0);
+                seriesHeader.setHeaderValue(selectedGroup.getLabelHeader());
+
+                // Zmień model tabeli
+                DefaultTableModel tableModel = (DefaultTableModel) this.groupTable.getModel();
+                tableModel.setRowCount(0);
+                Series series;
+                for (int i = 0; i < selectedGroup.getNumberOfSeries(); i++) {
+                    series = selectedGroup.getSeries(i);
+                    tableModel.addRow(new String[]{
+                        series.getLabel(),
+                            Double.toString(series.getMean())
+                    });
+                }
+
+                int highlighted = selectedGroup.getHighlightedSeries();
+                System.out.println("Pobieram podświetlone: " + highlighted);
+                if (highlighted != -1)
+                    this.groupTable.setRowSelectionInterval(highlighted, highlighted);
+
+                break;
+
+            case SeriesGroup.NEW_SERIES:
+                break;
+        }
     }
 }

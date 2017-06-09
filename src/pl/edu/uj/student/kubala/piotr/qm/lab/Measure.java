@@ -12,6 +12,12 @@ import java.beans.PropertyChangeEvent;
 
 public class Measure extends Model implements Cloneable
 {
+    /* Etykiety właściwości */
+    public static final String  VALUE = "m.value";
+    public static final String  CALIBRATION_ERROR = "m.calibrationError";
+    public static final String  HUMAN_ERROR = "m.humanError";
+    public static final String  STANDARD_ERROR = "m.standardError";
+
     private double value;               // Wartość pomiaru
     private double calibrationError;    // Niepewność wzorcowania przyrządu pomiarowego
     private double humanError;          // Niepewność człowieka
@@ -101,7 +107,7 @@ public class Measure extends Model implements Cloneable
         checkValue(value);
         double oldValue = this.value;
         this.value = value;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "measure.value", oldValue, this.value);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, VALUE, oldValue, this.value);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -119,7 +125,7 @@ public class Measure extends Model implements Cloneable
         checkCalibrationError(calibrationError);
         double oldValue = this.calibrationError;
         this.calibrationError = calibrationError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "measure.calibrationError", oldValue, this.calibrationError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, CALIBRATION_ERROR, oldValue, this.calibrationError);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -137,7 +143,7 @@ public class Measure extends Model implements Cloneable
         checkHumanError(humanError);
         double oldValue = this.humanError;
         this.humanError = humanError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "measure.humanError", oldValue, this.humanError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, HUMAN_ERROR, oldValue, this.humanError);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -155,7 +161,7 @@ public class Measure extends Model implements Cloneable
         checkStandardError(standardError);
         double oldValue = this.standardError;
         this.standardError = standardError;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "measure.standardError", oldValue, this.standardError);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, STANDARD_ERROR, oldValue, this.standardError);
         this.propertyFirer.firePropertyChange(evt);
     }
 

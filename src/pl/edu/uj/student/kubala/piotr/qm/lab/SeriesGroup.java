@@ -19,12 +19,23 @@ public class SeriesGroup extends PropagatingModel
 {
     public static final String  DEFAULT_LABEL_HEADER = "Nazwa serii";
 
+    /* Etykiety zdarzeń */
+    public static final String  NAME = "sg.name";
+    public static final String  LABEL_HEADER = "sg.labelHeader";
+    public static final String  SELECTED_SERIES = "sg.selectedSeries";
+    public static final String  HIGHLIGHTED_SERIER = "sg.highlightedSeries";
+    public static final String  NEW_SERIES = "sg.newSeries";
+    public static final String  DEL_SERIES = "sg.delSeries";
+    public static final String  SELECTING_NOW = "sg.selectingNow";
+
+
     private static int staticIdx = 0;
 
     private ArrayList<Series>   series;             // Tablica z seriami pomiarowymi
     private ArrayList<Integer>  selectedSeries;     // Indeksy w tablicy zaznaczonych serii grup
     private int                 highlightedSeries;  // Indeks podświetlonej serii ("bieżącej")
     private LabProject          parentLab;          // Laboratorium, do którego należy grupa pomiarów
+    private boolean             selectingNow;       // Czy obecnie trwa zaznaczanie serii?
 
     private String          name;               // Nazwa serii pomiarów
     private String          labelHeader;        // Nagłówek w tabeli przy etykietach serii
@@ -39,6 +50,7 @@ public class SeriesGroup extends PropagatingModel
 
         this.series = new ArrayList<>();
         this.selectedSeries = new ArrayList<>();
+        this.highlightedSeries = -1;
         this.labelHeader = DEFAULT_LABEL_HEADER;
     }
 
@@ -57,7 +69,7 @@ public class SeriesGroup extends PropagatingModel
     {
         String oldValue = this.name;
         this.name = Objects.requireNonNull(name);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.name", oldValue, this.name);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, NAME, oldValue, this.name);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -69,7 +81,7 @@ public class SeriesGroup extends PropagatingModel
     {
         String oldValue = this.labelHeader;
         this.labelHeader = Objects.requireNonNull(labelHeader);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.labelHeader", oldValue, this.labelHeader);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, LABEL_HEADER, oldValue, this.labelHeader);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -99,7 +111,7 @@ public class SeriesGroup extends PropagatingModel
                 .boxed()
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.selectedSeries", oldSelected, newSelected);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, SELECTED_SERIES, oldSelected, newSelected);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -119,7 +131,11 @@ public class SeriesGroup extends PropagatingModel
         // Sprawdź poprawność indeksu
         if (highlightedSeries != -1)
             this.series.get(highlightedSeries);
+        int oldValue = this.highlightedSeries;
+        int newValue = highlightedSeries;
         this.highlightedSeries = highlightedSeries;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, HIGHLIGHTED_SERIER, oldValue, newValue);
+        this.propertyFirer.firePropertyChange(evt);
     }
 
     /* Pozostałe metody */
@@ -145,7 +161,7 @@ public class SeriesGroup extends PropagatingModel
         }
         series.setParentGroup(this);
         series.addPropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.new_series", null, series);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, NEW_SERIES, null, series);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -185,7 +201,7 @@ public class SeriesGroup extends PropagatingModel
         series.setParentGroup(null);
         series.removePropertyChangeListener(this);
         Utils.removeElementFromIndicesList(pos, this.selectedSeries);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.del_series", series, null);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_SERIES, series, null);
         this.propertyFirer.firePropertyChange(evt);
         if (this.highlightedSeries == pos)
             this.setHighlightedSeries(-1);
@@ -208,7 +224,7 @@ public class SeriesGroup extends PropagatingModel
             series.setParentGroup(null);
             series.removePropertyChangeListener(this);
             Utils.removeElementFromIndicesList(index, this.selectedSeries);
-            PropertyChangeEvent evt = new PropertyChangeEvent(this, "series_group.del_series", series, null);
+            PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_SERIES, series, null);
             this.propertyFirer.firePropertyChange(evt);
             if (this.highlightedSeries == index)
                 this.setHighlightedSeries(-1);
@@ -225,5 +241,34 @@ public class SeriesGroup extends PropagatingModel
     public int getNumberOfSeries()
     {
         return this.series.size();
+    }
+
+    /**
+     * Metoda zwraca indeks podanej serii, lub -1, jeśli nie znaleziono
+     * @param series poszukiwana seria
+     * @return indeks podanej serii, lub -1, jeśli nie znaleziono
+     */
+    public int getSeriesIdx(Series series)
+    {
+        return this.series.indexOf(series);
+    }
+
+    /**
+     * Zwraca true, jeśli obecnie trwa zaznaczanie pomiarów (myszka nie jest jeszcze puszczona
+     * @return {@code true}, jeśli trwa zaznaczanie, {@code false} w przeciwnym wypadku
+     */
+    public boolean isSelectingNow() {
+        return selectingNow;
+    }
+
+    /**
+     * Ustawia informację, czy trwa zaznaczanie (myszka nie jest jeszcze puszczona)
+     * @param selectingNow czy trwa zaznaczanie?
+     */
+    public void setSelectingNow(boolean selectingNow) {
+        boolean oldValue = this.selectingNow;
+        this.selectingNow = selectingNow;
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, SELECTING_NOW, oldValue, selectingNow);
+        this.propertyFirer.firePropertyChange(evt);
     }
 }

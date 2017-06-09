@@ -83,6 +83,9 @@ public class MeasuresInput implements View
         this.panel = new JPanel(new BorderLayout(0, INPUT_BUTTONS_GAP));
         this.panel.add(scrollPane, BorderLayout.CENTER);
         this.panel.add(buttonsPanel, BorderLayout.SOUTH);
+
+        // Nasłuchuj projektu
+        this.labProject.addPropertyChangeListener(this);
     }
 
     public JButton getIndividualErrorsButton() {

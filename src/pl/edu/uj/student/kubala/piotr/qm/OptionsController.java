@@ -10,6 +10,7 @@ package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -29,7 +30,12 @@ public class OptionsController implements Controller
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void actionPerformed(ActionEvent e) {
+
+    }
+
+    @Override
+    public void setup() {
 
     }
 }
