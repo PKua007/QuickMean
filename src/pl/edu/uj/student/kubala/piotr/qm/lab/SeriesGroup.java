@@ -23,7 +23,7 @@ public class SeriesGroup extends PropagatingModel
     public static final String  NAME = "sg.name";
     public static final String  LABEL_HEADER = "sg.labelHeader";
     public static final String  SELECTED_SERIES = "sg.selectedSeries";
-    public static final String  HIGHLIGHTED_SERIER = "sg.highlightedSeries";
+    public static final String HIGHLIGHTED_SERIES = "sg.highlightedSeries";
     public static final String  NEW_SERIES = "sg.newSeries";
     public static final String  DEL_SERIES = "sg.delSeries";
     public static final String  SELECTING_NOW = "sg.selectingNow";
@@ -123,7 +123,7 @@ public class SeriesGroup extends PropagatingModel
         this.parentLab = Objects.requireNonNull(parentLab);
     }
 
-    public int getHighlightedSeries() {
+    public int getHighlightedSeriesIdx() {
         return highlightedSeries;
     }
 
@@ -134,7 +134,7 @@ public class SeriesGroup extends PropagatingModel
         int oldValue = this.highlightedSeries;
         int newValue = highlightedSeries;
         this.highlightedSeries = highlightedSeries;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, HIGHLIGHTED_SERIER, oldValue, newValue);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, HIGHLIGHTED_SERIES, oldValue, newValue);
         this.propertyFirer.firePropertyChange(evt);
     }
 

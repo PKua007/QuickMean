@@ -211,15 +211,15 @@ class SeriesTest {
     void emptyMean() {
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(0, series.getMean());
-        assertEquals(0, series.getCalculatedStandardError());
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(0, series.getMeanQuantity().getValue());
+        assertEquals(0, series.getMeanQuantity().getStandardError());
+        assertEquals(0, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(0, series.getMean());
-        assertEquals(0, series.getCalculatedStandardError());
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(0, series.getMeanQuantity().getValue());
+        assertEquals(0, series.getMeanQuantity().getStandardError());
+        assertEquals(0, series.getMeanQuantity().getMaxError());
     }
 
     @Test
@@ -229,15 +229,15 @@ class SeriesTest {
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(30, series.getMean());
-        assertEquals(1, series.getCalculatedStandardError());
-        assertEquals(5, series.getCalculatedMaxError());
+        assertEquals(30, series.getMeanQuantity().getValue());
+        assertEquals(1, series.getMeanQuantity().getStandardError());
+        assertEquals(5, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(30, series.getMean());
-        assertEquals(2.3094010767585, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(30, series.getMeanQuantity().getValue());
+        assertEquals(2.3094010767585, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
     }
 
     @Test
@@ -247,15 +247,15 @@ class SeriesTest {
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(30, series.getMean());
-        assertEquals(0, series.getCalculatedStandardError());
-        assertEquals(5, series.getCalculatedMaxError());
+        assertEquals(30, series.getMeanQuantity().getValue());
+        assertEquals(0, series.getMeanQuantity().getStandardError());
+        assertEquals(5, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(30, series.getMean());
-        assertEquals(2.08166599946613, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(30, series.getMeanQuantity().getValue());
+        assertEquals(2.08166599946613, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
     }
 
     @Test
@@ -267,15 +267,15 @@ class SeriesTest {
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(30, series.getMean());
-        assertEquals(0, series.getCalculatedStandardError());
-        assertEquals(5, series.getCalculatedMaxError());
+        assertEquals(30, series.getMeanQuantity().getValue());
+        assertEquals(0, series.getMeanQuantity().getStandardError());
+        assertEquals(5, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(30, series.getMean());
-        assertEquals(2.08166599946613, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(30, series.getMeanQuantity().getValue());
+        assertEquals(2.08166599946613, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
     }
 
     @Test
@@ -292,15 +292,15 @@ class SeriesTest {
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.37519324554225, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(33.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.37519324554225, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.37519324554225, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(33.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.37519324554225, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
     }
 
     @Test
@@ -318,15 +318,15 @@ class SeriesTest {
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.49974322135263, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(33.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.49974322135263, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.49974322135263, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(33.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.49974322135263, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
     }
 
     @Test
@@ -343,15 +343,15 @@ class SeriesTest {
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.59305465356707, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(33.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.59305465356707, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(33.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.37519324554225, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(1.8, series.getCalculatedMaxError());
+        assertEquals(33.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.37519324554225, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(1.8, series.getMeanQuantity().getMaxError());
     }
 
     @Test
@@ -368,15 +368,15 @@ class SeriesTest {
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.36603602506256, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(31.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.36603602506256, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(0.44652856023108, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(3, series.getCalculatedMaxError());
+        assertEquals(31.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(0.44652856023108, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(3, series.getMeanQuantity().getMaxError());
     }
 
     @Test
@@ -393,15 +393,15 @@ class SeriesTest {
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.50077077702428, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(31.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.50077077702428, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(0.96890428330361, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(2.75714285714286, series.getCalculatedMaxError(), 0.0000000000001);
+        assertEquals(31.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(0.96890428330361, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(2.75714285714286, series.getMeanQuantity().getMaxError(), 0.0000000000001);
     }
 
     @Test
@@ -418,15 +418,15 @@ class SeriesTest {
 
         series.setSeparateErrors(false);
         series.updateMean();
-        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(1.26894582941063, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(0, series.getCalculatedMaxError());
+        assertEquals(31.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(1.26894582941063, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(0, series.getMeanQuantity().getMaxError());
 
         series.setSeparateErrors(true);
         series.updateMean();
-        assertEquals(31.2857142857143, series.getMean(), 0.0000000000001);
-        assertEquals(0.791205302626183, series.getCalculatedStandardError(), 0.00000000000001);
-        assertEquals(2.42857142857143, series.getCalculatedMaxError(), 0.0000000000001);
+        assertEquals(31.2857142857143, series.getMeanQuantity().getValue(), 0.0000000000001);
+        assertEquals(0.791205302626183, series.getMeanQuantity().getStandardError(), 0.00000000000001);
+        assertEquals(2.42857142857143, series.getMeanQuantity().getMaxError(), 0.0000000000001);
     }
 
     @Test

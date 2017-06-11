@@ -3,7 +3,6 @@ package pl.edu.uj.student.kubala.piotr.qm.tests;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.edu.uj.student.kubala.piotr.qm.lab.Measure;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 
@@ -235,10 +234,10 @@ class SeriesGroupTest
 
         seriesGroup.setHighlightedSeries(3);
         seriesGroup.deleteSeries(4);
-        assertEquals(3, seriesGroup.getHighlightedSeries());
+        assertEquals(3, seriesGroup.getHighlightedSeriesIdx());
         seriesGroup.deleteSeries(2);
-        assertEquals(2, seriesGroup.getHighlightedSeries());
+        assertEquals(2, seriesGroup.getHighlightedSeriesIdx());
         seriesGroup.deleteSeries(2);
-        assertEquals(-1, seriesGroup.getHighlightedSeries());
+        assertEquals(-1, seriesGroup.getHighlightedSeriesIdx());
     }
 }

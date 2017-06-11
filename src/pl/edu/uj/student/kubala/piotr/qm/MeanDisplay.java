@@ -8,7 +8,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm;
 
-import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.lab.*;
 import pl.edu.uj.student.kubala.piotr.qm.utils.RoundedBorder;
 
 import javax.swing.*;
@@ -18,6 +18,7 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.util.Objects;
 
+import static java.awt.image.ImageObserver.SOMEBITS;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_COLOR;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.TITLE_COLOR;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_RADIUS;
@@ -30,6 +31,7 @@ public class MeanDisplay implements View
     private static final int        TOP_MARGIN_BIAS = -6;
     private static final int        HEIGHT = 100;
     private static final Color      MEAN_COLOR = new Color(0x5A83BF);
+    private static final String     EMPTY_HTML = "<html> </html>";
 
     private LabProject      labProject;
     private QuickFrame      parentFrame;
@@ -59,7 +61,7 @@ public class MeanDisplay implements View
         if (this.panel != null)
             throw new RuntimeException("MeanDisplay::init wywołane drugi raz");
 
-        this.meanLabel = new JLabel("", JLabel.CENTER);
+        this.meanLabel = new JLabel(EMPTY_HTML, JLabel.CENTER);
         this.meanLabel.setFont(MEAN_FONT);
         this.meanLabel.setForeground(MEAN_COLOR);
 
@@ -88,7 +90,38 @@ public class MeanDisplay implements View
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        Series series = this.labProject.getHighlightedSeries();
 
+        switch (evt.getPropertyName()) {
+            // Zmiana liczby cyfr znaczących lub rozdzielania niepewności lub zmiana wartości średniej
+            case Series.SEPARATE_ERRORS:
+            case Series.SIGNIFICANT_DIGITS:
+            case Series.MEAN_ERR:
+                // Zignoruj, jeśli nie dotyczy wyświetlanej
+                if (evt.getSource() != series)
+                    return;
+
+                // BEZ BREAK! MA SIĘ WYKONAĆ KOD AKTUALIZACJI ŚREDNIEJ
+
+            // Zmiana podświetlonej serii (lub grupy)
+            case LabProject.SELECTED_GROUP:
+            case SeriesGroup.HIGHLIGHTED_SERIES:
+                // Bądź przygotowany na brak podświetlenia
+                if (series == null) {
+                    this.meanLabel.setText(EMPTY_HTML);
+                    return;
+                }
+
+                // Sformatuj średnią do wyświetlenia
+                Quantity quantity = series.getMeanQuantity();
+                FormattedMeasureFactory factory = new FormattedMeasureFactory();
+                factory.setErrorSignificantDigits(series.getSignificantDigits());
+                factory.setSeparateErrors(series.isSeparateErrors());
+                FormattedMeasure formattedMeasure = factory.format(quantity);
+                this.meanLabel.setText(formattedMeasure.toHTMLCompact());
+                break;
+        }
     }
 }

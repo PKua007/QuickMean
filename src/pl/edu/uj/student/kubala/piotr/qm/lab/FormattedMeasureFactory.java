@@ -8,10 +8,13 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
+import java.util.Locale;
+
 public class FormattedMeasureFactory {
     private static final int DEFAULT_MIN_FIXED_EXPONENT = -3;
     private static final int DEFAULT_MAX_FIXED_EXPONENT = 3;
     private static final int DEFAULT_ERROR_SIGNIFICANT_DIGITS = 2;
+    private static final Locale LOCALE = Locale.ENGLISH;
 
     private int minFixedExponent;       // Minimalny wykładnik, dla której zostaje postać zwykła
     private int maxFixedExponent;       // Maksymalny wykładnik, dla którego zostaje postać zwykła
@@ -77,16 +80,16 @@ public class FormattedMeasureFactory {
     /**
      * Formatuje pomiar na podstawie ustalonych parametrów.
      *
-     * @param measure pomiar do sformatowania
+     * @param quantity wielkość do sformatowania
      * @return sformatowany pomiar
      */
-    public FormattedMeasure format(Measure measure) {
+    public FormattedMeasure format(Quantity quantity) {
         FormattedMeasure result = new FormattedMeasure();
         result.separateErrors = this.separateErrors;
 
-        int valueSignif = getSignifOrZero(measure.getValue());
-        int standardSignif = getSignifOrIntMin(measure.getStandardError());
-        int maxSignif = getSignifOrIntMin(measure.getCalibrationError() + measure.getHumanError());
+        int valueSignif = getSignifOrZero(quantity.getValue());
+        int standardSignif = getSignifOrIntMin(quantity.getStandardError());
+        int maxSignif = getSignifOrIntMin(quantity.getMaxError());
         int firstSignif = Math.max(standardSignif, maxSignif);      // pierwsza cyfra znacząca większej niepewności
 
 
@@ -98,37 +101,48 @@ public class FormattedMeasureFactory {
                 // Liczba cyfr po przecinku do wyświetlenia - taka, żeby była odpowiednia ilość cyfr znaczących większego
                 // błędu
                 int valueDotDigits = Math.max(0, valueSignif - firstSignif + this.errorSignificantDigits - 1);
+                double factor = Math.pow(10, -result.exponent);
 
-                result.value = String.format("%." + valueDotDigits + "f",
-                        measure.getValue() * Math.pow(10, -result.exponent));
-                result.standardError = String.format("%." + valueDotDigits + "f",
-                        measure.getStandardError() * Math.pow(10, -result.exponent));
+                result.value = String.format(LOCALE, "%." + valueDotDigits + "f", quantity.getValue() * factor);
+                result.standardError = String.format(LOCALE, "%." + valueDotDigits + "f", quantity.getStandardError() * factor);
                 result.maxError = this.separateErrors
-                        ? String.format("%." + valueDotDigits + "f",
-                                (measure.getCalibrationError() + measure.getHumanError()) * Math.pow(10, -result.exponent))
+                        ? String.format(LOCALE, "%." + valueDotDigits + "f", quantity.getMaxError() * factor)
                         : "";
             } else {        // Oba błedy zerowe - walnij maksymalna dokładność
-                result.value = Double.toString(measure.getValue() * Math.pow(10, -result.exponent));
-                result.standardError = "0";
-                result.maxError = this.separateErrors ? "0" : "";
+                result.value = Double.toString(quantity.getValue() * Math.pow(10, -result.exponent));
+                result.standardError = "0.0";
+                result.maxError = this.separateErrors ? "0.0" : "";
             }
         } else {        // Przedstaw w postaci "tradycyjnej"
             result.scientificForm = false;
 
             if (firstSignif > Integer.MIN_VALUE) {      // Którykolwiek z błedów niezerowy
-                result.value = "a";
-                result.standardError = "b";
-                result.maxError = "c";
-            } else {        // Oba błedy zerowe - walnij maksymalna dokładność
-                result.value = Double.toString(measure.getValue());
-                result.standardError = "0";
-                result.maxError = this.separateErrors ? "0" : "";
+                // Pozycja ostatniej niezerowej cyfry - normalnie ostatnia cyfra niepewności, czhyba że niepewność
+                // większa niż wynik, to pierwsa cyfra wyniku
+                int valueLastDigit = Math.min(valueSignif, firstSignif - this.errorSignificantDigits + 1);
+                if (valueLastDigit < 0) {  // Występuje część ułamkowa, bądź kończy się na jednościach
+                    result.value = String.format(LOCALE, "%." + (-valueLastDigit) + "f", quantity.getValue());
+                    result.standardError = String.format(LOCALE, "%." + (-valueLastDigit) + "f", quantity.getStandardError());
+                    result.maxError = this.separateErrors
+                            ? String.format(LOCALE, "%." + (-valueLastDigit) + "f", quantity.getMaxError())
+                            : "";
+                } else {    // Ostatnia cyfra to cyfra dziesiątek, setek, itd. Trzeba dopisać ileś zer
+                    String trailingZeros = new String(new char[valueLastDigit]).replace('\0', '0');
+                    double factor = Math.pow(10, -valueLastDigit);
+
+                    result.value = String.format(LOCALE, "%.0f%s", quantity.getValue() * factor, trailingZeros);
+                    result.standardError = String.format(LOCALE, "%.0f%s", quantity.getStandardError() * factor, trailingZeros);
+                    result.maxError = this.separateErrors
+                            ? String.format(LOCALE, "%.0f%s", quantity.getMaxError() * factor, trailingZeros)
+                            : "";
+                }
+            } else {        // Oba błedy zerowe - walnij maksymalną dokładność
+                result.value = Double.toString(quantity.getValue());
+                result.standardError = "0.0";
+                result.maxError = this.separateErrors ? "0.0" : "";
             }
         }
 
-        /*int digitDiff = valueSignif - uncertainitySignif + SIGNIFICANT_DIGITS;
-        if (digitDiff < 0)  digitDiff = 0;
-        return String.format("%." + digitDiff + "g += %." + SIGNIFICANT_DIGITS + "g", value, uncertainity);*/
         return result;
     }
 
@@ -153,8 +167,8 @@ public class FormattedMeasureFactory {
         FormattedMeasureFactory factory = new FormattedMeasureFactory();
         factory.setSeparateErrors(true);
 
-        Measure measure = new Measure(67.435325, 0.564356, 0, 0);
-        FormattedMeasure formattedMeasure = factory.format(measure);
+        Quantity quantity = new Quantity(456.234, 4.5003, 12.023);
+        FormattedMeasure formattedMeasure = factory.format(quantity);
         System.out.println(formattedMeasure);
     }
 }

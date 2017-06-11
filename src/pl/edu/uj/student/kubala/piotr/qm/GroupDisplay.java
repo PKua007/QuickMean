@@ -9,10 +9,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm;
 
-import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
-import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
-import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
-import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
+import pl.edu.uj.student.kubala.piotr.qm.lab.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -155,17 +152,26 @@ public class GroupDisplay implements View
                 // Zmień model tabeli
                 DefaultTableModel tableModel = (DefaultTableModel) this.groupTable.getModel();
                 tableModel.setRowCount(0);
-                Series series;
+
+                Series                  series;
+                Quantity                quantity;
+                FormattedMeasureFactory factory = new FormattedMeasureFactory();
+                FormattedMeasure        formattedMeasure;
+
                 for (int i = 0; i < selectedGroup.getNumberOfSeries(); i++) {
                     series = selectedGroup.getSeries(i);
+                    factory.setSeparateErrors(series.isSeparateErrors());
+                    factory.setErrorSignificantDigits(series.getSignificantDigits());
+                    quantity = series.getMeanQuantity();
+                    formattedMeasure = factory.format(quantity);
+
                     tableModel.addRow(new String[]{
                         series.getLabel(),
-                            Double.toString(series.getMean())
+                        formattedMeasure.toHTMLCompact()
                     });
                 }
 
-                int highlighted = selectedGroup.getHighlightedSeries();
-                System.out.println("Pobieram podświetlone: " + highlighted);
+                int highlighted = selectedGroup.getHighlightedSeriesIdx();
                 if (highlighted != -1)
                     this.groupTable.setRowSelectionInterval(highlighted, highlighted);
 

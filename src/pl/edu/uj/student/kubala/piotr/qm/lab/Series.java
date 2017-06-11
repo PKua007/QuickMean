@@ -36,9 +36,7 @@ public class Series extends PropagatingModel
     private static int staticIdx = 0;
 
     private ArrayList<Measure>  measures;       // Tablica z pomiarami
-    private double              mean;           // Średnia pomiarów
-    private double              calculatedStandardError;    // Obliczona niepewność standarwoda
-    private double              calculatedMaxError;         // Obliczony błąd maksymalny
+    private Quantity            meanQuantity;   // Średnia wyliczona wielkość
     private ArrayList<Integer>  selectedMeasures;           // Zaznaczone pomiary
     private SeriesGroup         parentGroup;    // Grupa, do której należy seria pomiarowa
 
@@ -59,6 +57,7 @@ public class Series extends PropagatingModel
 
         this.measures = new ArrayList<>();
         this.selectedMeasures = new ArrayList<>();
+        this.meanQuantity = new Quantity();
         this.significantDigits = DEFAULT_SIGNIFICANT_DIGITS;
     }
 
@@ -206,16 +205,9 @@ public class Series extends PropagatingModel
 
     /* Gettery solo */
 
-    public double getMean() {
-        return mean;
-    }
-
-    public double getCalculatedStandardError() {
-        return calculatedStandardError;
-    }
-
-    public double getCalculatedMaxError() {
-        return calculatedMaxError;
+    public Quantity getMeanQuantity()
+    {
+        return meanQuantity;
     }
 
     /* Pozostałe metody */
@@ -227,29 +219,30 @@ public class Series extends PropagatingModel
     public void updateMean()
     {
         // Stare wartości
-        double [] oldValues = new double[]{ this.mean, this.calculatedStandardError, this.calculatedMaxError };
+        Quantity oldValue = this.meanQuantity;
+        double mean, standard, max;
 
         switch (this.measures.size()) {
             // 0 pomiarów, brak wartości
             case 0:
-                this.mean = 0;
-                this.calculatedStandardError = 0;
-                this.calculatedMaxError = 0;
+                mean = 0;
+                standard = 0;
+                max = 0;
                 break;
 
             // 1 pomiar, przepisz wartości z pojedynczego pomiaru
             case 1:
                 Measure measure = this.measures.get(0);
-                this.mean = measure.getValue();
+                mean = measure.getValue();
 
                 if (separateErrors) {   // Rozdzielanie niepewności wg starej konwencji
-                    this.calculatedMaxError =
+                    max =
                             defClibration(measure) +
                             defHuman(measure);
-                    this.calculatedStandardError = measure.getStandardError();
+                    standard = measure.getStandardError();
                 } else {                // Sumowanie niepewności wg nowej konwencji
-                    this.calculatedMaxError = 0;
-                    this.calculatedStandardError = Math.sqrt(
+                    max = 0;
+                    standard = Math.sqrt(
                             Math.pow(measure.getStandardError(), 2) +
                             Math.pow(defClibration(measure), 2) / 3 +
                             Math.pow(defHuman(measure), 2) / 3);
@@ -258,13 +251,13 @@ public class Series extends PropagatingModel
 
             // 2 lub więcej pomiarów - trzeba już się pomęczyć z przeliczeniem ;)
             default:
-                this.mean = this.measures.stream()                  // Średnia pomiarów
+                mean = this.measures.stream()                  // Średnia pomiarów
                         .mapToDouble(Measure::getValue)
                         .average()
                         .orElse(0);
                 double diffSquareSum = this.measures.stream()       // Suma kwadratów odchyleń od średniej
                         .mapToDouble(Measure::getValue)
-                        .reduce(0, (sum, m) -> sum + Math.pow(this.mean - m, 2));
+                        .reduce(0, (sum, m) -> sum + Math.pow(mean - m, 2));
                 double measureStdDev = Math.sqrt(                   // Odchylenie standardowe pojedynczego pomiaru
                         diffSquareSum / (this.measures.size() - 1)) *
                         (useStudentFisher ? StudentFisherCache.get(this.measures.size() - 1) : 1);
@@ -274,13 +267,13 @@ public class Series extends PropagatingModel
                         .reduce(0, (sum, m) ->  sum + m * m);
 
                 if (separateErrors) {   // Rozdzielanie niepewności wg starej konwencji
-                    this.calculatedMaxError = this.measures.stream()
+                    max = this.measures.stream()
                             .mapToDouble((m) ->
                                     defHuman(m) +
                                     defClibration(m))
                             .average()
                             .orElse(0);
-                    this.calculatedStandardError = Math.sqrt(stdErrSquareSum) / this.measures.size();
+                    standard = Math.sqrt(stdErrSquareSum) / this.measures.size();
                 } else {                // Sumowanie niepewności wg nowej konwencji
                     double meanCalibration = this.measures.stream()     // Średni błąd wzorcowania
                             .mapToDouble(this::defClibration)
@@ -291,8 +284,8 @@ public class Series extends PropagatingModel
                             .average()
                             .orElse(0);
 
-                    this.calculatedMaxError = 0;
-                    this.calculatedStandardError = Math.sqrt(
+                    max = 0;
+                    standard = Math.sqrt(
                             stdErrSquareSum / Math.pow(this.measures.size(), 2) +
                             Math.pow(meanCalibration, 2) / 3 +
                             Math.pow(meanHumanError, 2) / 3);
@@ -300,10 +293,9 @@ public class Series extends PropagatingModel
                 break;
         }
 
-        // Nowe wartości
-        double [] newValues = new double[]{ this.mean, this.calculatedStandardError, this.calculatedMaxError };
+        this.meanQuantity = new Quantity(mean, standard, max);
         // Odpal wiadomość o zmianie średniej i niepewności dla listenerów
-        this.propertyFirer.firePropertyChange(new PropertyChangeEvent(this, MEAN_ERR, oldValues, newValues));
+        this.propertyFirer.firePropertyChange(new PropertyChangeEvent(this, MEAN_ERR, oldValue, this.meanQuantity));
     }
 
     /* Pomocnicza metoda - zwraca measure.getStandardError(), jeśli niezerowy, albo domyślny def, jeśli zerowy */

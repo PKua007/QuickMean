@@ -18,6 +18,12 @@ public class FormattedMeasure implements Cloneable {
      * Znak plus minus ze spacjami - przydatne przy wyświetlaniu
      */
     public static final String PLUS_MINUS_SPACE = " ± ";
+    /**
+     * Znak x
+     */
+    public static final char CROSS = '×';
+    private static final String CROSS_SPACE = " × ";
+
 
     /**
      * Sformatowana wartość pomiaru
@@ -72,6 +78,42 @@ public class FormattedMeasure implements Cloneable {
             return "(" + body + ") * 10^" + exponent;
         else
             return body;
+    }
+
+    /**
+     * Zwraca sformatowaną (z ładnym wykładnikiem) Stringową posta (3.06 += 0.56 += 0.40) * 10^5. Wykładnik nie wystaje
+     * poza linię tekstu
+     * @return sformatowana reprezentacja Stringowa
+     */
+    public String toHTMLCompact()
+    {
+        String body;
+        if (separateErrors)
+            body = value + PLUS_MINUS_SPACE + standardError + PLUS_MINUS_SPACE + maxError;
+        else
+            body = value + PLUS_MINUS_SPACE + standardError;
+        if (scientificForm)
+            return "<html>(" + body + ")" + CROSS + "10<sup style='font-size: 80%;'>" + exponent + "</sup></html>";
+        else
+            return "<html>" + body + "</html>";
+    }
+
+    /**
+     * Zwraca sformatowaną (z ładnym wykładnikiem) Stringową posta (3.06 += 0.56 += 0.40) * 10^5. Wykładnik wystaje
+     * poza linię tekstu
+     * @return sformatowana reprezentacja Stringowa
+     */
+    public String toHTML()
+    {
+        String body;
+        if (separateErrors)
+            body = value + PLUS_MINUS_SPACE + standardError + PLUS_MINUS_SPACE + maxError;
+        else
+            body = value + PLUS_MINUS_SPACE + standardError;
+        if (scientificForm)
+            return "<html>(" + body + ")" + CROSS + "10<sup>" + exponent + "</sup></html>";
+        else
+            return "<html>" + body + "</html>";
     }
 
     @Override

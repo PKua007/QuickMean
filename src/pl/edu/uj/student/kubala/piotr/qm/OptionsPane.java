@@ -9,6 +9,9 @@
 package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.lab.Measure;
+import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
+import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 import pl.edu.uj.student.kubala.piotr.qm.utils.RoundedBorder;
 import pl.edu.uj.student.kubala.piotr.qm.utils.SpringUtilities;
 
@@ -17,7 +20,11 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.TITLE_COLOR;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_COLOR;
@@ -39,6 +46,8 @@ public class OptionsPane implements View
     private static final int        PANEL_LEFT_PADDING = 2;
     private static final int        PANEL_BOTTOM_PADDING = 0;
     private static final int        PANEL_RIGHT_PADDING = 0;
+    private static final int        MIN_DIGITS = 1;
+    private static final int        MAX_DIGITS = 6;
 
     private QuickFrame      parentFrame;
     private LabProject      labProject;
@@ -72,13 +81,23 @@ public class OptionsPane implements View
         JLabel signifLabel = new JLabel(SIGNIFICANT_DIGITS, SwingConstants.LEADING);
         JLabel sepLabel = new JLabel(SEPARATE_ERRORS, SwingConstants.LEADING);
 
-        // Utwórz kontrolki
+        // Utwórz kontrolki i "zresetuj"
         this.calibrationErrorField = new JTextField();
+        this.calibrationErrorField.setEnabled(false);
         this.humanErrorField = new JTextField();
+        this.humanErrorField.setEnabled(false);
         this.fisherCheckBox = new JCheckBox();
+        this.fisherCheckBox.setEnabled(false);
         this.separateErrorsCheckBox = new JCheckBox();
-        this.significantDigitsComboBox = new JComboBox<>(new Integer[]{1, 2, 3, 4, 5, 6});
+        this.separateErrorsCheckBox.setEnabled(false);
+        this.significantDigitsComboBox = new JComboBox<>(
+                IntStream.rangeClosed(MIN_DIGITS, MAX_DIGITS)
+                .boxed()
+                .toArray(Integer[]::new)
+        );
         this.significantDigitsComboBox.setPreferredSize(new Dimension(0, SIGNIFICANT_DIGITS_COMBO_BOX_HEIGHT));
+        this.significantDigitsComboBox.setSelectedIndex(-1);
+        this.significantDigitsComboBox.setEnabled(false);
 
         // Utwórz panel
         this.panel = new JPanel(new SpringLayout());
@@ -141,7 +160,35 @@ public class OptionsPane implements View
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        // Zmiana podświetlonej serii (lub w ogóle zmiana grupy)
+        switch (evt.getPropertyName()) {
+            case LabProject.SELECTED_GROUP:
+            case SeriesGroup.HIGHLIGHTED_SERIES:
+                // Pobierz podświetloną serię i zaktualizuj
+                Series series = this.labProject.getHighlightedSeries();
+                // Brak podświetlenia
+                if (series == null) {
+                    this.separateErrorsCheckBox.setSelected(false);
+                    this.separateErrorsCheckBox.setEnabled(false);
+                    this.significantDigitsComboBox.setSelectedIndex(-1);
+                    this.significantDigitsComboBox.setEnabled(false);
+                } else {
+                    this.separateErrorsCheckBox.setSelected(series.isSeparateErrors());
+                    this.separateErrorsCheckBox.setEnabled(true);
 
+                    int digits = series.getSignificantDigits();
+                    // Nieprawidłowa liczba cyfr znaczących - nie wykrzacz, skasuj zaznaczenie
+                    if (digits < MIN_DIGITS || digits > MAX_DIGITS)
+                        this.significantDigitsComboBox.setSelectedIndex(-1);
+                    else
+                        this.significantDigitsComboBox.setSelectedIndex(digits - MIN_DIGITS);
+
+                    this.significantDigitsComboBox.setEnabled(true);
+                }
+
+                break;
+        }
     }
 }

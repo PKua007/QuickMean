@@ -9,12 +9,18 @@
 package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-public class OptionsController implements Controller
+public class OptionsController implements Controller, ActionListener, ItemListener
 {
     private LabProject      labProject;
     private OptionsPane     optionsPane;
@@ -30,12 +36,37 @@ public class OptionsController implements Controller
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e)
+    {
+        Object source = e.getSource();
+        // Zignoruj ewentualny błąd - gdy nie jest podświetlona seria (powinna być)
+        Series series = this.labProject.getHighlightedSeries();
+        if (series == null)
+            return;
 
+        // Check box rozdzielania niepewności
+        if (source == this.optionsPane.getSeparateErrorsCheckBox()) {
+            series.setSeparateErrors(this.optionsPane.getSeparateErrorsCheckBox().isSelected());
+            series.updateMean();
+        }
     }
 
     @Override
     public void setup() {
+        // Nasłuchuj check boxa osobnych niepewności
+        this.optionsPane.getSeparateErrorsCheckBox().addActionListener(this);
+        // Nasłuchuj listy z ilością cyfr znacących
+        this.optionsPane.getSignificantDigitsComboBox().addItemListener(this);
+    }
 
+    @Override
+    public void itemStateChanged(ItemEvent e)
+    {
+        // Zmieniono liczbę cyfr znaczących
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            Series series = this.labProject.getHighlightedSeries();
+            if (series != null)
+                series.setSignificantDigits((int)e.getItem());
+        }
     }
 }

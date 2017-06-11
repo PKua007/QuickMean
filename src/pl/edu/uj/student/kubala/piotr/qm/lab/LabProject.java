@@ -14,6 +14,7 @@ import pl.edu.uj.student.kubala.piotr.qm.converters.Converter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -161,7 +162,10 @@ public class LabProject extends PropagatingModel
      */
     public SeriesGroup getSelectedSeriesGroup()
     {
-        return this.seriesGroups.get(this.selectedSeriesGroup);
+        if (this.selectedSeriesGroup == -1)
+            return null;
+        else
+            return this.seriesGroups.get(this.selectedSeriesGroup);
     }
 
     /**
@@ -173,11 +177,27 @@ public class LabProject extends PropagatingModel
     {
         if (seriesGroupIdx != -1) // Sprawdź poprawność indeksu
             this.seriesGroups.get(seriesGroupIdx);
-        SeriesGroup oldSelected = (this.selectedSeriesGroup != -1 ? this.seriesGroups.get(this.selectedSeriesGroup) : null);
+        SeriesGroup oldSelected = getSelectedSeriesGroup();
         this.selectedSeriesGroup = seriesGroupIdx;
-        SeriesGroup newSelected = (seriesGroupIdx != -1 ? this.seriesGroups.get(this.selectedSeriesGroup) : null);
+        SeriesGroup newSelected = getSelectedSeriesGroup();
         PropertyChangeEvent evt = new PropertyChangeEvent(this, SELECTED_GROUP, oldSelected, newSelected);
         this.propertyFirer.firePropertyChange(evt);
+    }
+
+    /**
+     * Metoda zwraca obecnie podświetloną serię w obecnie wybranej grupie. Jeśli którakolwiek część hierarchii nie
+     * jest wybrana - {@code null}.
+     * @return obecnie podświetloną serię w obecnie wybranej grupie lub {@code null}
+     */
+    public Series getHighlightedSeries()
+    {
+        SeriesGroup selectedGroup = this.getSelectedSeriesGroup();
+        if (selectedGroup == null)
+            return null;
+        int idx = selectedGroup.getHighlightedSeriesIdx();
+        if (idx == -1)
+            return null;
+        return selectedGroup.getSeries(idx);
     }
 
     /**
@@ -253,23 +273,47 @@ public class LabProject extends PropagatingModel
         this.setSelectedSeriesGroup(0);*/
 
         defaultSeriesGroup = new SeriesGroup();
+
         defaultSeries = new Series();
+        defaultSeries.addMeasure(new Measure(5435634, 234, 234, 0));
+        defaultSeries.addMeasure(new Measure(5475783, 234, 34, 0));
+        defaultSeries.addMeasure(new Measure(5436724, 734, 24, 0));
+        defaultSeries.updateMean();
         defaultSeriesGroup.addSeries(defaultSeries);
+
         defaultSeries = new Series();
+        defaultSeries.addMeasure(new Measure(545634, 234, 234, 0));
+        defaultSeries.addMeasure(new Measure(545783, 234, 34, 0));
+        defaultSeries.addMeasure(new Measure(546724, 734, 24, 0));
+        defaultSeries.updateMean();
         defaultSeriesGroup.addSeries(defaultSeries);
+
         defaultSeries = new Series();
+        defaultSeries.addMeasure(new Measure(0.54534, 0.0234, 0.0234, 0));
+        defaultSeries.addMeasure(new Measure(0.54783, 0.0234, 0.034, 0));
+        defaultSeries.addMeasure(new Measure(0.54324, 0.0734, 0.024, 0));
+        defaultSeries.updateMean();
+        System.out.println(defaultSeries.getMeanQuantity());
         defaultSeriesGroup.addSeries(defaultSeries);
+
         defaultSeriesGroup.setHighlightedSeries(1);
         this.addSeriesGroup(defaultSeriesGroup);
+
+
         defaultSeriesGroup = new SeriesGroup();
+
         defaultSeries = new Series();
         defaultSeriesGroup.addSeries(defaultSeries);
+
         defaultSeries = new Series();
         defaultSeriesGroup.addSeries(defaultSeries);
+
         defaultSeries = new Series();
         defaultSeriesGroup.addSeries(defaultSeries);
+
         defaultSeries = new Series();
         defaultSeriesGroup.addSeries(defaultSeries);
+
         defaultSeriesGroup.setHighlightedSeries(2);
         this.addSeriesGroup(defaultSeriesGroup);
         this.setSelectedSeriesGroup(0);
