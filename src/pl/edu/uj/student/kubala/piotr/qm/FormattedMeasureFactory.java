@@ -6,7 +6,9 @@
 // (C)PKua, wszystkie prawa zastrzeżone
 //---------------------------------------------------------------------
 
-package pl.edu.uj.student.kubala.piotr.qm.lab;
+package pl.edu.uj.student.kubala.piotr.qm;
+
+import pl.edu.uj.student.kubala.piotr.qm.lab.Quantity;
 
 import java.util.Locale;
 
@@ -14,7 +16,7 @@ public class FormattedMeasureFactory {
     private static final int DEFAULT_MIN_FIXED_EXPONENT = -3;
     private static final int DEFAULT_MAX_FIXED_EXPONENT = 3;
     private static final int DEFAULT_ERROR_SIGNIFICANT_DIGITS = 2;
-    private static final Locale LOCALE = Locale.ENGLISH;
+    private static final Locale ENGLISH_LOCALE = Locale.ENGLISH;
 
     private int minFixedExponent;       // Minimalny wykładnik, dla której zostaje postać zwykła
     private int maxFixedExponent;       // Maksymalny wykładnik, dla którego zostaje postać zwykła
@@ -103,10 +105,10 @@ public class FormattedMeasureFactory {
                 int valueDotDigits = Math.max(0, valueSignif - firstSignif + this.errorSignificantDigits - 1);
                 double factor = Math.pow(10, -result.exponent);
 
-                result.value = String.format(LOCALE, "%." + valueDotDigits + "f", quantity.getValue() * factor);
-                result.standardError = String.format(LOCALE, "%." + valueDotDigits + "f", quantity.getStandardError() * factor);
+                result.value = String.format(ENGLISH_LOCALE, "%." + valueDotDigits + "f", quantity.getValue() * factor);
+                result.standardError = String.format(ENGLISH_LOCALE, "%." + valueDotDigits + "f", quantity.getStandardError() * factor);
                 result.maxError = this.separateErrors
-                        ? String.format(LOCALE, "%." + valueDotDigits + "f", quantity.getMaxError() * factor)
+                        ? String.format(ENGLISH_LOCALE, "%." + valueDotDigits + "f", quantity.getMaxError() * factor)
                         : "";
             } else {        // Oba błedy zerowe - walnij maksymalna dokładność
                 result.value = Double.toString(quantity.getValue() * Math.pow(10, -result.exponent));
@@ -121,19 +123,19 @@ public class FormattedMeasureFactory {
                 // większa niż wynik, to pierwsa cyfra wyniku
                 int valueLastDigit = Math.min(valueSignif, firstSignif - this.errorSignificantDigits + 1);
                 if (valueLastDigit < 0) {  // Występuje część ułamkowa, bądź kończy się na jednościach
-                    result.value = String.format(LOCALE, "%." + (-valueLastDigit) + "f", quantity.getValue());
-                    result.standardError = String.format(LOCALE, "%." + (-valueLastDigit) + "f", quantity.getStandardError());
+                    result.value = String.format(ENGLISH_LOCALE, "%." + (-valueLastDigit) + "f", quantity.getValue());
+                    result.standardError = String.format(ENGLISH_LOCALE, "%." + (-valueLastDigit) + "f", quantity.getStandardError());
                     result.maxError = this.separateErrors
-                            ? String.format(LOCALE, "%." + (-valueLastDigit) + "f", quantity.getMaxError())
+                            ? String.format(ENGLISH_LOCALE, "%." + (-valueLastDigit) + "f", quantity.getMaxError())
                             : "";
                 } else {    // Ostatnia cyfra to cyfra dziesiątek, setek, itd. Trzeba dopisać ileś zer
                     String trailingZeros = new String(new char[valueLastDigit]).replace('\0', '0');
                     double factor = Math.pow(10, -valueLastDigit);
 
-                    result.value = String.format(LOCALE, "%.0f%s", quantity.getValue() * factor, trailingZeros);
-                    result.standardError = String.format(LOCALE, "%.0f%s", quantity.getStandardError() * factor, trailingZeros);
+                    result.value = String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getValue() * factor, trailingZeros);
+                    result.standardError = String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getStandardError() * factor, trailingZeros);
                     result.maxError = this.separateErrors
-                            ? String.format(LOCALE, "%.0f%s", quantity.getMaxError() * factor, trailingZeros)
+                            ? String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getMaxError() * factor, trailingZeros)
                             : "";
                 }
             } else {        // Oba błedy zerowe - walnij maksymalną dokładność

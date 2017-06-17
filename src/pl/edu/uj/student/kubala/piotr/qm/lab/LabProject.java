@@ -12,20 +12,18 @@ package pl.edu.uj.student.kubala.piotr.qm.lab;
 import pl.edu.uj.student.kubala.piotr.qm.converters.Converter;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class LabProject extends PropagatingModel
+public class LabProject extends PropagatingListModel<SeriesGroup>
 {
     /* Etykiety właściwości */
-    public static final String  NEW_GROUP = "lp.new_group";
-    public static final String  DEL_GROUP = "lp.del_group";
-    public static final String  SELECTED_GROUP = "lp.selected_group";
-
-    private ArrayList<SeriesGroup>      seriesGroups;   // Tablica z grupami serii pomiarów
+    private static final String PREFIX = "lp";
+    
+    public static final String  NEW_GROUP = PREFIX + "." + NEW;
+    public static final String  DEL_GROUP = PREFIX + "." + DEL;
+    public static final String  SELECTED_GROUP = PREFIX + ".selected_group";
 
     private File        file;           // Plik, w którym jest zapisane laboratorium (zawiera nazwę)
     private boolean     saved;          // Czy zmiany w pliku są zapisane?
@@ -38,9 +36,10 @@ public class LabProject extends PropagatingModel
      */
     public LabProject(File file)
     {
+        this.setPrefix(PREFIX);
+
         this.file = file;
 
-        this.seriesGroups = new ArrayList<>();
         this.saved = false;
         this.everSaved = false;
         this.selectedSeriesGroup = -1;
@@ -72,20 +71,9 @@ public class LabProject extends PropagatingModel
      */
     public void addSeriesGroup(SeriesGroup seriesGroup, int index)
     {
-        Objects.requireNonNull(seriesGroup);
-        if (this.seriesGroups.indexOf(seriesGroup) != -1) {
-            throw new IllegalArgumentException("Grupa jest już w projekcie");
-        } if (index == -1) {
-            this.seriesGroups.add(seriesGroup);
-        } else {
-            this.seriesGroups.add(index, seriesGroup);
-            if (index <= this.selectedSeriesGroup)
-                this.selectedSeriesGroup++;
-        }
-        seriesGroup.setParentLab(this);
-        seriesGroup.addPropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, NEW_GROUP, null, seriesGroup);
-        this.propertyFirer.firePropertyChange(evt);
+        if (index != -1 && index <= this.selectedSeriesGroup)
+            this.selectedSeriesGroup++;
+        this.addChild(seriesGroup, index);
     }
 
     /**
@@ -107,7 +95,7 @@ public class LabProject extends PropagatingModel
      */
     public SeriesGroup getSeriesGroup(int pos)
     {
-        return this.seriesGroups.get(pos);
+        return this.getChild(pos);
     }
 
     /**
@@ -118,13 +106,11 @@ public class LabProject extends PropagatingModel
      */
     public int deleteSeriesGroup(int pos)
     {
-        SeriesGroup seriesGroup = this.seriesGroups.get(pos);
-        this.seriesGroups.remove(pos);
-        seriesGroup.setParentLab(null);
-        seriesGroup.removePropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_GROUP, seriesGroup, null);
-        this.propertyFirer.firePropertyChange(evt);
-        return this.seriesGroups.size();
+        if (selectedSeriesGroup == pos)
+            this.setSelectedSeriesGroup(-1);
+        else if (selectedSeriesGroup > pos)
+            this.selectedSeriesGroup--;
+        return this.deleteChild(pos);
     }
 
     /**
@@ -134,17 +120,10 @@ public class LabProject extends PropagatingModel
      */
     public int deleteSeriesGroup(SeriesGroup seriesGroup)
     {
-        int index = this.seriesGroups.indexOf(seriesGroup);
-        if (index != -1) {
-            this.seriesGroups.remove(index);
-            seriesGroup.setParentLab(null);
-            seriesGroup.removePropertyChangeListener(this);
-            if (this.selectedSeriesGroup > index)       // Zaktualizuj indeks wybranej grupy
-                this.selectedSeriesGroup--;
-            PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_GROUP, seriesGroup, null);
-            this.propertyFirer.firePropertyChange(evt);
-        }
-        return this.seriesGroups.size();
+        int index = this.children.indexOf(seriesGroup);
+        if (index != -1)
+            this.deleteSeriesGroup(index);
+        return this.children.size();
     }
 
     /**
@@ -153,7 +132,7 @@ public class LabProject extends PropagatingModel
      */
     public int getNumberOfGroupSeries()
     {
-        return this.seriesGroups.size();
+        return this.getNumberOfChildren();
     }
 
     /**
@@ -165,7 +144,7 @@ public class LabProject extends PropagatingModel
         if (this.selectedSeriesGroup == -1)
             return null;
         else
-            return this.seriesGroups.get(this.selectedSeriesGroup);
+            return this.children.get(this.selectedSeriesGroup);
     }
 
     /**
@@ -176,7 +155,7 @@ public class LabProject extends PropagatingModel
     public void setSelectedSeriesGroup(int seriesGroupIdx)
     {
         if (seriesGroupIdx != -1) // Sprawdź poprawność indeksu
-            this.seriesGroups.get(seriesGroupIdx);
+            this.children.get(seriesGroupIdx);
         SeriesGroup oldSelected = getSelectedSeriesGroup();
         this.selectedSeriesGroup = seriesGroupIdx;
         SeriesGroup newSelected = getSelectedSeriesGroup();
@@ -216,7 +195,7 @@ public class LabProject extends PropagatingModel
      */
     public int getSeriesGroupIdx(SeriesGroup seriesGroup)
     {
-        return this.seriesGroups.indexOf(seriesGroup);
+        return this.getChildIdx(seriesGroup);
     }
 
     /* Metody zapisu i otwierania */

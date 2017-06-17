@@ -15,27 +15,29 @@ import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Series extends PropagatingModel
+public class Series extends PropagatingListModel<Measure>
 {
     public static final int DEFAULT_SIGNIFICANT_DIGITS = 2;
     public static final int MIN_SIGNIFICANT_DIGITS = 1;
     public static final int MAX_SIGNIFICANT_DIGITS = 6;
 
     /* Etykiety właściwości */
-    public static final String  LABEL = "s.label";
-    public static final String  CALIBRATION_ERROR = "s.calibrationError";
-    public static final String  HUMAN_ERROR = "s.humanError";
-    public static final String  USE_STUDENT_FISHER = "s.useStudentFisher";
-    public static final String  SIGNIFICANT_DIGITS = "s.significantDigits";
-    public static final String  SEPARATE_ERRORS = "s.separateErrors";
-    public static final String  SELECTED_MEASURES = "s.selectedMeasures";
-    public static final String  MEAN_ERR = "s.mean_err";
-    public static final String  NEW_MEASURE = "s.new_measure";
-    public static final String  DEL_MEASURE = "s.del_measure";
+    private static final String PREFIX = "s";
+
+    public static final String  LABEL               = PREFIX + ".label";
+    public static final String  CALIBRATION_ERROR   = PREFIX + ".calibrationError";
+    public static final String  HUMAN_ERROR         = PREFIX + ".humanError";
+    public static final String  USE_STUDENT_FISHER  = PREFIX + ".useStudentFisher";
+    public static final String  SIGNIFICANT_DIGITS  = PREFIX + ".significantDigits";
+    public static final String  SEPARATE_ERRORS     = PREFIX + ".separateErrors";
+    public static final String  SELECTED_MEASURES   = PREFIX + ".selectedMeasures";
+    public static final String  MEAN_ERR            = PREFIX + ".mean_err";
+    public static final String  NEW_MEASURE         = PREFIX + "." + NEW;
+    public static final String  DEL_MEASURE         = PREFIX + "." + DEL;
 
     private static int staticIdx = 0;
 
-    private ArrayList<Measure>  measures;       // Tablica z pomiarami
+
     private Quantity            meanQuantity;   // Średnia wyliczona wielkość
     private ArrayList<Integer>  selectedMeasures;           // Zaznaczone pomiary
     private SeriesGroup         parentGroup;    // Grupa, do której należy seria pomiarowa
@@ -53,9 +55,10 @@ public class Series extends PropagatingModel
      */
     public Series(String label)
     {
+        this.setPrefix(PREFIX);
+
         this.label = Objects.requireNonNull(label);
 
-        this.measures = new ArrayList<>();
         this.selectedMeasures = new ArrayList<>();
         this.meanQuantity = new Quantity();
         this.significantDigits = DEFAULT_SIGNIFICANT_DIGITS;
@@ -180,12 +183,12 @@ public class Series extends PropagatingModel
      */
     public void setSelectedMeasures(int[] selectedMeasures)
     {
-        Arrays.stream(selectedMeasures).forEach(this.measures::get);        // Sprawdź poprawność indeksów
+        Arrays.stream(selectedMeasures).forEach(this.children::get);        // Sprawdź poprawność indeksów
         Measure [] oldValue = this.selectedMeasures.stream()
-                .map((i) -> this.measures.get(i))
+                .map((i) -> this.children.get(i))
                 .toArray(Measure[]::new);
         Measure [] newValue = Arrays.stream(selectedMeasures).
-                mapToObj((i) -> this.measures.get(i))
+                mapToObj((i) -> this.children.get(i))
                 .toArray(Measure[]::new);
         this.selectedMeasures = Arrays.stream(selectedMeasures)
                 .boxed()
@@ -222,7 +225,7 @@ public class Series extends PropagatingModel
         Quantity oldValue = this.meanQuantity;
         double mean, standard, max;
 
-        switch (this.measures.size()) {
+        switch (this.children.size()) {
             // 0 pomiarów, brak wartości
             case 0:
                 mean = 0;
@@ -232,7 +235,7 @@ public class Series extends PropagatingModel
 
             // 1 pomiar, przepisz wartości z pojedynczego pomiaru
             case 1:
-                Measure measure = this.measures.get(0);
+                Measure measure = this.children.get(0);
                 mean = measure.getValue();
 
                 if (separateErrors) {   // Rozdzielanie niepewności wg starej konwencji
@@ -251,42 +254,42 @@ public class Series extends PropagatingModel
 
             // 2 lub więcej pomiarów - trzeba już się pomęczyć z przeliczeniem ;)
             default:
-                mean = this.measures.stream()                  // Średnia pomiarów
+                mean = this.children.stream()                  // Średnia pomiarów
                         .mapToDouble(Measure::getValue)
                         .average()
                         .orElse(0);
-                double diffSquareSum = this.measures.stream()       // Suma kwadratów odchyleń od średniej
+                double diffSquareSum = this.children.stream()       // Suma kwadratów odchyleń od średniej
                         .mapToDouble(Measure::getValue)
                         .reduce(0, (sum, m) -> sum + Math.pow(mean - m, 2));
                 double measureStdDev = Math.sqrt(                   // Odchylenie standardowe pojedynczego pomiaru
-                        diffSquareSum / (this.measures.size() - 1)) *
-                        (useStudentFisher ? StudentFisherCache.get(this.measures.size() - 1) : 1);
-                double stdErrSquareSum = this.measures.stream()     // Suma kwardatów niepewności standardowych
+                        diffSquareSum / (this.children.size() - 1)) *
+                        (useStudentFisher ? StudentFisherCache.get(this.children.size() - 1) : 1);
+                double stdErrSquareSum = this.children.stream()     // Suma kwardatów niepewności standardowych
                         .mapToDouble((m) ->
                                 defStandard(m, measureStdDev))
                         .reduce(0, (sum, m) ->  sum + m * m);
 
                 if (separateErrors) {   // Rozdzielanie niepewności wg starej konwencji
-                    max = this.measures.stream()
+                    max = this.children.stream()
                             .mapToDouble((m) ->
                                     defHuman(m) +
                                     defClibration(m))
                             .average()
                             .orElse(0);
-                    standard = Math.sqrt(stdErrSquareSum) / this.measures.size();
+                    standard = Math.sqrt(stdErrSquareSum) / this.children.size();
                 } else {                // Sumowanie niepewności wg nowej konwencji
-                    double meanCalibration = this.measures.stream()     // Średni błąd wzorcowania
+                    double meanCalibration = this.children.stream()     // Średni błąd wzorcowania
                             .mapToDouble(this::defClibration)
                             .average()
                             .orElse(0);
-                    double meanHumanError = this.measures.stream()      // Średni błąd człowieka
+                    double meanHumanError = this.children.stream()      // Średni błąd człowieka
                             .mapToDouble(this::defHuman)
                             .average()
                             .orElse(0);
 
                     max = 0;
                     standard = Math.sqrt(
-                            stdErrSquareSum / Math.pow(this.measures.size(), 2) +
+                            stdErrSquareSum / Math.pow(this.children.size(), 2) +
                             Math.pow(meanCalibration, 2) / 3 +
                             Math.pow(meanHumanError, 2) / 3);
                 }
@@ -326,20 +329,8 @@ public class Series extends PropagatingModel
      */
     public void addMeasure(Measure measure, int index)
     {
-        Objects.requireNonNull(measure);
-        if (this.measures.indexOf(measure) != -1) {
-            throw new IllegalArgumentException("Pomiar już jest w serii");
-        } if (index == -1) {
-            this.measures.add(measure);
-        } else {
-            this.measures.add(index, measure);
-            Utils.shiftIndicesAfterAddition(index, this.selectedMeasures);
-        }
-
-        measure.setParentSeries(this);
-        measure.addPropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, NEW_MEASURE, null, measure);
-        this.propertyFirer.firePropertyChange(evt);
+        Utils.shiftIndicesAfterAddition(index, this.selectedMeasures);
+        addChild(measure, index);
     }
 
     /**
@@ -361,7 +352,7 @@ public class Series extends PropagatingModel
      */
     public Measure getMeasure(int pos)
     {
-        return this.measures.get(pos);
+        return this.getChild(pos);
     }
 
     /**
@@ -372,14 +363,8 @@ public class Series extends PropagatingModel
      */
     public int deleteMeasure(int pos)
     {
-        Measure measure = this.measures.get(pos);
-        this.measures.remove(pos);
-        measure.setParentSeries(null);
-        measure.removePropertyChangeListener(this);
         Utils.removeElementFromIndicesList(pos, this.selectedMeasures);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_MEASURE, measure, null);
-        this.propertyFirer.firePropertyChange(evt);
-        return this.measures.size();
+        return deleteChild(pos);
     }
 
     /**
@@ -389,16 +374,10 @@ public class Series extends PropagatingModel
      */
     public int deleteMeasure(Measure measure)
     {
-        int index = this.measures.indexOf(measure);
-        if (index != -1) {
-            this.measures.remove(index);
-            measure.setParentSeries(null);
-            measure.removePropertyChangeListener(this);
-            Utils.removeElementFromIndicesList(index, this.selectedMeasures);
-            PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_MEASURE, measure, null);
-            this.propertyFirer.firePropertyChange(evt);
-        }
-        return this.measures.size();
+        int index = this.getChildIdx(measure);
+        if (index != -1)
+            deleteMeasure(index);
+        return this.getNumberOfMeasures();
     }
 
     /**
@@ -407,7 +386,7 @@ public class Series extends PropagatingModel
      */
     public int getNumberOfMeasures()
     {
-        return this.measures.size();
+        return this.getNumberOfChildren();
     }
 
     /**
@@ -417,6 +396,6 @@ public class Series extends PropagatingModel
      */
     public int getMeasureIdx(Measure measure)
     {
-        return this.measures.indexOf(measure);
+        return this.getChildIdx(measure);
     }
 }

@@ -16,6 +16,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Objects;
 
 public class GroupDisplay implements View
@@ -28,6 +29,11 @@ public class GroupDisplay implements View
     private static final int        BUTTONS_HORIZONTAL_MARGIN = 5;  // Prawy i lewy margines w przyciskach
     private static final int        LABEL_COLUMN_WIDTH = 30;        // Szerokość kolumny z nazwami serii
     private static final int        MEAN_COLUMN_WIDTH = 150;         // Szerokość kolumny z nazwami serii
+
+    private static final String     DELETE_GROUP_MESSAGE = "Czy na pewno chcesz usunąć wskazaną GRUPĘ POMIARÓW? Operacji "
+            + "nie da się cofnąć.\n\nJeżeli chcesz usunać zaznaczone serie pomiarów, kliknij PPM na zaznaczeniu.";
+    private static final String     DELETE_GROUP_TITLE = "Usuwanie grupy";
+
 
     private QuickFrame      parentFrame;
     private LabProject      labProject;
@@ -75,7 +81,7 @@ public class GroupDisplay implements View
 
         // Utwórz listę z grupami
         this.groupList = new JComboBox<>(/*new String[]{"Grupa 1", "Grupa 2", "Grupa 3", "Grupa 4"}*/);
-        this.groupList.setEditable(true);
+        this.groupList.setEditable(false);
 
         // Utwórz przyciski dodawania i usuwania grup
         this.addButton = new JButton("+");
@@ -84,6 +90,7 @@ public class GroupDisplay implements View
         bMargin.left = bMargin.right = BUTTONS_HORIZONTAL_MARGIN;
         this.addButton.setMargin(bMargin);
         this.deleteButton.setMargin(bMargin);
+        this.deleteButton.setEnabled(false);
 
         // Upakuj w panelach
         JPanel buttonsPanel = new JPanel();
@@ -102,7 +109,7 @@ public class GroupDisplay implements View
         this.groupTablePanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         // Nasłuchuj projektu
-        this.labProject.addPropertyChangeListener(this);
+        this.labProject.addPropertyChangeListener(new LabChangeListener());
     }
 
     public JScrollPane getGroupTablePanel()
@@ -123,62 +130,155 @@ public class GroupDisplay implements View
         return Objects.requireNonNull(groupTable);
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt)
+    public JButton getAddButton() {
+        return Objects.requireNonNull(addButton);
+    }
+
+    public JButton getDeleteButton() {
+        return Objects.requireNonNull(deleteButton);
+    }
+
+    public QuickFrame getParentFrame() {
+        return parentFrame;
+    }
+
+    /**
+     * Metoda pokazuje dialog pytajacy użytkownika, czy na pewno chce usunąć grupę.
+     * @return {@code true}, jeśli użytkownik sie zgodził
+     */
+    public boolean deleteGroupConfirmationDialog()
     {
-        int idx;
-        switch (evt.getPropertyName()) {
-            // Dodanie nowej grupy - uzupełnij listę
-            case LabProject.NEW_GROUP:
-                SeriesGroup newGroup = (SeriesGroup) evt.getNewValue();
-                idx = this.labProject.getSeriesGroupIdx(newGroup);
-                if (idx == -1)
-                    throw new AssertionError();
+        if (this.groupTable == null)
+            throw new RuntimeException("GroupDisplay::init jeszcze nie wywołane");
 
-                DefaultComboBoxModel<String> comboBoxModel = (DefaultComboBoxModel<String>) this.groupList.getModel();
-                comboBoxModel.insertElementAt(newGroup.getName(), idx);
-                break;
+        return JOptionPane.showConfirmDialog(this.parentFrame, DELETE_GROUP_MESSAGE, DELETE_GROUP_TITLE, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE)
+                == JOptionPane.OK_OPTION;
+    }
 
-            // Zmiana wybranej grupy - zmień wybraną pozycję na liście i zaktualizuj tabelę
-            case LabProject.SELECTED_GROUP:
-                // Zmień pozycję na liście
-                SeriesGroup selectedGroup = (SeriesGroup) evt.getNewValue();
-                this.groupList.setSelectedIndex(this.labProject.getSeriesGroupIdx(selectedGroup));
+    /*
+     * Wewnętrzna klasa nasłuchująca projektu
+     */
+    private class LabChangeListener implements PropertyChangeListener {
 
-                // Zmień nagłówek w tabeli
-                TableColumn seriesHeader = this.groupTable.getColumnModel().getColumn(0);
+        /* Dodanie nowej grupy - uzupełnij listę */
+        private void handleNewGroup(PropertyChangeEvent evt) {
+            int idx;
+            SeriesGroup newGroup = (SeriesGroup) evt.getNewValue();
+            idx = labProject.getSeriesGroupIdx(newGroup);
+            if (idx == -1)
+                throw new AssertionError();
+
+            DefaultComboBoxModel<String> comboBoxModel = (DefaultComboBoxModel<String>) groupList.getModel();
+            comboBoxModel.insertElementAt(newGroup.getName(), idx);
+        }
+
+        /* Usuwanie grupy - załaduj listę od nowa */
+        private void handleDelGroup(PropertyChangeEvent evt) {
+            DefaultComboBoxModel<String> comboBoxModel = (DefaultComboBoxModel<String>) groupList.getModel();
+            comboBoxModel.removeAllElements();
+            for (int i = 0; i < labProject.getNumberOfGroupSeries(); i++)
+                comboBoxModel.addElement(labProject.getSeriesGroup(i).getName());
+        }
+
+        /* Zmiana wybranej grupy - zmień wybraną pozycję na liście i zaktualizuj tabelę */
+        private void handleSelectedGroupChange(PropertyChangeEvent evt) {
+            // Zmień pozycję na liście i status przycisków
+            SeriesGroup selectedGroup = (SeriesGroup) evt.getNewValue();
+            groupList.setSelectedIndex(labProject.getSeriesGroupIdx(selectedGroup));
+            System.out.println("Tu jest: " + selectedGroup);
+            deleteButton.setEnabled(selectedGroup != null);
+            groupList.setEditable(selectedGroup != null);
+
+            // Zmień nagłówek w tabeli
+            TableColumn seriesHeader = groupTable.getColumnModel().getColumn(0);
+            if (selectedGroup == null)
+                seriesHeader.setHeaderValue("");
+            else
                 seriesHeader.setHeaderValue(selectedGroup.getLabelHeader());
 
-                // Zmień model tabeli
-                DefaultTableModel tableModel = (DefaultTableModel) this.groupTable.getModel();
-                tableModel.setRowCount(0);
+            // Zmień model tabeli
+            DefaultTableModel tableModel = (DefaultTableModel) groupTable.getModel();
+            tableModel.setRowCount(0);
+            if (selectedGroup == null)
+                return;
 
-                Series                  series;
-                Quantity                quantity;
-                FormattedMeasureFactory factory = new FormattedMeasureFactory();
-                FormattedMeasure        formattedMeasure;
+            Series series;
+            Quantity quantity;
+            FormattedMeasureFactory factory = new FormattedMeasureFactory();
+            FormattedMeasure formattedMeasure;
 
-                for (int i = 0; i < selectedGroup.getNumberOfSeries(); i++) {
-                    series = selectedGroup.getSeries(i);
-                    factory.setSeparateErrors(series.isSeparateErrors());
-                    factory.setErrorSignificantDigits(series.getSignificantDigits());
-                    quantity = series.getMeanQuantity();
-                    formattedMeasure = factory.format(quantity);
+            for (int i = 0; i < selectedGroup.getNumberOfSeries(); i++) {
+                series = selectedGroup.getSeries(i);
+                factory.setSeparateErrors(series.isSeparateErrors());
+                factory.setErrorSignificantDigits(series.getSignificantDigits());
+                quantity = series.getMeanQuantity();
+                formattedMeasure = factory.format(quantity);
 
-                    tableModel.addRow(new String[]{
+                tableModel.addRow(new String[]{
                         series.getLabel(),
                         formattedMeasure.toHTMLCompact()
-                    });
-                }
+                });
+            }
 
-                int highlighted = selectedGroup.getHighlightedSeriesIdx();
-                if (highlighted != -1)
-                    this.groupTable.setRowSelectionInterval(highlighted, highlighted);
+            int highlighted = selectedGroup.getHighlightedSeriesIdx();
+            if (highlighted != -1)
+                groupTable.setRowSelectionInterval(highlighted, highlighted);
+        }
 
-                break;
+        /* Zmiana opcji lub wartości średniej serii - zaktualizuj dane w tabeli */
+        private void handleSeriesMeanChange(PropertyChangeEvent evt) {
+            // Odrzuć zdarzenia niedotyczące bieżącej grupy
+            SeriesGroup selectedGroup = labProject.getSelectedSeriesGroup();
+            if (selectedGroup == null)
+                return;
+            Series changedSeries = (Series) evt.getSource();
+            int idx = selectedGroup.getSeriesIdx(changedSeries);
+            if (idx == -1)
+                return;
 
-            case SeriesGroup.NEW_SERIES:
-                break;
+            Quantity quantity;
+            FormattedMeasureFactory factory = new FormattedMeasureFactory();
+            FormattedMeasure formattedMeasure;
+
+            factory.setSeparateErrors(changedSeries.isSeparateErrors());
+            factory.setErrorSignificantDigits(changedSeries.getSignificantDigits());
+            quantity = changedSeries.getMeanQuantity();
+            formattedMeasure = factory.format(quantity);
+
+            DefaultTableModel model = (DefaultTableModel) groupTable.getModel();
+            model.setValueAt(formattedMeasure.toHTMLCompact(), idx, 1);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            System.out.println(evt);
+
+            switch (evt.getPropertyName()) {
+                // Dodanie nowej grupy - uzupełnij listę
+                case LabProject.NEW_GROUP:
+                    this.handleNewGroup(evt);
+                    break;
+
+                // Usuwanie grupy - załaduj listę od nowa
+                case LabProject.DEL_GROUP:
+                    this.handleDelGroup(evt);
+                    break;
+
+                // Zmiana wybranej grupy - zmień wybraną pozycję na liście i zaktualizuj tabelę
+                case LabProject.SELECTED_GROUP:
+                    this.handleSelectedGroupChange(evt);
+                    break;
+
+                // Zmiana opcji lub wartości średniej serii - zaktualizuj dane w tabeli
+                case Series.MEAN_ERR:
+                case Series.SIGNIFICANT_DIGITS:
+                case Series.SEPARATE_ERRORS:
+                    this.handleSeriesMeanChange(evt);
+                    break;
+
+                case SeriesGroup.NEW_SERIES:
+                    break;
+            }
         }
     }
 }

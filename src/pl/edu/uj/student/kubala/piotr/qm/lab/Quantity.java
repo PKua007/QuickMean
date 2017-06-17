@@ -9,6 +9,8 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
+import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasureFactory;
+
 import java.io.Serializable;
 
 public class Quantity implements Serializable

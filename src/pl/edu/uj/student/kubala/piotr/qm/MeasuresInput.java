@@ -14,9 +14,10 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Objects;
 
-public class MeasuresInput implements View
+public class MeasuresInput implements View, PropertyChangeListener
 {
     private static final String     INDIVIDUAL_ERRORS = "<html><center>Indywidualne<br/>niepewności</center></html>";
     private static final String     DELETE_MEASURE = "<html><center>Usuń<br/>pomiar</center></html>";

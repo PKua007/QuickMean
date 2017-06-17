@@ -22,6 +22,9 @@ public class Utils
      */
     public static void removeElementFromIndicesList(int index, ArrayList<Integer> list)
     {
+        if (index == -1)
+            return;
+
         ListIterator<Integer> it = list.listIterator();
         Integer value;
         while(it.hasNext()) {
@@ -42,6 +45,9 @@ public class Utils
      */
     public static void shiftIndicesAfterAddition(int index, ArrayList<Integer> list)
     {
+        if (index == -1)
+            return;
+
         ListIterator<Integer> it = list.listIterator();
         Integer value;
         while(it.hasNext()) {

@@ -57,6 +57,8 @@ public class GroupController implements Controller, ItemListener, ListSelectionL
         // Wybrano inną grupę
         if (e.getSource() == list && e.getStateChange() == ItemEvent.SELECTED) {
             this.labProject.setSelectedSeriesGroup(list.getSelectedIndex());
+            //System.out.println(e);
+            //System.out.println(Thread.currentThread().getStackTrace());
         }
     }
 
@@ -64,8 +66,29 @@ public class GroupController implements Controller, ItemListener, ListSelectionL
     public void setup() {
         // Ustaw nasłuchiwanie na CheckBoxa
         this.groupDisplay.getGroupList().addItemListener(this);
-        // Ustaw na nasłuchiwanie na zaznaczanie w tabelce
+        // Ustaw nasłuchiwanie na zaznaczanie w tabelce
         this.groupDisplay.getGroupTable().getSelectionModel().addListSelectionListener(this);
+        // Ustaw nasłuchiwanie na przycisk usunięcia
+        JButton deleteButton = this.groupDisplay.getDeleteButton();
+        deleteButton.setAction(new DeleteAction(deleteButton.getText()));
+    }
+
+    /* Akcja usuwania grupy - przycisk "X" */
+    private class DeleteAction extends AbstractAction
+    {
+        public DeleteAction(String name) {
+            super(name);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            if (!groupDisplay.deleteGroupConfirmationDialog())
+                return;
+            SeriesGroup selectedGroup = labProject.getSelectedSeriesGroup();
+            if (selectedGroup != null)
+                labProject.deleteSeriesGroup(selectedGroup);
+        }
     }
 
     /* Wywoływane, gdy zmieni się zaznaczenie w tabelce */
@@ -88,7 +111,7 @@ public class GroupController implements Controller, ItemListener, ListSelectionL
 
             SeriesGroup selectedGroup = this.labProject.getSelectedSeriesGroup();
             // Jeżeli pierwsze kliknięcie przy zaznaczaniu, albo puszczenie myszki, zaktualizuj podświetloną serię
-            if (selectedGroup.isSelectingNow() || !selectionModel.getValueIsAdjusting())
+            if (!selectedGroup.isSelectingNow() || !selectionModel.getValueIsAdjusting())
                 selectedGroup.setHighlightedSeries(selectionModel.getLeadSelectionIndex());
 
             // Zaktualizuj zaznaczone serie w grupie

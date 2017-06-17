@@ -15,23 +15,23 @@ import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SeriesGroup extends PropagatingModel
+public class SeriesGroup extends PropagatingListModel<Series>
 {
     public static final String  DEFAULT_LABEL_HEADER = "Nazwa serii";
 
     /* Etykiety zdarzeń */
-    public static final String  NAME = "sg.name";
-    public static final String  LABEL_HEADER = "sg.labelHeader";
-    public static final String  SELECTED_SERIES = "sg.selectedSeries";
-    public static final String HIGHLIGHTED_SERIES = "sg.highlightedSeries";
-    public static final String  NEW_SERIES = "sg.newSeries";
-    public static final String  DEL_SERIES = "sg.delSeries";
-    public static final String  SELECTING_NOW = "sg.selectingNow";
-
-
+    private static final String PREFIX = "sg";
+    
+    public static final String  NAME                = PREFIX + ".name";
+    public static final String  LABEL_HEADER        = PREFIX + ".labelHeader";
+    public static final String  SELECTED_SERIES     = PREFIX + ".selectedSeries";
+    public static final String  HIGHLIGHTED_SERIES  = PREFIX + ".highlightedSeries";
+    public static final String  SELECTING_NOW       = PREFIX + ".selectingNow";
+    public static final String  NEW_SERIES          = PREFIX + "." + NEW;
+    public static final String  DEL_SERIES          = PREFIX + "." + NEW;
+    
     private static int staticIdx = 0;
-
-    private ArrayList<Series>   series;             // Tablica z seriami pomiarowymi
+    
     private ArrayList<Integer>  selectedSeries;     // Indeksy w tablicy zaznaczonych serii grup
     private int                 highlightedSeries;  // Indeks podświetlonej serii ("bieżącej")
     private LabProject          parentLab;          // Laboratorium, do którego należy grupa pomiarów
@@ -46,9 +46,10 @@ public class SeriesGroup extends PropagatingModel
      */
     public SeriesGroup(String name)
     {
+        this.setPrefix(PREFIX);
+
         this.name = Objects.requireNonNull(name);
 
-        this.series = new ArrayList<>();
         this.selectedSeries = new ArrayList<>();
         this.highlightedSeries = -1;
         this.labelHeader = DEFAULT_LABEL_HEADER;
@@ -100,12 +101,12 @@ public class SeriesGroup extends PropagatingModel
      */
     public void setSelectedSeries(int[] selectedSeries)
     {
-        Arrays.stream(selectedSeries).forEach(this.series::get);        // Sprawdź poprawność indeksów
+        Arrays.stream(selectedSeries).forEach(this.children::get);        // Sprawdź poprawność indeksów
         Series [] oldSelected = this.selectedSeries.stream()
-                .map((i) -> this.series.get(i)).
+                .map((i) -> this.children.get(i)).
                         toArray(Series[]::new);
         Series [] newSelected = Arrays.stream(selectedSeries).
-                mapToObj((i) -> this.series.get(i)).
+                mapToObj((i) -> this.children.get(i)).
                 toArray(Series[]::new);
         this.selectedSeries = Arrays.stream(selectedSeries)
                 .boxed()
@@ -130,7 +131,7 @@ public class SeriesGroup extends PropagatingModel
     public void setHighlightedSeries(int highlightedSeries) {
         // Sprawdź poprawność indeksu
         if (highlightedSeries != -1)
-            this.series.get(highlightedSeries);
+            this.children.get(highlightedSeries);
         int oldValue = this.highlightedSeries;
         int newValue = highlightedSeries;
         this.highlightedSeries = highlightedSeries;
@@ -150,19 +151,10 @@ public class SeriesGroup extends PropagatingModel
      */
     public void addSeries(Series series, int index)
     {
-        Objects.requireNonNull(series);
-        if (this.series.indexOf(series) != -1) {
-            throw new IllegalArgumentException("Seria jest już w grupie");
-        } if (index == -1) {
-            this.series.add(series);
-        } else {
-            this.series.add(index, series);
-            Utils.shiftIndicesAfterAddition(index, this.selectedSeries);
-        }
-        series.setParentGroup(this);
-        series.addPropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, NEW_SERIES, null, series);
-        this.propertyFirer.firePropertyChange(evt);
+        Utils.shiftIndicesAfterAddition(index, this.selectedSeries);
+        if (index != -1 && this.highlightedSeries >= index)
+            this.highlightedSeries++;
+        this.addChild(series, index);
     }
 
     /**
@@ -184,7 +176,7 @@ public class SeriesGroup extends PropagatingModel
      */
     public Series getSeries(int pos)
     {
-        return this.series.get(pos);
+        return this.getChild(pos);
     }
 
     /**
@@ -196,18 +188,12 @@ public class SeriesGroup extends PropagatingModel
      */
     public int deleteSeries(int pos)
     {
-        Series series = this.series.get(pos);
-        this.series.remove(pos);
-        series.setParentGroup(null);
-        series.removePropertyChangeListener(this);
         Utils.removeElementFromIndicesList(pos, this.selectedSeries);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_SERIES, series, null);
-        this.propertyFirer.firePropertyChange(evt);
         if (this.highlightedSeries == pos)
             this.setHighlightedSeries(-1);
         else if (this.highlightedSeries > pos)
             this.highlightedSeries--;
-        return this.series.size();
+        return this.deleteChild(pos);
     }
 
     /**
@@ -218,20 +204,10 @@ public class SeriesGroup extends PropagatingModel
      */
     public int deleteSeries(Series series)
     {
-        int index = this.series.indexOf(series);
-        if (index != -1) {
-            this.series.remove(index);
-            series.setParentGroup(null);
-            series.removePropertyChangeListener(this);
-            Utils.removeElementFromIndicesList(index, this.selectedSeries);
-            PropertyChangeEvent evt = new PropertyChangeEvent(this, DEL_SERIES, series, null);
-            this.propertyFirer.firePropertyChange(evt);
-            if (this.highlightedSeries == index)
-                this.setHighlightedSeries(-1);
-            else if (this.highlightedSeries > index)
-                this.highlightedSeries--;
-        }
-        return this.series.size();
+        int index = this.children.indexOf(series);
+        if (index != -1)
+            this.deleteSeries(index);
+        return this.children.size();
     }
 
     /**
@@ -240,7 +216,7 @@ public class SeriesGroup extends PropagatingModel
      */
     public int getNumberOfSeries()
     {
-        return this.series.size();
+        return this.getNumberOfChildren();
     }
 
     /**
@@ -250,7 +226,7 @@ public class SeriesGroup extends PropagatingModel
      */
     public int getSeriesIdx(Series series)
     {
-        return this.series.indexOf(series);
+        return this.getChildIdx(series);
     }
 
     /**

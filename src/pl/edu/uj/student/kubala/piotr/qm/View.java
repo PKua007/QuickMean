@@ -10,7 +10,7 @@ package pl.edu.uj.student.kubala.piotr.qm;
 
 import java.beans.PropertyChangeListener;
 
-public interface View extends PropertyChangeListener
+public interface View
 {
     void init();
 }

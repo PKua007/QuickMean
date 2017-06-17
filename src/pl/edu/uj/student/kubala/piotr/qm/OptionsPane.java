@@ -20,6 +20,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -30,7 +31,7 @@ import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.TITLE_COLOR;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_COLOR;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_RADIUS;
 
-public class OptionsPane implements View
+public class OptionsPane implements View, PropertyChangeListener
 {
     private static final String     CALIBRATION_ERROR = "Błąd wzorcowania";
     private static final String     HUMAN_ERROR = "Błąd człowieka";

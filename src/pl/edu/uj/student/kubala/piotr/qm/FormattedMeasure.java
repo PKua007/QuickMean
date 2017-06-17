@@ -7,7 +7,7 @@
 // (C)PKua, wszystkie prawa zastrzeżone
 //---------------------------------------------------------------------
 
-package pl.edu.uj.student.kubala.piotr.qm.lab;
+package pl.edu.uj.student.kubala.piotr.qm;
 
 public class FormattedMeasure implements Cloneable {
     /**

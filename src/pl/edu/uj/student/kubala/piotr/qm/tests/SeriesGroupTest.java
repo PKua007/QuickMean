@@ -67,7 +67,6 @@ class SeriesGroupTest
         IllegalArgumentException e;
         seriesGroup.addSeries(series[0]);
         e = assertThrows(IllegalArgumentException.class, () -> seriesGroup.addSeries(series[0]));
-        assertEquals("Seria jest już w grupie", e.getMessage());
     }
 
     @Test

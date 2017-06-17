@@ -94,7 +94,6 @@ class SeriesTest {
         IllegalArgumentException e;
         series.addMeasure(measure[0]);
         e = assertThrows(IllegalArgumentException.class, () -> series.addMeasure(measure[0]));
-        assertEquals("Pomiar już jest w serii", e.getMessage());
     }
 
     @Test

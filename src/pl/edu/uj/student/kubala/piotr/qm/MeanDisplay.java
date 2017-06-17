@@ -16,20 +16,20 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Objects;
 
-import static java.awt.image.ImageObserver.SOMEBITS;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_COLOR;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.TITLE_COLOR;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_RADIUS;
 
-public class MeanDisplay implements View
+public class MeanDisplay implements View, PropertyChangeListener
 {
     private static final String     MEAN_OF_MEASURES = "X\u0305 ± σ(X\u0305) ± ΔX\u0305";
     private static final Font       MEAN_FONT = new Font("Dialog", Font.PLAIN, 24);
     private static final int        MEAN_MARGIN = 8;
     private static final int        TOP_MARGIN_BIAS = -6;
-    private static final int        HEIGHT = 100;
+    private static final int        HEIGHT = 70;
     private static final Color      MEAN_COLOR = new Color(0x5A83BF);
     private static final String     EMPTY_HTML = "<html> </html>";
 
@@ -73,7 +73,8 @@ public class MeanDisplay implements View
 
         this.panel = new JPanel(new BorderLayout());
         this.panel.setBorder(compoundBorder);
-        //this.panel.setPreferredSize(new Dimension(0, HEIGHT));
+        this.panel.setPreferredSize(new Dimension(0, HEIGHT));
+        this.meanLabel.setVerticalAlignment(SwingConstants.BOTTOM);
         this.panel.add(this.meanLabel, BorderLayout.CENTER);
 
         // Nasłuchuj projektu

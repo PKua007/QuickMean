@@ -15,10 +15,11 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class QuickFrame extends JFrame implements View
+public class QuickFrame extends JFrame implements View, PropertyChangeListener
 {
     /** Kolor standardowej zaokrąglonej ramki używanej przez kilka widoków */
     public static final Color       BORDER_COLOR = new Color(0xB6B6B6);
