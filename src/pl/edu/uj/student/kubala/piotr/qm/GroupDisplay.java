@@ -60,9 +60,7 @@ public class GroupDisplay implements View
         if (this.groupTable != null)
             throw new RuntimeException("GroupDisplay::init wywołane drugi raz");
 
-        // Utwórz tabelę z grupami
-        DefaultTableModel tableModel = new DefaultTableModel(new Object[][]{
-                /*new Object[]{"Seria 1", "3.09 ± 0.16 ± 0.12"},
+        /*new Object[]{"Seria 1", "3.09 ± 0.16 ± 0.12"},
                 new Object[]{"Seria 2", "4.12 ± 0.58 ± 0.15"},
                 new Object[]{"Seria 3", "5.53 ± 0.65 ± 0.72"},
                 new Object[]{"Seria 4", "8.06 ± 1.27 ± 0.92"},
@@ -71,10 +69,18 @@ public class GroupDisplay implements View
                 new Object[]{"Seria 7", "14.42 ± 3.64 ± 0.17"},
                 new Object[]{"Seria 8", "18.14 ± 5.23 ± 0.52"},
                 new Object[]{"Seria 9", "20.85 ± 5.57 ± 0.92"}*/
-        }, new Object[]{
+
+        // Utwórz tabelę z grupami - kolumna ze średnimi nieedytowalna
+        DefaultTableModel tableModel = new DefaultTableModel(new Object[][]{}, new Object[]{
                 DEFAULT_LABEL_HEADER,
                 MEAN_OF_MEASURES
-        });
+        }) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 0;
+            }
+        };
+
         this.groupTable = new JTable(tableModel);
         this.groupTable.getColumnModel().getColumn(0).setPreferredWidth(LABEL_COLUMN_WIDTH);
         this.groupTable.getColumnModel().getColumn(1).setPreferredWidth(MEAN_COLUMN_WIDTH);
@@ -164,7 +170,7 @@ public class GroupDisplay implements View
         private void handleNewGroup(PropertyChangeEvent evt) {
             int idx;
             SeriesGroup newGroup = (SeriesGroup) evt.getNewValue();
-            idx = labProject.getSeriesGroupIdx(newGroup);
+            idx = labProject.getChildIdx(newGroup);
             if (idx == -1)
                 throw new AssertionError();
 
@@ -176,15 +182,15 @@ public class GroupDisplay implements View
         private void handleDelGroup(PropertyChangeEvent evt) {
             DefaultComboBoxModel<String> comboBoxModel = (DefaultComboBoxModel<String>) groupList.getModel();
             comboBoxModel.removeAllElements();
-            for (int i = 0; i < labProject.getNumberOfGroupSeries(); i++)
-                comboBoxModel.addElement(labProject.getSeriesGroup(i).getName());
+            for (int i = 0; i < labProject.getNumberOfChildren(); i++)
+                comboBoxModel.addElement(labProject.getChild(i).getName());
         }
 
         /* Zmiana wybranej grupy - zmień wybraną pozycję na liście i zaktualizuj tabelę */
         private void handleSelectedGroupChange(PropertyChangeEvent evt) {
             // Zmień pozycję na liście i status przycisków
             SeriesGroup selectedGroup = (SeriesGroup) evt.getNewValue();
-            groupList.setSelectedIndex(labProject.getSeriesGroupIdx(selectedGroup));
+            groupList.setSelectedIndex(labProject.getChildIdx(selectedGroup));
             System.out.println("Tu jest: " + selectedGroup);
             deleteButton.setEnabled(selectedGroup != null);
             groupList.setEditable(selectedGroup != null);
@@ -207,8 +213,8 @@ public class GroupDisplay implements View
             FormattedMeasureFactory factory = new FormattedMeasureFactory();
             FormattedMeasure formattedMeasure;
 
-            for (int i = 0; i < selectedGroup.getNumberOfSeries(); i++) {
-                series = selectedGroup.getSeries(i);
+            for (int i = 0; i < selectedGroup.getNumberOfChildren(); i++) {
+                series = selectedGroup.getChild(i);
                 factory.setSeparateErrors(series.isSeparateErrors());
                 factory.setErrorSignificantDigits(series.getSignificantDigits());
                 quantity = series.getMeanQuantity();
@@ -232,7 +238,7 @@ public class GroupDisplay implements View
             if (selectedGroup == null)
                 return;
             Series changedSeries = (Series) evt.getSource();
-            int idx = selectedGroup.getSeriesIdx(changedSeries);
+            int idx = selectedGroup.getChildIdx(changedSeries);
             if (idx == -1)
                 return;
 

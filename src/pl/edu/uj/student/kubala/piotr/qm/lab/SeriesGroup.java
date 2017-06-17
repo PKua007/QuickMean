@@ -34,7 +34,6 @@ public class SeriesGroup extends PropagatingListModel<Series>
     
     private ArrayList<Integer>  selectedSeries;     // Indeksy w tablicy zaznaczonych serii grup
     private int                 highlightedSeries;  // Indeks podświetlonej serii ("bieżącej")
-    private LabProject          parentLab;          // Laboratorium, do którego należy grupa pomiarów
     private boolean             selectingNow;       // Czy obecnie trwa zaznaczanie serii?
 
     private String          name;               // Nazwa serii pomiarów
@@ -116,26 +115,16 @@ public class SeriesGroup extends PropagatingListModel<Series>
         this.propertyFirer.firePropertyChange(evt);
     }
 
-    public LabProject getParentLab() {
-        return parentLab;
-    }
-
-    public void setParentLab(LabProject parentLab) {
-        this.parentLab = Objects.requireNonNull(parentLab);
-    }
-
     public int getHighlightedSeriesIdx() {
         return highlightedSeries;
     }
 
     public void setHighlightedSeries(int highlightedSeries) {
         // Sprawdź poprawność indeksu
-        if (highlightedSeries != -1)
-            this.children.get(highlightedSeries);
+        this.validateNullableIdx(highlightedSeries);
         int oldValue = this.highlightedSeries;
-        int newValue = highlightedSeries;
         this.highlightedSeries = highlightedSeries;
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, HIGHLIGHTED_SERIES, oldValue, newValue);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, HIGHLIGHTED_SERIES, oldValue, highlightedSeries);
         this.propertyFirer.firePropertyChange(evt);
     }
 
@@ -146,37 +135,18 @@ public class SeriesGroup extends PropagatingListModel<Series>
      * @param series seria do dodania
      * @param index pozyzja, na której ma być dodana. -1, jeśli na końcu
      * @throws NullPointerException jeśli series == null
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link SeriesGroup#getNumberOfSeries() - 1}]
+     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link SeriesGroup#getNumberOfChildren()}  - 1}]
      * @throws IllegalArgumentException jeśli seria jest już w grupie
      */
-    public void addSeries(Series series, int index)
+    @Override
+    public void addChild(Series series, int index)
     {
+        this.validateNotNull(series);
+        this.validateAddIdx(index);
         Utils.shiftIndicesAfterAddition(index, this.selectedSeries);
         if (index != -1 && this.highlightedSeries >= index)
             this.highlightedSeries++;
-        this.addChild(series, index);
-    }
-
-    /**
-     * Metoda dodaje serię na końcu listy
-     * @param series seria do dodania
-     * @throws NullPointerException jeśli series == null
-     * @throws IllegalArgumentException jeśli seria jest już w grupie
-     */
-    public void addSeries(Series series)
-    {
-        this.addSeries(series, -1);
-    }
-
-    /**
-     * Metoda pobiera serię
-     * @param pos pozycja serii na liście
-     * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
-     * @return seria z podanej pozycji
-     */
-    public Series getSeries(int pos)
-    {
-        return this.getChild(pos);
+        super.addChild(series, index);
     }
 
     /**
@@ -186,47 +156,16 @@ public class SeriesGroup extends PropagatingListModel<Series>
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return liczba serii pozostałych po usunięciu
      */
-    public int deleteSeries(int pos)
+    @Override
+    public int deleteChild(int pos)
     {
+        this.validateIdx(pos);
         Utils.removeElementFromIndicesList(pos, this.selectedSeries);
         if (this.highlightedSeries == pos)
             this.setHighlightedSeries(-1);
         else if (this.highlightedSeries > pos)
             this.highlightedSeries--;
-        return this.deleteChild(pos);
-    }
-
-    /**
-     * Metoda usuwa serię z listy. Jeśli usuwana seria jest właśnie podświetlona, ustawia podświetlenie na
-     * -1 i wyzwalane jest zdarzenia zmiany podświetlenia
-     * @param series seria do usunięcia
-     * @return liczba serii pozostałych po usunięciu
-     */
-    public int deleteSeries(Series series)
-    {
-        int index = this.children.indexOf(series);
-        if (index != -1)
-            this.deleteSeries(index);
-        return this.children.size();
-    }
-
-    /**
-     * Metoda zwraca liczbę serii w grupie
-     * @return liczba serii w grupie
-     */
-    public int getNumberOfSeries()
-    {
-        return this.getNumberOfChildren();
-    }
-
-    /**
-     * Metoda zwraca indeks podanej serii, lub -1, jeśli nie znaleziono
-     * @param series poszukiwana seria
-     * @return indeks podanej serii, lub -1, jeśli nie znaleziono
-     */
-    public int getSeriesIdx(Series series)
-    {
-        return this.getChildIdx(series);
+        return super.deleteChild(pos);
     }
 
     /**

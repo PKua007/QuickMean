@@ -22,7 +22,6 @@ public class Measure extends Model implements Cloneable
     private double calibrationError;    // Niepewność wzorcowania przyrządu pomiarowego
     private double humanError;          // Niepewność człowieka
     private double standardError;       // Odchylenie standardowe
-    private Series parentSeries;        // Seria, do której pomiar należy
 
     /**
      * Konstruktor przyjmujący wszystkie parametry
@@ -43,7 +42,6 @@ public class Measure extends Model implements Cloneable
         this.calibrationError = calibrationError;
         this.humanError = humanError;
         this.standardError = standardError;
-        this.parentSeries = null;
     }
 
     /* Pomocnicza metoda zrzucająca wyjątek, jeśli podana wartość jest zła */
@@ -163,14 +161,6 @@ public class Measure extends Model implements Cloneable
         this.standardError = standardError;
         PropertyChangeEvent evt = new PropertyChangeEvent(this, STANDARD_ERROR, oldValue, this.standardError);
         this.propertyFirer.firePropertyChange(evt);
-    }
-
-    public Series getParentSeries() {
-        return parentSeries;
-    }
-
-    public void setParentSeries(Series parentSeries) {
-        this.parentSeries = parentSeries;
     }
 
     @Override

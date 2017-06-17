@@ -37,7 +37,7 @@ class SeriesTest {
 
     @Test
     void emptySize() {
-        assertEquals(0, series.getNumberOfMeasures());
+        assertEquals(0, series.getNumberOfChildren());
     }
 
     @Test
@@ -75,135 +75,135 @@ class SeriesTest {
 
     @Test
     void addLast() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1]);
-        series.addMeasure(measure[2]);
-        series.addMeasure(measure[3]);
+        series.addChild(measure[0]);
+        series.addChild(measure[1]);
+        series.addChild(measure[2]);
+        series.addChild(measure[3]);
 
-        assertEquals(measure[0], series.getMeasure(0));
-        assertEquals(measure[3], series.getMeasure(3));
+        assertEquals(measure[0], series.getChild(0));
+        assertEquals(measure[3], series.getChild(3));
     }
 
     @Test
     void addNull() {
-        assertThrows(NullPointerException.class, () -> series.addMeasure(null));
+        assertThrows(NullPointerException.class, () -> series.addChild(null));
     }
 
     @Test
     void addDuplicate() {
         IllegalArgumentException e;
-        series.addMeasure(measure[0]);
-        e = assertThrows(IllegalArgumentException.class, () -> series.addMeasure(measure[0]));
+        series.addChild(measure[0]);
+        assertThrows(IllegalArgumentException.class, () -> series.addChild(measure[0]));
     }
 
     @Test
     void addLastByMinusOne() {
-        series.addMeasure(measure[0], -1);
-        series.addMeasure(measure[1], -1);
-        series.addMeasure(measure[2], -1);
-        series.addMeasure(measure[3], -1);
+        series.addChild(measure[0], -1);
+        series.addChild(measure[1], -1);
+        series.addChild(measure[2], -1);
+        series.addChild(measure[3], -1);
 
-        assertEquals(measure[0], series.getMeasure(0));
-        assertEquals(measure[3], series.getMeasure(3));
-        assertEquals(4, series.getNumberOfMeasures());
+        assertEquals(measure[0], series.getChild(0));
+        assertEquals(measure[3], series.getChild(3));
+        assertEquals(4, series.getNumberOfChildren());
     }
 
     @Test
     void addInMiddle() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1]);
-        series.addMeasure(measure[3]);
-        series.addMeasure(measure[4]);
+        series.addChild(measure[0]);
+        series.addChild(measure[1]);
+        series.addChild(measure[3]);
+        series.addChild(measure[4]);
 
-        series.addMeasure(measure[2], 2);
-        assertEquals(measure[1], series.getMeasure(1));
-        assertEquals(measure[2], series.getMeasure(2));
-        assertEquals(measure[3], series.getMeasure(3));
-        assertEquals(5, series.getNumberOfMeasures());
+        series.addChild(measure[2], 2);
+        assertEquals(measure[1], series.getChild(1));
+        assertEquals(measure[2], series.getChild(2));
+        assertEquals(measure[3], series.getChild(3));
+        assertEquals(5, series.getNumberOfChildren());
     }
 
     @Test
     void addLastByIndex() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1], 1);
+        series.addChild(measure[0]);
+        series.addChild(measure[1], 1);
 
-        assertEquals(measure[1], series.getMeasure(1));
-        assertEquals(2, series.getNumberOfMeasures());
+        assertEquals(measure[1], series.getChild(1));
+        assertEquals(2, series.getNumberOfChildren());
     }
 
     @Test
     void getBadIndices() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1]);
-        series.addMeasure(measure[2]);
+        series.addChild(measure[0]);
+        series.addChild(measure[1]);
+        series.addChild(measure[2]);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> series.getMeasure(-1));
-        assertThrows(IndexOutOfBoundsException.class, () -> series.getMeasure(3));
-        series.getMeasure(0);
-        series.getMeasure(2);
+        assertThrows(IndexOutOfBoundsException.class, () -> series.getChild(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> series.getChild(3));
+        series.getChild(0);
+        series.getChild(2);
     }
 
     @Test
     void addBadIndices() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1]);
-        series.addMeasure(measure[2]);
+        series.addChild(measure[0]);
+        series.addChild(measure[1]);
+        series.addChild(measure[2]);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> series.addMeasure(new Measure(), -2));
-        assertThrows(IndexOutOfBoundsException.class, () -> series.addMeasure(new Measure(), 4));
+        assertThrows(IndexOutOfBoundsException.class, () -> series.addChild(new Measure(), -2));
+        assertThrows(IndexOutOfBoundsException.class, () -> series.addChild(new Measure(), 4));
     }
 
     @Test
     void deleteByIndex() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1]);
-        series.addMeasure(measure[2]);
+        series.addChild(measure[0]);
+        series.addChild(measure[1]);
+        series.addChild(measure[2]);
 
-        int newsize = series.deleteMeasure(1);
-        assertEquals(measure[0], series.getMeasure(0));
-        assertEquals(measure[2], series.getMeasure(1));
+        int newsize = series.deleteChild(1);
+        assertEquals(measure[0], series.getChild(0));
+        assertEquals(measure[2], series.getChild(1));
         assertEquals(2, newsize);
-        assertEquals(2, series.getNumberOfMeasures());
+        assertEquals(2, series.getNumberOfChildren());
     }
 
     @Test
     void deleteByRef() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1]);
-        series.addMeasure(measure[2]);
+        series.addChild(measure[0]);
+        series.addChild(measure[1]);
+        series.addChild(measure[2]);
 
-        int newsize = series.deleteMeasure(measure[1]);
-        assertEquals(measure[0], series.getMeasure(0));
-        assertEquals(measure[2], series.getMeasure(1));
+        int newsize = series.deleteChild(measure[1]);
+        assertEquals(measure[0], series.getChild(0));
+        assertEquals(measure[2], series.getChild(1));
         assertEquals(2, newsize);
-        assertEquals(2, series.getNumberOfMeasures());
+        assertEquals(2, series.getNumberOfChildren());
     }
 
     @Test
     void deleteByBadRef() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1]);
-        series.addMeasure(measure[2]);
+        series.addChild(measure[0]);
+        series.addChild(measure[1]);
+        series.addChild(measure[2]);
 
-        int newsize = series.deleteMeasure(measure[3]);
-        assertEquals(measure[0], series.getMeasure(0));
-        assertEquals(measure[1], series.getMeasure(1));
-        assertEquals(measure[2], series.getMeasure(2));
+        int newsize = series.deleteChild(measure[3]);
+        assertEquals(measure[0], series.getChild(0));
+        assertEquals(measure[1], series.getChild(1));
+        assertEquals(measure[2], series.getChild(2));
         assertEquals(3, newsize);
-        assertEquals(3, series.getNumberOfMeasures());
+        assertEquals(3, series.getNumberOfChildren());
     }
 
     @Test
     void deleteBadIndices() {
-        series.addMeasure(measure[0]);
-        series.addMeasure(measure[1]);
-        series.addMeasure(measure[2]);
+        series.addChild(measure[0]);
+        series.addChild(measure[1]);
+        series.addChild(measure[2]);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> series.deleteMeasure(-1));
-        assertThrows(IndexOutOfBoundsException.class, () -> series.deleteMeasure(3));
-        series.deleteMeasure(0);
-        assertThrows(IndexOutOfBoundsException.class, () -> series.deleteMeasure(2));
-        series.deleteMeasure(1);
+        assertThrows(IndexOutOfBoundsException.class, () -> series.deleteChild(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> series.deleteChild(3));
+        series.deleteChild(0);
+        assertThrows(IndexOutOfBoundsException.class, () -> series.deleteChild(2));
+        series.deleteChild(1);
     }
 
     @Test
@@ -224,7 +224,7 @@ class SeriesTest {
     @Test
     void singleMeanAllErrors() {
         Measure measure = new Measure(30, 3, 2, 1);
-        series.addMeasure(measure);
+        series.addChild(measure);
 
         series.setSeparateErrors(true);
         series.updateMean();
@@ -242,7 +242,7 @@ class SeriesTest {
     @Test
     void singleMeanNoStdError() {
         Measure measure = new Measure(30, 3, 2, 0);
-        series.addMeasure(measure);
+        series.addChild(measure);
 
         series.setSeparateErrors(true);
         series.updateMean();
@@ -260,7 +260,7 @@ class SeriesTest {
     @Test
     void singleMeanDefaultErrors() {
         Measure measure = new Measure(30, 0, 0, 0);
-        series.addMeasure(measure);
+        series.addChild(measure);
         series.setCalibrationError(3);
         series.setHumanError(2);
 
@@ -279,13 +279,13 @@ class SeriesTest {
 
     @Test
     void standardErrorWithoutMax() {
-        series.addMeasure(new Measure(30));
-        series.addMeasure(new Measure(34));
-        series.addMeasure(new Measure(35));
-        series.addMeasure(new Measure(29));
-        series.addMeasure(new Measure(30));
-        series.addMeasure(new Measure(37));
-        series.addMeasure(new Measure(38));
+        series.addChild(new Measure(30));
+        series.addChild(new Measure(34));
+        series.addChild(new Measure(35));
+        series.addChild(new Measure(29));
+        series.addChild(new Measure(30));
+        series.addChild(new Measure(37));
+        series.addChild(new Measure(38));
         series.setCalibrationError(0);
         series.setHumanError(0);
 
@@ -304,13 +304,13 @@ class SeriesTest {
 
     @Test
     void standardErrorFisherWithoutMax() {
-        series.addMeasure(new Measure(30));
-        series.addMeasure(new Measure(34));
-        series.addMeasure(new Measure(35));
-        series.addMeasure(new Measure(29));
-        series.addMeasure(new Measure(30));
-        series.addMeasure(new Measure(37));
-        series.addMeasure(new Measure(38));
+        series.addChild(new Measure(30));
+        series.addChild(new Measure(34));
+        series.addChild(new Measure(35));
+        series.addChild(new Measure(29));
+        series.addChild(new Measure(30));
+        series.addChild(new Measure(37));
+        series.addChild(new Measure(38));
         series.setCalibrationError(0);
         series.setHumanError(0);
         series.setUseStudentFisher(true);
@@ -330,13 +330,13 @@ class SeriesTest {
 
     @Test
     void standardErrorWithMax() {
-        series.addMeasure(new Measure(30));
-        series.addMeasure(new Measure(34));
-        series.addMeasure(new Measure(35));
-        series.addMeasure(new Measure(29));
-        series.addMeasure(new Measure(30));
-        series.addMeasure(new Measure(37));
-        series.addMeasure(new Measure(38));
+        series.addChild(new Measure(30));
+        series.addChild(new Measure(34));
+        series.addChild(new Measure(35));
+        series.addChild(new Measure(29));
+        series.addChild(new Measure(30));
+        series.addChild(new Measure(37));
+        series.addChild(new Measure(38));
         series.setCalibrationError(0.5);
         series.setHumanError(1.3);
 
@@ -355,13 +355,13 @@ class SeriesTest {
 
     @Test
     void specifiedStandardErrors() {
-        series.addMeasure(new Measure(30, 0, 0, 1));
-        series.addMeasure(new Measure(31, 0, 0, 1.5));
-        series.addMeasure(new Measure(28, 0, 0, 1.3));
-        series.addMeasure(new Measure(35, 0, 0, 0.7));
-        series.addMeasure(new Measure(34, 0, 0, 1.1));
-        series.addMeasure(new Measure(29, 0, 0, 1.3));
-        series.addMeasure(new Measure(32, 0, 0, 1.2));
+        series.addChild(new Measure(30, 0, 0, 1));
+        series.addChild(new Measure(31, 0, 0, 1.5));
+        series.addChild(new Measure(28, 0, 0, 1.3));
+        series.addChild(new Measure(35, 0, 0, 0.7));
+        series.addChild(new Measure(34, 0, 0, 1.1));
+        series.addChild(new Measure(29, 0, 0, 1.3));
+        series.addChild(new Measure(32, 0, 0, 1.2));
         series.setCalibrationError(2);
         series.setHumanError(1);
 
@@ -380,13 +380,13 @@ class SeriesTest {
 
     @Test
     void specifiedMaxErrors() {
-        series.addMeasure(new Measure(30, 1, 0.2, 0));
-        series.addMeasure(new Measure(31, 2, 0.5, 0));
-        series.addMeasure(new Measure(28, 0.3, 0.5, 0));
-        series.addMeasure(new Measure(35, 4, 1.3, 0));
-        series.addMeasure(new Measure(34, 1.5, 1.3, 0));
-        series.addMeasure(new Measure(29, 0.7, 2, 0));
-        series.addMeasure(new Measure(32, 2, 2, 0));
+        series.addChild(new Measure(30, 1, 0.2, 0));
+        series.addChild(new Measure(31, 2, 0.5, 0));
+        series.addChild(new Measure(28, 0.3, 0.5, 0));
+        series.addChild(new Measure(35, 4, 1.3, 0));
+        series.addChild(new Measure(34, 1.5, 1.3, 0));
+        series.addChild(new Measure(29, 0.7, 2, 0));
+        series.addChild(new Measure(32, 2, 2, 0));
         series.setCalibrationError(0);
         series.setHumanError(0);
 
@@ -405,13 +405,13 @@ class SeriesTest {
 
     @Test
     void mixedSpecifiedAndUnspecifiedErrors() {
-        series.addMeasure(new Measure(30, 0, 0.2, 0));
-        series.addMeasure(new Measure(31, 0, 0, 1.4));
-        series.addMeasure(new Measure(28, 0.3, 0.5, 2));
-        series.addMeasure(new Measure(35, 4, 0, 0));
-        series.addMeasure(new Measure(34, 0, 1.3, 1));
-        series.addMeasure(new Measure(29, 0.7, 2, 2));
-        series.addMeasure(new Measure(32, 2, 2, 0));
+        series.addChild(new Measure(30, 0, 0.2, 0));
+        series.addChild(new Measure(31, 0, 0, 1.4));
+        series.addChild(new Measure(28, 0.3, 0.5, 2));
+        series.addChild(new Measure(35, 4, 0, 0));
+        series.addChild(new Measure(34, 0, 1.3, 1));
+        series.addChild(new Measure(29, 0.7, 2, 2));
+        series.addChild(new Measure(32, 2, 2, 0));
         series.setCalibrationError(0.4);
         series.setHumanError(1.4);
 
@@ -431,7 +431,7 @@ class SeriesTest {
     @Test
     void setBadSelectedMeasures() {
         Arrays.stream(measure).
-                forEach(series::addMeasure);
+                forEach(series::addChild);
 
         assertThrows(NullPointerException.class, () -> series.setSelectedMeasures(null));
         assertThrows(ArrayIndexOutOfBoundsException.class, () -> series.setSelectedMeasures(new int[]{-1, 6}));
@@ -442,28 +442,28 @@ class SeriesTest {
     @Test
     void deleteSelectedMeasures() {
         Arrays.stream(measure).
-                forEach(series::addMeasure);
+                forEach(series::addChild);
 
         series.setSelectedMeasures(new int[]{1, 2, 4, 5});
-        series.deleteMeasure(2);
-        series.deleteMeasure(measure[4]);
-        series.deleteMeasure(measure[0]);
+        series.deleteChild(2);
+        series.deleteChild(measure[4]);
+        series.deleteChild(measure[0]);
         assertArrayEquals(new int[]{0, 2}, series.getSelectedMeasures(), Arrays.toString(series.getSelectedMeasures()));
 
-        series.deleteMeasure(measure[1]);
-        series.deleteMeasure(measure[5]);
+        series.deleteChild(measure[1]);
+        series.deleteChild(measure[5]);
         assertArrayEquals(new int[0], series.getSelectedMeasures());
     }
 
     @Test
     void checkSelectedMeasuresAfterAddition() {
         Arrays.stream(measure).
-                forEach(series::addMeasure);
+                forEach(series::addChild);
 
         series.setSelectedMeasures(new int[]{1, 2, 4, 5});
-        series.addMeasure(new Measure());
+        series.addChild(new Measure());
         assertArrayEquals(new int[]{1, 2, 4, 5}, series.getSelectedMeasures());
-        series.addMeasure(new Measure(), 2);
+        series.addChild(new Measure(), 2);
         assertArrayEquals(new int[]{1, 3, 5, 6}, series.getSelectedMeasures());
     }
 }

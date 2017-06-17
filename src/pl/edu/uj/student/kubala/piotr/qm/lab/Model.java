@@ -14,6 +14,15 @@ import java.beans.PropertyChangeListener;
 public abstract class Model
 {
     protected SwingPropertyChangeSupport    propertyFirer;
+    private Model parent;
+
+    public Model getParent() {
+        return parent;
+    }
+
+    public void setParent(Model parent) {
+        this.parent = parent;
+    }
 
     protected Model()
     {

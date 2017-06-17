@@ -32,9 +32,9 @@ class LabProjectTest
         SeriesGroup seriesGroup1 = new SeriesGroup();
         LabProject labProject = new LabProject(null);
 
-        series1.addMeasure(measure1);
-        seriesGroup1.addSeries(series1);
-        labProject.addSeriesGroup(seriesGroup1);
+        series1.addChild(measure1);
+        seriesGroup1.addChild(series1);
+        labProject.addChild(seriesGroup1);
 
         final ArrayList<PropertyChangeEvent> fired = new ArrayList<>();
         labProject.addPropertyChangeListener(fired::add);

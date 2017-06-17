@@ -13,8 +13,6 @@ import pl.edu.uj.student.kubala.piotr.qm.converters.Converter;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Objects;
 
 public class LabProject extends PropagatingListModel<SeriesGroup>
 {
@@ -66,36 +64,17 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
      * @param seriesGroup grupa serii do dodania
      * @param index pozyzja, na której ma być dodana. -1, jeśli na końcu
      * @throws NullPointerException jeśli seriesGroup == null
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link LabProject#getNumberOfGroupSeries()}  - 1}]
+     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link LabProject#getNumberOfChildren()}  - 1}]
      * @throws IllegalArgumentException jeśli grupa jest już w projekcie
      */
-    public void addSeriesGroup(SeriesGroup seriesGroup, int index)
+    @Override
+    public void addChild(SeriesGroup seriesGroup, int index)
     {
+        this.validateNotNull(seriesGroup);
+        this.validateAddIdx(index);
         if (index != -1 && index <= this.selectedSeriesGroup)
             this.selectedSeriesGroup++;
-        this.addChild(seriesGroup, index);
-    }
-
-    /**
-     * Metoda dodaje grupę serii na końcu listy
-     * @param seriesGroup grupa serii do dodania
-     * @throws NullPointerException jeśli seriesGroup == null
-     * @throws IllegalArgumentException jeśli grupa jest już w projekcie
-     */
-    public void addSeriesGroup(SeriesGroup seriesGroup)
-    {
-        this.addSeriesGroup(seriesGroup, -1);
-    }
-
-    /**
-     * Metoda pobiera grupę serii
-     * @param pos pozycja grupy serii na liście
-     * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
-     * @return grupa serii z podanej pozycji
-     */
-    public SeriesGroup getSeriesGroup(int pos)
-    {
-        return this.getChild(pos);
+        super.addChild(seriesGroup, index);
     }
 
     /**
@@ -104,35 +83,15 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return liczba grup serii pozostałych po usunięciu
      */
-    public int deleteSeriesGroup(int pos)
+    @Override
+    public int deleteChild(int pos)
     {
+        this.validateIdx(pos);
         if (selectedSeriesGroup == pos)
             this.setSelectedSeriesGroup(-1);
         else if (selectedSeriesGroup > pos)
             this.selectedSeriesGroup--;
-        return this.deleteChild(pos);
-    }
-
-    /**
-     * Metoda usuwa grupę serii z listy
-     * @param seriesGroup grupa serii do usunięcia
-     * @return liczba grup serii pozostałych po usunięciu
-     */
-    public int deleteSeriesGroup(SeriesGroup seriesGroup)
-    {
-        int index = this.children.indexOf(seriesGroup);
-        if (index != -1)
-            this.deleteSeriesGroup(index);
-        return this.children.size();
-    }
-
-    /**
-     * Metoda zwraca liczbę grup serii w laboratorium
-     * @return liczba grup serii w laboratorium
-     */
-    public int getNumberOfGroupSeries()
-    {
-        return this.getNumberOfChildren();
+        return super.deleteChild(pos);
     }
 
     /**
@@ -154,8 +113,7 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
      */
     public void setSelectedSeriesGroup(int seriesGroupIdx)
     {
-        if (seriesGroupIdx != -1) // Sprawdź poprawność indeksu
-            this.children.get(seriesGroupIdx);
+        this.validateNullableIdx(seriesGroupIdx);
         SeriesGroup oldSelected = getSelectedSeriesGroup();
         this.selectedSeriesGroup = seriesGroupIdx;
         SeriesGroup newSelected = getSelectedSeriesGroup();
@@ -176,7 +134,7 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
         int idx = selectedGroup.getHighlightedSeriesIdx();
         if (idx == -1)
             return null;
-        return selectedGroup.getSeries(idx);
+        return selectedGroup.getChild(idx);
     }
 
     /**
@@ -186,16 +144,6 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
     public int getSelectedSeriesGroupIdx()
     {
         return this.selectedSeriesGroup;
-    }
-
-    /**
-     * Metoda zwraca indeks podanej grupy serii, lub -1, jeśli nie znaleziono
-     * @param seriesGroup poszukiwana grupa serii
-     * @return indeks podanej grupy serii, lub -1, jeśli nie znaleziono
-     */
-    public int getSeriesGroupIdx(SeriesGroup seriesGroup)
-    {
-        return this.getChildIdx(seriesGroup);
     }
 
     /* Metody zapisu i otwierania */
@@ -236,6 +184,16 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
 
     }
 
+    @Override
+    public Model getParent() {
+        throw new RuntimeException("Niezaimplementowane");
+    }
+
+    @Override
+    public void setParent(Model parent) {
+        throw new RuntimeException("Niezaimplementowane");
+    }
+
     /**
      * Metoda ustawia w projekcje domyślne dane
      */
@@ -246,55 +204,55 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
 
         /*defaultSeriesGroup = new SeriesGroup();
         defaultSeries = new Series();
-        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.addChild(defaultSeries);
         defaultSeriesGroup.setHighlightedSeries(0);
-        this.addSeriesGroup(defaultSeriesGroup);
+        this.addChild(defaultSeriesGroup);
         this.setSelectedSeriesGroup(0);*/
 
         defaultSeriesGroup = new SeriesGroup();
 
         defaultSeries = new Series();
-        defaultSeries.addMeasure(new Measure(5435634, 234, 234, 0));
-        defaultSeries.addMeasure(new Measure(5475783, 234, 34, 0));
-        defaultSeries.addMeasure(new Measure(5436724, 734, 24, 0));
+        defaultSeries.addChild(new Measure(5435634, 234, 234, 0));
+        defaultSeries.addChild(new Measure(5475783, 234, 34, 0));
+        defaultSeries.addChild(new Measure(5436724, 734, 24, 0));
         defaultSeries.updateMean();
-        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeries.addMeasure(new Measure(545634, 234, 234, 0));
-        defaultSeries.addMeasure(new Measure(545783, 234, 34, 0));
-        defaultSeries.addMeasure(new Measure(546724, 734, 24, 0));
+        defaultSeries.addChild(new Measure(545634, 234, 234, 0));
+        defaultSeries.addChild(new Measure(545783, 234, 34, 0));
+        defaultSeries.addChild(new Measure(546724, 734, 24, 0));
         defaultSeries.updateMean();
-        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeries.addMeasure(new Measure(0.54534, 0.0234, 0.0234, 0));
-        defaultSeries.addMeasure(new Measure(0.54783, 0.0234, 0.034, 0));
-        defaultSeries.addMeasure(new Measure(0.54324, 0.0734, 0.024, 0));
+        defaultSeries.addChild(new Measure(0.54534, 0.0234, 0.0234, 0));
+        defaultSeries.addChild(new Measure(0.54783, 0.0234, 0.034, 0));
+        defaultSeries.addChild(new Measure(0.54324, 0.0734, 0.024, 0));
         defaultSeries.updateMean();
         System.out.println(defaultSeries.getMeanQuantity());
-        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeriesGroup.setHighlightedSeries(1);
-        this.addSeriesGroup(defaultSeriesGroup);
+        this.addChild(defaultSeriesGroup);
 
 
         defaultSeriesGroup = new SeriesGroup();
 
         defaultSeries = new Series();
-        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeriesGroup.addSeries(defaultSeries);
+        defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeriesGroup.setHighlightedSeries(2);
-        this.addSeriesGroup(defaultSeriesGroup);
+        this.addChild(defaultSeriesGroup);
         this.setSelectedSeriesGroup(0);
     }
 }

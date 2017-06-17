@@ -9,8 +9,6 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
-import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -19,7 +17,6 @@ import java.util.Objects;
 
 //#############################################
 // DO ZROBIENIA:
-// - setParent
 // - nieokreślony stan po złym wywołaniu
 //#############################################
 
@@ -67,12 +64,12 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      * @param child pomiar do dodania
      * @param index pozyzja, na której ma być dodany. -1, jeśli na końcu
      * @throws NullPointerException jeśli measure == null
-     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfMeasures()}]
+     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfChildren()}]
      * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
-    protected final void addChild(E child, int index)
+    public void addChild(E child, int index)
     {
-        Objects.requireNonNull(child);
+        this.validateNotNull(child);
         if (this.children.indexOf(child) != -1) {
             throw new IllegalArgumentException(child.getClass().getSimpleName() + " jest już w " + this.getClass().getSimpleName());
         } if (index == -1) {
@@ -81,7 +78,7 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
             this.children.add(index, child);
         }
 
-        //measure.setParentSeries(this);
+        child.setParent(this);
         child.addPropertyChangeListener(this);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + NEW, null, child);
         this.propertyFirer.firePropertyChange(evt);
@@ -93,7 +90,7 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      * @throws NullPointerException jeśli measure == null
      * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
-    protected final void addChild(E child)
+    public void addChild(E child)
     {
         this.addChild(child, -1);
     }
@@ -101,10 +98,10 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
     /**
      * Metoda pobiera pomiar
      * @param pos pozycja pomiaru
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link Series#getNumberOfMeasures() - 1}]
+     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link Series#getNumberOfChildren()} - 1]
      * @return pomiar z podanej pozycji
      */
-    protected final E getChild(int pos)
+    public E getChild(int pos)
     {
         return this.children.get(pos);
     }
@@ -115,7 +112,7 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      * @return liczba pomiarów pozostałych po usunięciu
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      */
-    protected final int deleteChild(int pos)
+    public int deleteChild(int pos)
     {
         E child = this.children.get(pos);
         // Usuń dzieci, jeśli posiada
@@ -123,14 +120,25 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
             ((PropagatingListModel)child).clearChildren();
 
         this.children.remove(pos);
-        //measure.setParentSeries(null);
+        child.setParent(null);
         child.removePropertyChangeListener(this);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + DEL, child, null);
         this.propertyFirer.firePropertyChange(evt);
         return this.children.size();
     }
 
-    protected final void clearChildren()
+    public int deleteChild(E child)
+    {
+        int idx = this.getChildIdx(child);
+        if (idx != -1)
+            deleteChild(idx);
+        return this.children.size();
+    }
+
+    /**
+     * Metoda usuwa wszystkie dzieci na liście
+     */
+    public void clearChildren()
     {
         while (this.getNumberOfChildren() > 0)
             deleteChild(0);
@@ -140,7 +148,7 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      * Metoda zwraca liczbę pomiarów w serii
      * @return liczba pomiarów w serii
      */
-    protected final int getNumberOfChildren()
+    public int getNumberOfChildren()
     {
         return this.children.size();
     }
@@ -150,8 +158,46 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      * @param child poszukiwany pomiar
      * @return indeks poszukiwanego pomiaru, lub -1, jeśli nie znaleziono
      */
-    protected int getChildIdx(E child)
+    public int getChildIdx(E child)
     {
         return this.children.indexOf(child);
+    }
+
+    /**
+     * Testuj, czy dzieciak niezerowy
+     * @param child dzieciak do przetestowania
+     * @throws NullPointerException jeśli dzieciak zerowy
+     */
+    protected void validateNotNull(E child) {
+        Objects.requireNonNull(child);
+    }
+
+    /**
+     * Testuj, czy indeks prawidłowy (bez -1)
+     * @param idx indeks do testowania
+     * @throws IndexOutOfBoundsException jeśli niepoprany indeks elementu
+     */
+    protected void validateIdx(int idx) {
+        this.children.get(idx);
+    }
+
+    /**
+     * Testuj, czy indeks prawidłowy (z -1)
+     * @param idx indeks do testorania
+     * @throws IndexOutOfBoundsException jeśli niepoprawny indeks elementu
+     */
+    protected void validateNullableIdx(int idx) {
+        if (idx != -1)
+            this.children.get(idx);
+    }
+
+    /**
+     * Testuj, czy prawidłowy indeks przy dodawaniu (dozwolony -1 i o 1 większy niż maksymalny)
+     * @param idx indeks do sprawdzenia
+     * @throws IndexOutOfBoundsException jeśli nieprawidłowy indeks
+     */
+    protected void validateAddIdx(int idx) {
+        if (idx < -1 || idx > this.children.size())
+            throw new IndexOutOfBoundsException("Index: " + idx + ", Size: " + this.children.size());
     }
 }

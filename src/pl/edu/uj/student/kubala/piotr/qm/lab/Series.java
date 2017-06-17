@@ -40,7 +40,6 @@ public class Series extends PropagatingListModel<Measure>
 
     private Quantity            meanQuantity;   // Średnia wyliczona wielkość
     private ArrayList<Integer>  selectedMeasures;           // Zaznaczone pomiary
-    private SeriesGroup         parentGroup;    // Grupa, do której należy seria pomiarowa
 
     private String          label;              // Nazwa serii pomiarowej (może być również wartością powiązanej zmiennej)
     private double          calibrationError;   // Domyślna niepewność wzorcowania dla całej serii
@@ -198,14 +197,6 @@ public class Series extends PropagatingListModel<Measure>
         propertyFirer.firePropertyChange(evt);
     }
 
-    public SeriesGroup getParentGroup() {
-        return parentGroup;
-    }
-
-    public void setParentGroup(SeriesGroup parentGroup) {
-        this.parentGroup = parentGroup;
-    }
-
     /* Gettery solo */
 
     public Quantity getMeanQuantity()
@@ -324,35 +315,16 @@ public class Series extends PropagatingListModel<Measure>
      * @param measure pomiar do dodania
      * @param index pozyzja, na której ma być dodany. -1, jeśli na końcu
      * @throws NullPointerException jeśli measure == null
-     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfMeasures()}]
+     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfChildren()}]
      * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
-    public void addMeasure(Measure measure, int index)
+    @Override
+    public void addChild(Measure measure, int index)
     {
+        this.validateNotNull(measure);
+        this.validateAddIdx(index);
         Utils.shiftIndicesAfterAddition(index, this.selectedMeasures);
-        addChild(measure, index);
-    }
-
-    /**
-     * Metoda dodaje pomiar na końcu listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
-     * @param measure pomiar do dodania
-     * @throws NullPointerException jeśli measure == null
-     * @throws IllegalArgumentException jeśli pomiar już jest w serii
-     */
-    public void addMeasure(Measure measure)
-    {
-        this.addMeasure(measure, -1);
-    }
-
-    /**
-     * Metoda pobiera pomiar
-     * @param pos pozycja pomiaru
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link Series#getNumberOfMeasures() - 1}]
-     * @return pomiar z podanej pozycji
-     */
-    public Measure getMeasure(int pos)
-    {
-        return this.getChild(pos);
+        super.addChild(measure, index);
     }
 
     /**
@@ -361,41 +333,11 @@ public class Series extends PropagatingListModel<Measure>
      * @return liczba pomiarów pozostałych po usunięciu
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      */
-    public int deleteMeasure(int pos)
+    @Override
+    public int deleteChild(int pos)
     {
+        this.validateIdx(pos);
         Utils.removeElementFromIndicesList(pos, this.selectedMeasures);
-        return deleteChild(pos);
-    }
-
-    /**
-     * Metoda usuwa pomiar z listy i ustawia w nim rodzica na null
-     * @param measure pomiar do usunięcia
-     * @return liczba pomiarów pozostałych po usunięciu
-     */
-    public int deleteMeasure(Measure measure)
-    {
-        int index = this.getChildIdx(measure);
-        if (index != -1)
-            deleteMeasure(index);
-        return this.getNumberOfMeasures();
-    }
-
-    /**
-     * Metoda zwraca liczbę pomiarów w serii
-     * @return liczba pomiarów w serii
-     */
-    public int getNumberOfMeasures()
-    {
-        return this.getNumberOfChildren();
-    }
-
-    /**
-     * Metoda zwraca indeks podanego pomiaru, lub -1, jeśli nie znaleziono
-     * @param measure poszukiwany pomiar
-     * @return indeks poszukiwanego pomiaru, lub -1, jeśli nie znaleziono
-     */
-    public int getMeasureIdx(Measure measure)
-    {
-        return this.getChildIdx(measure);
+        return super.deleteChild(pos);
     }
 }

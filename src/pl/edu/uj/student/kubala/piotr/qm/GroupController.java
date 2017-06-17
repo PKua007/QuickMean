@@ -17,9 +17,6 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.stream.IntStream;
 
 public class GroupController implements Controller, ItemListener, ListSelectionListener
@@ -87,7 +84,7 @@ public class GroupController implements Controller, ItemListener, ListSelectionL
                 return;
             SeriesGroup selectedGroup = labProject.getSelectedSeriesGroup();
             if (selectedGroup != null)
-                labProject.deleteSeriesGroup(selectedGroup);
+                labProject.deleteChild(selectedGroup);
         }
     }
 
