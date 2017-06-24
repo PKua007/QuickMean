@@ -30,11 +30,6 @@ public class MeasuresInputController implements Controller
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-
-    }
-
-    @Override
     public void setup() {
 
     }

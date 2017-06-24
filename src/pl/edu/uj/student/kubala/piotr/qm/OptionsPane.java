@@ -23,9 +23,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.TITLE_COLOR;
 import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_COLOR;
@@ -166,30 +168,45 @@ public class OptionsPane implements View, PropertyChangeListener
         // Zmiana podświetlonej serii (lub w ogóle zmiana grupy)
         switch (evt.getPropertyName()) {
             case LabProject.SELECTED_GROUP:
-            case SeriesGroup.HIGHLIGHTED_SERIES:
-                // Pobierz podświetloną serię i zaktualizuj
-                Series series = this.labProject.getHighlightedSeries();
-                // Brak podświetlenia
-                if (series == null) {
-                    this.separateErrorsCheckBox.setSelected(false);
-                    this.separateErrorsCheckBox.setEnabled(false);
-                    this.significantDigitsComboBox.setSelectedIndex(-1);
-                    this.significantDigitsComboBox.setEnabled(false);
-                } else {
-                    this.separateErrorsCheckBox.setSelected(series.isSeparateErrors());
-                    this.separateErrorsCheckBox.setEnabled(true);
-
-                    int digits = series.getSignificantDigits();
-                    // Nieprawidłowa liczba cyfr znaczących - nie wykrzacz, skasuj zaznaczenie
-                    if (digits < MIN_DIGITS || digits > MAX_DIGITS)
-                        this.significantDigitsComboBox.setSelectedIndex(-1);
-                    else
-                        this.significantDigitsComboBox.setSelectedIndex(digits - MIN_DIGITS);
-
-                    this.significantDigitsComboBox.setEnabled(true);
+            case SeriesGroup.SELECTED_SERIES:
+                // Pobierz zaznaczone serię i zaktualizuj
+                Series[] selected_series = this.labProject.getSelectedSeries();
+                if (selected_series.length == 0) {
+                    disableOptionPane();
+                    return;
                 }
+
+                // Sprawdź, które parametry są identyczne dla całego zaznaczenia - jeśli nie, wpisz null do zmiennej
+                Integer signif = selected_series[0].getSignificantDigits();
+                Boolean sep_errors = selected_series[0].isSeparateErrors();
+                for (int i = 1; i < selected_series.length; i++) {
+                    if (signif != null && signif != selected_series[i].getSignificantDigits())
+                        signif = null;
+                    if (sep_errors != null && sep_errors != selected_series[i].isSeparateErrors())
+                        sep_errors = null;
+                }
+
+                this.separateErrorsCheckBox.setSelected(sep_errors != null && sep_errors);
+                this.separateErrorsCheckBox.setEnabled(true);
+
+                // Nieprawidłowa liczba cyfr znaczących lub różna w zaznaczeniu - skasuj zaznaczenie
+                if (signif == null || signif < MIN_DIGITS || signif > MAX_DIGITS)
+                    this.significantDigitsComboBox.setSelectedIndex(-1);
+                else
+                    this.significantDigitsComboBox.setSelectedIndex(signif - MIN_DIGITS);
+
+                this.significantDigitsComboBox.setEnabled(true);
 
                 break;
         }
+    }
+
+    /* Pomocnicza metoda blokująca wszystkie kontrolki */
+    private void disableOptionPane()
+    {
+        this.separateErrorsCheckBox.setSelected(false);
+        this.separateErrorsCheckBox.setEnabled(false);
+        this.significantDigitsComboBox.setSelectedIndex(-1);
+        this.significantDigitsComboBox.setEnabled(false);
     }
 }

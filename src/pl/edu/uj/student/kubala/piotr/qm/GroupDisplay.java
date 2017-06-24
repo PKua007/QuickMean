@@ -12,6 +12,7 @@ package pl.edu.uj.student.kubala.piotr.qm;
 import pl.edu.uj.student.kubala.piotr.qm.lab.*;
 
 import javax.swing.*;
+import javax.swing.event.ListDataListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
@@ -84,6 +85,7 @@ public class GroupDisplay implements View
         this.groupTable = new JTable(tableModel);
         this.groupTable.getColumnModel().getColumn(0).setPreferredWidth(LABEL_COLUMN_WIDTH);
         this.groupTable.getColumnModel().getColumn(1).setPreferredWidth(MEAN_COLUMN_WIDTH);
+        this.groupTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 
         // Utwórz listę z grupami
         this.groupList = new JComboBox<>(/*new String[]{"Grupa 1", "Grupa 2", "Grupa 3", "Grupa 4"}*/);
@@ -191,7 +193,6 @@ public class GroupDisplay implements View
             // Zmień pozycję na liście i status przycisków
             SeriesGroup selectedGroup = (SeriesGroup) evt.getNewValue();
             groupList.setSelectedIndex(labProject.getChildIdx(selectedGroup));
-            System.out.println("Tu jest: " + selectedGroup);
             deleteButton.setEnabled(selectedGroup != null);
             groupList.setEditable(selectedGroup != null);
 
@@ -255,6 +256,19 @@ public class GroupDisplay implements View
             model.setValueAt(formattedMeasure.toHTMLCompact(), idx, 1);
         }
 
+        /* Zmiana nazwy grupy - zaktualizuj pozycję na liście */
+        private void handleGroupName(PropertyChangeEvent evt)
+        {
+            SeriesGroup group = (SeriesGroup) evt.getSource();
+            int idx = labProject.getChildIdx(group);
+            if (idx == -1)
+                return;
+            // Usuń starą pozycję i dodaj nową (albo raczej na odwrót, żeby wybrana grupa się sama nie zmieniła
+            DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) groupList.getModel();
+            model.insertElementAt(group.getName(), idx);
+            model.removeElementAt(idx + 1);
+        }
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             System.out.println(evt);
@@ -273,6 +287,11 @@ public class GroupDisplay implements View
                 // Zmiana wybranej grupy - zmień wybraną pozycję na liście i zaktualizuj tabelę
                 case LabProject.SELECTED_GROUP:
                     this.handleSelectedGroupChange(evt);
+                    break;
+
+                // Zmiana nazwy grupy - zaktualizuj na liście:
+                case SeriesGroup.NAME:
+                    this.handleGroupName(evt);
                     break;
 
                 // Zmiana opcji lub wartości średniej serii - zaktualizuj dane w tabeli

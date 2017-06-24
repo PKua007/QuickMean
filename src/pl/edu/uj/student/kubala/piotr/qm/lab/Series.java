@@ -9,6 +9,8 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
+import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasure;
+import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasureFactory;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
@@ -36,7 +38,7 @@ public class Series extends PropagatingListModel<Measure>
     public static final String  DEL_MEASURE         = PREFIX + "." + DEL;
 
     private static int staticIdx = 0;
-
+    private static final FormattedMeasureFactory factory = new FormattedMeasureFactory();
 
     private Quantity            meanQuantity;   // Średnia wyliczona wielkość
     private ArrayList<Integer>  selectedMeasures;           // Zaznaczone pomiary
@@ -54,9 +56,8 @@ public class Series extends PropagatingListModel<Measure>
      */
     public Series(String label)
     {
-        this.setPrefix(PREFIX);
-
         this.label = Objects.requireNonNull(label);
+        this.setPrefix(PREFIX);
 
         this.selectedMeasures = new ArrayList<>();
         this.meanQuantity = new Quantity();
@@ -183,12 +184,12 @@ public class Series extends PropagatingListModel<Measure>
     public void setSelectedMeasures(int[] selectedMeasures)
     {
         Arrays.stream(selectedMeasures).forEach(this.children::get);        // Sprawdź poprawność indeksów
-        Measure [] oldValue = this.selectedMeasures.stream()
+        ArrayList<Measure> oldValue = this.selectedMeasures.stream()
                 .map((i) -> this.children.get(i))
-                .toArray(Measure[]::new);
-        Measure [] newValue = Arrays.stream(selectedMeasures).
+                .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Measure> newValue = Arrays.stream(selectedMeasures).
                 mapToObj((i) -> this.children.get(i))
-                .toArray(Measure[]::new);
+                .collect(Collectors.toCollection(ArrayList::new));
         this.selectedMeasures = Arrays.stream(selectedMeasures)
                 .boxed()
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -339,5 +340,12 @@ public class Series extends PropagatingListModel<Measure>
         this.validateIdx(pos);
         Utils.removeElementFromIndicesList(pos, this.selectedMeasures);
         return super.deleteChild(pos);
+    }
+
+    @Override
+    public String toString()
+    {
+        FormattedMeasure measure = factory.format(this.meanQuantity);
+        return "seria \"" + this.label + "\": " + measure.toString();
     }
 }

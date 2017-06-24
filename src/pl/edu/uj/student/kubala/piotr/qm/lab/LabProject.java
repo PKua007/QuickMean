@@ -13,6 +13,7 @@ import pl.edu.uj.student.kubala.piotr.qm.converters.Converter;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.Arrays;
 
 public class LabProject extends PropagatingListModel<SeriesGroup>
 {
@@ -34,9 +35,8 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
      */
     public LabProject(File file)
     {
-        this.setPrefix(PREFIX);
-
         this.file = file;
+        this.setPrefix(PREFIX);
 
         this.saved = false;
         this.everSaved = false;
@@ -138,6 +138,24 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
     }
 
     /**
+     * Metoda zwraca obecnie zaznaczone serie w obecnie wybranej grupie. Jeśli którakolwiek część hierarchii nie jest
+     * wybrana - {@code null}
+     * @return obecnie zaznaczone serie w obecnie wybranej grupie lub {@code null}
+     */
+    public Series [] getSelectedSeries()
+    {
+        SeriesGroup sel_group = this.getSelectedSeriesGroup();
+        if (sel_group == null)
+            return new Series[0];
+        int [] sel_series_idx = sel_group.getSelectedSeries();
+        if (sel_series_idx.length == 0)
+            return new Series[0];
+        return Arrays.stream(sel_series_idx)
+                .mapToObj(sel_group::getChild)
+                .toArray(Series[]::new);
+    }
+
+    /**
      * Funkcja zwraca indeks w tablicy obecnie wybranej grupy serii
      * @return indeks obecnie wybranej grupy serii
      */
@@ -230,9 +248,9 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
         defaultSeries.addChild(new Measure(0.54783, 0.0234, 0.034, 0));
         defaultSeries.addChild(new Measure(0.54324, 0.0734, 0.024, 0));
         defaultSeries.updateMean();
-        System.out.println(defaultSeries.getMeanQuantity());
         defaultSeriesGroup.addChild(defaultSeries);
 
+        defaultSeriesGroup.setSelectedSeries(new int[]{1});
         defaultSeriesGroup.setHighlightedSeries(1);
         this.addChild(defaultSeriesGroup);
 
@@ -251,8 +269,15 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
         defaultSeries = new Series();
         defaultSeriesGroup.addChild(defaultSeries);
 
+        defaultSeriesGroup.setSelectedSeries(new int[]{2});
         defaultSeriesGroup.setHighlightedSeries(2);
         this.addChild(defaultSeriesGroup);
         this.setSelectedSeriesGroup(0);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "LabProject";
     }
 }

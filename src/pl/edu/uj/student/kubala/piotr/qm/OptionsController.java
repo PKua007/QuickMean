@@ -10,6 +10,7 @@ package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
+import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -19,6 +20,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 
 public class OptionsController implements Controller, ActionListener, ItemListener
 {
@@ -40,14 +42,16 @@ public class OptionsController implements Controller, ActionListener, ItemListen
     {
         Object source = e.getSource();
         // Zignoruj ewentualny błąd - gdy nie jest podświetlona seria (powinna być)
-        Series series = this.labProject.getHighlightedSeries();
-        if (series == null)
+        Series [] sel_series = this.labProject.getSelectedSeries();
+        if (sel_series.length == 0)
             return;
 
         // Check box rozdzielania niepewności
         if (source == this.optionsPane.getSeparateErrorsCheckBox()) {
-            series.setSeparateErrors(this.optionsPane.getSeparateErrorsCheckBox().isSelected());
-            series.updateMean();
+            for (Series s : sel_series) {
+                s.setSeparateErrors(this.optionsPane.getSeparateErrorsCheckBox().isSelected());
+                s.updateMean();
+            }
         }
     }
 
@@ -64,9 +68,10 @@ public class OptionsController implements Controller, ActionListener, ItemListen
     {
         // Zmieniono liczbę cyfr znaczących
         if (e.getStateChange() == ItemEvent.SELECTED) {
-            Series series = this.labProject.getHighlightedSeries();
-            if (series != null)
-                series.setSignificantDigits((int)e.getItem());
+            Series [] sel_series = this.labProject.getSelectedSeries();
+            if (sel_series.length != 0)
+                for (Series s : sel_series)
+                    s.setSignificantDigits((int)e.getItem());
         }
     }
 }

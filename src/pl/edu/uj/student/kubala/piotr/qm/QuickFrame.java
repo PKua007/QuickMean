@@ -21,6 +21,8 @@ import java.util.Objects;
 
 public class QuickFrame extends JFrame implements View, PropertyChangeListener
 {
+    public static final String ERROR_TITLE = "Błąd";
+
     /** Kolor standardowej zaokrąglonej ramki używanej przez kilka widoków */
     public static final Color       BORDER_COLOR = new Color(0xB6B6B6);
 

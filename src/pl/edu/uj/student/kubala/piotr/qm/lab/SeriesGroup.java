@@ -45,9 +45,8 @@ public class SeriesGroup extends PropagatingListModel<Series>
      */
     public SeriesGroup(String name)
     {
-        this.setPrefix(PREFIX);
-
         this.name = Objects.requireNonNull(name);
+        this.setPrefix(PREFIX);
 
         this.selectedSeries = new ArrayList<>();
         this.highlightedSeries = -1;
@@ -100,13 +99,14 @@ public class SeriesGroup extends PropagatingListModel<Series>
      */
     public void setSelectedSeries(int[] selectedSeries)
     {
+        // TODO kontrola zmian zaznaczenia przy zmianach grup
         Arrays.stream(selectedSeries).forEach(this.children::get);        // Sprawdź poprawność indeksów
-        Series [] oldSelected = this.selectedSeries.stream()
-                .map((i) -> this.children.get(i)).
-                        toArray(Series[]::new);
-        Series [] newSelected = Arrays.stream(selectedSeries).
-                mapToObj((i) -> this.children.get(i)).
-                toArray(Series[]::new);
+        ArrayList<Series> oldSelected = this.selectedSeries.stream()
+                .map(this.children::get)
+                .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Series> newSelected = Arrays.stream(selectedSeries)
+                .mapToObj(this.children::get)
+                .collect(Collectors.toCollection(ArrayList::new));
         this.selectedSeries = Arrays.stream(selectedSeries)
                 .boxed()
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -185,5 +185,10 @@ public class SeriesGroup extends PropagatingListModel<Series>
         this.selectingNow = selectingNow;
         PropertyChangeEvent evt = new PropertyChangeEvent(this, SELECTING_NOW, oldValue, selectingNow);
         this.propertyFirer.firePropertyChange(evt);
+    }
+
+    @Override
+    public String toString() {
+        return "grupa \"" + this.name + "\"";
     }
 }

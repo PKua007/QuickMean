@@ -31,6 +31,14 @@ public class FormattedMeasureFactory {
     }
 
     /**
+     * Konstruktor specyfikujący, czy rozdzielać niepewności
+     * @param separateErrors czy rozdzielać neipewności
+     */
+    public FormattedMeasureFactory(boolean separateErrors) {
+        this(DEFAULT_MIN_FIXED_EXPONENT, DEFAULT_MAX_FIXED_EXPONENT, DEFAULT_ERROR_SIGNIFICANT_DIGITS, separateErrors);
+    }
+
+    /**
      * Konstruktor przyjmujący wszystkie parametry
      *
      * @param minFixedExponent       minimalny wykładnik, dla której zostaje postać zwykła

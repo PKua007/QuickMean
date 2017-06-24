@@ -10,7 +10,7 @@ package pl.edu.uj.student.kubala.piotr.qm;
 
 import java.awt.event.ActionListener;
 
-public interface Controller extends ActionListener
+public interface Controller
 {
     default void setup()
     {
