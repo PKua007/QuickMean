@@ -18,6 +18,7 @@ import pl.edu.uj.student.kubala.piotr.qm.utils.SpringUtilities;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,8 +56,8 @@ public class OptionsPane implements View, PropertyChangeListener
     private QuickFrame      parentFrame;
     private LabProject      labProject;
     private JPanel          panel;
-    private JTextField      calibrationErrorField;
-    private JTextField      humanErrorField;
+    private JTextField calibrationErrorField;
+    private JTextField humanErrorField;
     private JCheckBox       fisherCheckBox;
     private JCheckBox       separateErrorsCheckBox;
     private JComboBox<Integer>  significantDigitsComboBox;
@@ -179,15 +180,31 @@ public class OptionsPane implements View, PropertyChangeListener
                 // Sprawdź, które parametry są identyczne dla całego zaznaczenia - jeśli nie, wpisz null do zmiennej
                 Integer signif = selected_series[0].getSignificantDigits();
                 Boolean sep_errors = selected_series[0].isSeparateErrors();
+                Boolean use_fisher = selected_series[0].isUseStudentFisher();
+                Double human_error = selected_series[0].getHumanError();
+                Double calibration_error = selected_series[0].getCalibrationError();
                 for (int i = 1; i < selected_series.length; i++) {
                     if (signif != null && signif != selected_series[i].getSignificantDigits())
                         signif = null;
                     if (sep_errors != null && sep_errors != selected_series[i].isSeparateErrors())
                         sep_errors = null;
+                    if (use_fisher != null && use_fisher != selected_series[i].isUseStudentFisher())
+                        use_fisher = null;
+                    if (human_error != null && human_error != selected_series[i].getHumanError())
+                        human_error = null;
+                    if (calibration_error != null && calibration_error != selected_series[i].getCalibrationError())
+                        calibration_error = null;
                 }
 
+                // TODO: przydałoby się wrócić do sformatowanych ładnie liczb w polach, bo jest trochę bajzel
                 this.separateErrorsCheckBox.setSelected(sep_errors != null && sep_errors);
                 this.separateErrorsCheckBox.setEnabled(true);
+                this.fisherCheckBox.setSelected(use_fisher != null && use_fisher);
+                this.fisherCheckBox.setEnabled(true);
+                this.humanErrorField.setText(String.valueOf(human_error));
+                this.humanErrorField.setEnabled(true);
+                this.calibrationErrorField.setText(String.valueOf(calibration_error));
+                this.calibrationErrorField.setEnabled(true);
 
                 // Nieprawidłowa liczba cyfr znaczących lub różna w zaznaczeniu - skasuj zaznaczenie
                 if (signif == null || signif < MIN_DIGITS || signif > MAX_DIGITS)
@@ -208,5 +225,13 @@ public class OptionsPane implements View, PropertyChangeListener
         this.separateErrorsCheckBox.setEnabled(false);
         this.significantDigitsComboBox.setSelectedIndex(-1);
         this.significantDigitsComboBox.setEnabled(false);
+        this.fisherCheckBox.setSelected(false);
+        this.fisherCheckBox.setEnabled(false);
+        this.humanErrorField.setEnabled(false);
+        this.calibrationErrorField.setEnabled(false);
+    }
+
+    public QuickFrame getParentFrame() {
+        return parentFrame;
     }
 }

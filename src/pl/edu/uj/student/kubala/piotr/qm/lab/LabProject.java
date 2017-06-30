@@ -139,7 +139,7 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
 
     /**
      * Metoda zwraca obecnie zaznaczone serie w obecnie wybranej grupie. Jeśli którakolwiek część hierarchii nie jest
-     * wybrana - {@code null}
+     * wybrana, tablicę zero elementową
      * @return obecnie zaznaczone serie w obecnie wybranej grupie lub {@code null}
      */
     public Series [] getSelectedSeries()
@@ -231,21 +231,22 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
 
         defaultSeries = new Series();
         defaultSeries.addChild(new Measure(5435634, 234, 234, 0));
-        defaultSeries.addChild(new Measure(5475783, 234, 34, 0));
+        defaultSeries.addChild(new Measure(5475783, 0, 34, 0));
         defaultSeries.addChild(new Measure(5436724, 734, 24, 0));
         defaultSeries.updateMean();
         defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeries.addChild(new Measure(545634, 234, 234, 0));
-        defaultSeries.addChild(new Measure(545783, 234, 34, 0));
-        defaultSeries.addChild(new Measure(546724, 734, 24, 0));
+        defaultSeries.setCalibrationError(500);
+        defaultSeries.addChild(new Measure(545634, 0, 234, 0));
+        defaultSeries.addChild(new Measure(545783, 0, 34, 0));
+        defaultSeries.addChild(new Measure(546724, 0, 24, 0));
         defaultSeries.updateMean();
         defaultSeriesGroup.addChild(defaultSeries);
 
         defaultSeries = new Series();
         defaultSeries.addChild(new Measure(0.54534, 0.0234, 0.0234, 0));
-        defaultSeries.addChild(new Measure(0.54783, 0.0234, 0.034, 0));
+        defaultSeries.addChild(new Measure(0.54783, 0.0, 0.034, 0));
         defaultSeries.addChild(new Measure(0.54324, 0.0734, 0.024, 0));
         defaultSeries.updateMean();
         defaultSeriesGroup.addChild(defaultSeries);

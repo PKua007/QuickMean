@@ -32,6 +32,9 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
     /** Promień zaokrąglonej ramki używanej przez kilka widoków */
     public static final int         BORDER_RADIUS = 14;
 
+    /** Jak długo pole z niepoprawną wartością ma być czerwone */
+    public static final int ERROR_BEEP_TIME = 1000;
+
     private static final int        FRAME_WIDTH = 360;
     private static final int        FRAME_HEIGHT = 640;
     private static final int        PANELS_GAP = 25;
@@ -118,9 +121,6 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
         mainBorderPanel.add(lowerContentPanel, BorderLayout.PAGE_END);
         this.setContentPane(mainBorderPanel);
         this.setVisible(true);
-
-        // Rozkazuje modelowi ustawić domyślne dane
-        this.labProject.setupDefault();
     }
 
     /* Gettery solo */

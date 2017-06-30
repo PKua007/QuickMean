@@ -18,10 +18,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.stream.IntStream;
 
 public class GroupController implements Controller
@@ -79,8 +76,7 @@ public class GroupController implements Controller
     }
 
     /* Klasa wewnętrzna obsługująca zdarzenia */
-    private class Handler implements ItemListener, ListSelectionListener, TableModelListener, ActionListener
-    {
+    private class Handler implements ItemListener, ListSelectionListener, TableModelListener, ActionListener {
         private SeriesGroup oldSelected = null;
 
         /* Wywoływane, gdy zostani wybrana nowa grupa */
@@ -133,10 +129,10 @@ public class GroupController implements Controller
                 DefaultListSelectionModel selectionModel = (DefaultListSelectionModel)source;
 
                 if (Main.DEBUG) {
-                    System.out.println("JTable selection:");
+                    /*System.out.println("JTable selection:");
                     System.out.println("isAdjusting: " + selectionModel.getValueIsAdjusting() + "; leadIndex: " + selectionModel.getLeadSelectionIndex());
                     for (int i = selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++)
-                        System.out.println(i + " selected: " + selectionModel.isSelectedIndex(i));
+                        System.out.println(i + " selected: " + selectionModel.isSelectedIndex(i));*/
                 }
 
                 // Zignoruj usunięcie zaznaczenia

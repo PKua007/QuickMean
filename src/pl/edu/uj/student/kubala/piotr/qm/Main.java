@@ -38,7 +38,6 @@ public class Main
         SwingUtilities.invokeLater(measuresInputController::setup);
         SwingUtilities.invokeLater(groupController::setup);
         SwingUtilities.invokeLater(optionsController::setup);
-
-
+        SwingUtilities.invokeLater(labProject::setupDefault);
     }
 }
