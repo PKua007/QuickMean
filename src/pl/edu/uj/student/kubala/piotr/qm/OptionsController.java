@@ -129,11 +129,12 @@ public class OptionsController implements Controller, ActionListener, ItemListen
         public boolean verify(JComponent input)
         {
             JTextField source = (JTextField)input;
-            System.out.println("ErrorFieldVeryfier: dostałem: " + source.getText());
+            if ("".equals(source.getText()))
+                return true;
 
             double value;
             try {
-                value = Double.parseDouble(source.getText());
+                value = Double.parseDouble(source.getText().replace(',', '.'));
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -143,13 +144,24 @@ public class OptionsController implements Controller, ActionListener, ItemListen
         @Override
         public boolean shouldYieldFocus(JComponent input)
         {
-            // TODO ale przecinek to by mogło akceptować
-            JTextField source = (JTextField)input;
+            JFormattedTextField source = (JFormattedTextField)input;
+            if (Main.DEBUG)
+                System.out.println("ErrorFieldVeryfier::shouldYieldFocus (typ " + type + "): dostałem: " + source.getText());
             if (verify(input)) {   // Zwalidowano wejście - uaktualnij
-                double value = Double.parseDouble(source.getText());
                 Series [] sel = labProject.getSelectedSeries();
                 if (sel.length == 0)
                     return true;
+
+                double value;
+                if ("".equals(source.getText())) {
+                    value = 0;
+                    if (sel.length > 1) {     // Jeśli zaznaczono kilka i puste pole, ustaw wartość na null i pomiń
+                        source.setValue(null);
+                        return true;
+                    }
+                } else {
+                    value = Double.parseDouble(source.getText().replace(',', '.'));
+                }
 
                 if (this.type == HUMAN_ERROR) {
                     for (Series s : sel) {

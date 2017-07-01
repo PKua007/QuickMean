@@ -26,10 +26,10 @@ import static pl.edu.uj.student.kubala.piotr.qm.QuickFrame.BORDER_RADIUS;
 public class MeanDisplay implements View, PropertyChangeListener
 {
     private static final String     MEAN_OF_MEASURES = "X\u0305 ± σ(X\u0305) ± ΔX\u0305";
-    private static final Font       MEAN_FONT = new Font("Dialog", Font.PLAIN, 24);
+    private static final Font       MEAN_FONT = new Font("Dialog", Font.PLAIN, 20);
     private static final int        MEAN_MARGIN = 8;
     private static final int        TOP_MARGIN_BIAS = -6;
-    private static final int        HEIGHT = 70;
+    private static final int        HEIGHT = 60;
     private static final Color      MEAN_COLOR = new Color(0x5A83BF);
     private static final String     EMPTY_HTML = "<html> </html>";
 

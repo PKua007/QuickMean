@@ -93,9 +93,9 @@ public class FormattedMeasure implements Cloneable {
         else
             body = value + PLUS_MINUS_SPACE + standardError;
         if (scientificForm)
-            return "<html>(" + body + ")" + CROSS + "10<sup style='font-size: 80%;'>" + exponent + "</sup></html>";
+            return "<html><span style='white-space: nowrap;'>(" + body + ")" + CROSS + "10<sup style='font-size: 80%;'>" + exponent + "</sup></span></html>";
         else
-            return "<html>" + body + "</html>";
+            return "<html><span style='white-space: nowrap;'>" + body + "</span></html>";
     }
 
     /**
@@ -111,9 +111,9 @@ public class FormattedMeasure implements Cloneable {
         else
             body = value + PLUS_MINUS_SPACE + standardError;
         if (scientificForm)
-            return "<html>(" + body + ")" + CROSS + "10<sup>" + exponent + "</sup></html>";
+            return "<html><span style='white-space: nowrap;'>(" + body + ")" + CROSS + "10<sup>" + exponent + "</sup></span></html>";
         else
-            return "<html>" + body + "</html>";
+            return "<html><span style='white-space: nowrap;'>" + body + "</span></html>";
     }
 
     @Override

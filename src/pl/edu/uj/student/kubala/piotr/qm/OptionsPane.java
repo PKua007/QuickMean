@@ -18,14 +18,12 @@ import pl.edu.uj.student.kubala.piotr.qm.utils.SpringUtilities;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -56,11 +54,12 @@ public class OptionsPane implements View, PropertyChangeListener
     private QuickFrame      parentFrame;
     private LabProject      labProject;
     private JPanel          panel;
-    private JTextField calibrationErrorField;
-    private JTextField humanErrorField;
+    private JFormattedTextField calibrationErrorField;
+    private JFormattedTextField humanErrorField;
     private JCheckBox       fisherCheckBox;
     private JCheckBox       separateErrorsCheckBox;
     private JComboBox<Integer>  significantDigitsComboBox;
+    private TitledBorder    titledBorder;
 
     /**
      * Konstruktor panelu opcjami
@@ -86,9 +85,15 @@ public class OptionsPane implements View, PropertyChangeListener
         JLabel sepLabel = new JLabel(SEPARATE_ERRORS, SwingConstants.LEADING);
 
         // Utwórz kontrolki i "zresetuj"
-        this.calibrationErrorField = new JTextField();
+        this.calibrationErrorField = new JFormattedTextField(new DefaultFormatterFactory(
+                new ScientificDisplayFormatter(),
+                new ScientificDisplayFormatter(),
+                new ScientificEditFormatter()));
         this.calibrationErrorField.setEnabled(false);
-        this.humanErrorField = new JTextField();
+        this.humanErrorField = new JFormattedTextField(new DefaultFormatterFactory(
+                new ScientificDisplayFormatter(),
+                new ScientificDisplayFormatter(),
+                new ScientificEditFormatter()));
         this.humanErrorField.setEnabled(false);
         this.fisherCheckBox = new JCheckBox();
         this.fisherCheckBox.setEnabled(false);
@@ -106,8 +111,9 @@ public class OptionsPane implements View, PropertyChangeListener
         // Utwórz panel
         this.panel = new JPanel(new SpringLayout());
         Border roundBorder = new RoundedBorder(BORDER_RADIUS, BORDER_COLOR);
+        this.titledBorder = BorderFactory.createTitledBorder(roundBorder, SERIES_OPTIONS, TitledBorder.CENTER, TitledBorder.TOP, null, TITLE_COLOR);
         Border compoundBorder = BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(roundBorder, SERIES_OPTIONS, TitledBorder.CENTER, TitledBorder.TOP, null, TITLE_COLOR),
+                titledBorder,
                 BorderFactory.createEmptyBorder(PANEL_TOP_PADDING, PANEL_LEFT_PADDING, PANEL_BOTTOM_PADDING, PANEL_RIGHT_PADDING)
         );
         this.panel.setBorder(compoundBorder);
@@ -143,11 +149,11 @@ public class OptionsPane implements View, PropertyChangeListener
         return Objects.requireNonNull(panel);
     }
 
-    public JTextField getCalibrationErrorField() {
+    public JFormattedTextField getCalibrationErrorField() {
         return Objects.requireNonNull(calibrationErrorField);
     }
 
-    public JTextField getHumanErrorField() {
+    public JFormattedTextField getHumanErrorField() {
         return Objects.requireNonNull(humanErrorField);
     }
 
@@ -196,14 +202,13 @@ public class OptionsPane implements View, PropertyChangeListener
                         calibration_error = null;
                 }
 
-                // TODO: przydałoby się wrócić do sformatowanych ładnie liczb w polach, bo jest trochę bajzel
                 this.separateErrorsCheckBox.setSelected(sep_errors != null && sep_errors);
                 this.separateErrorsCheckBox.setEnabled(true);
                 this.fisherCheckBox.setSelected(use_fisher != null && use_fisher);
                 this.fisherCheckBox.setEnabled(true);
-                this.humanErrorField.setText(String.valueOf(human_error));
+                this.humanErrorField.setValue(human_error);
                 this.humanErrorField.setEnabled(true);
-                this.calibrationErrorField.setText(String.valueOf(calibration_error));
+                this.calibrationErrorField.setValue(calibration_error);
                 this.calibrationErrorField.setEnabled(true);
 
                 // Nieprawidłowa liczba cyfr znaczących lub różna w zaznaczeniu - skasuj zaznaczenie
@@ -214,11 +219,17 @@ public class OptionsPane implements View, PropertyChangeListener
 
                 this.significantDigitsComboBox.setEnabled(true);
 
+                // Zmień tytuł
+                if (selected_series.length == 1)
+                    this.titledBorder.setTitle(SERIES_OPTIONS + " \"" + selected_series[0].getLabel() + "\"");
+                else
+                    this.titledBorder.setTitle(SERIES_OPTIONS + " [zaznaczenie]");
+                this.panel.repaint();
                 break;
         }
     }
 
-    /* Pomocnicza metoda blokująca wszystkie kontrolki */
+    /* Pomocnicza metoda blokująca wszystkie kontrolki i zmieniająca tytuł na domyślny */
     private void disableOptionPane()
     {
         this.separateErrorsCheckBox.setSelected(false);
@@ -227,8 +238,11 @@ public class OptionsPane implements View, PropertyChangeListener
         this.significantDigitsComboBox.setEnabled(false);
         this.fisherCheckBox.setSelected(false);
         this.fisherCheckBox.setEnabled(false);
+        this.humanErrorField.setValue(null);
         this.humanErrorField.setEnabled(false);
+        this.calibrationErrorField.setValue(null);
         this.calibrationErrorField.setEnabled(false);
+        this.titledBorder.setTitle(SERIES_OPTIONS);
     }
 
     public QuickFrame getParentFrame() {
