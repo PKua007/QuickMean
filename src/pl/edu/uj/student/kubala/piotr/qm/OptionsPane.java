@@ -145,6 +145,11 @@ public class OptionsPane implements View, PropertyChangeListener
         this.labProject.addPropertyChangeListener(this);
     }
 
+    @Override
+    public String getElementName() {
+        return "OptionsPane";
+    }
+
     public JPanel getPanel() {
         return Objects.requireNonNull(panel);
     }

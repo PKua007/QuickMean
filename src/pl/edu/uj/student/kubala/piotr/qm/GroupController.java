@@ -39,10 +39,14 @@ public class GroupController implements Controller
     public GroupController(LabProject labProject, GroupDisplay groupDisplay) {
         this.labProject = labProject;
         this.groupDisplay = groupDisplay;
+
+        EDTInitializationManager manager = EDTInitializationManager.getInstance();
+        manager.registerElement(this);
+        manager.addDependency(this, groupDisplay);
     }
 
     @Override
-    public void setup() {
+    public void init() {
         Handler handler = new Handler();
 
         // Ustaw nasłuchiwanie na listę grup
@@ -55,6 +59,11 @@ public class GroupController implements Controller
         deleteButton.setAction(new DeleteAction(deleteButton.getText()));
         // Ustaw nasłuchiwanie na model tabeli (edycja nazw serii)
         this.groupDisplay.getGroupTable().getModel().addTableModelListener(handler);
+    }
+
+    @Override
+    public String getElementName() {
+        return "GroupController";
     }
 
     /* Akcja usuwania grupy - przycisk "X" */

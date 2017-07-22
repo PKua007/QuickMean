@@ -8,9 +8,8 @@
 
 package pl.edu.uj.student.kubala.piotr.qm;
 
+import pl.edu.uj.student.kubala.piotr.qm.dialog.GroupDialog;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
-
-import javax.swing.*;
 
 public class Main
 {
@@ -24,6 +23,8 @@ public class Main
     private static GroupController          groupController;
     private static OptionsController        optionsController;
 
+    private static GroupDialog      groupDialog;
+
     public static void main(String [] args)
     {
         labProject = new LabProject(null);
@@ -33,11 +34,18 @@ public class Main
         groupController = new GroupController(labProject, quickFrame.getGroupDisplay());
         optionsController = new OptionsController(labProject, quickFrame.getOptionsPane());
 
-        // Umieść inicjację okna i kontolerów na EDT
-        SwingUtilities.invokeLater(quickFrame::init);
-        SwingUtilities.invokeLater(measuresInputController::setup);
-        SwingUtilities.invokeLater(groupController::setup);
-        SwingUtilities.invokeLater(optionsController::setup);
-        SwingUtilities.invokeLater(labProject::setupDefault);
+        groupDialog = new GroupDialog(quickFrame);
+
+        // Zarejestruj laboratorium i utwórz zależności
+        EDTInitializationManager manager = EDTInitializationManager.getInstance();
+        manager.registerElement(labProject);
+
+        manager.addDependency(labProject, quickFrame);
+        manager.addDependency(labProject, measuresInputController);
+        manager.addDependency(labProject, groupController);
+        manager.addDependency(labProject, optionsController);
+
+        // Zainicjuj elementy
+        manager.initElements();
     }
 }

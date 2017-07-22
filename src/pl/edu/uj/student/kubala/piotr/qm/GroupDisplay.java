@@ -120,6 +120,11 @@ public class GroupDisplay implements View
         this.labProject.addPropertyChangeListener(new LabChangeListener());
     }
 
+    @Override
+    public String getElementName() {
+        return "GroupDisplay";
+    }
+
     public JScrollPane getGroupTablePanel()
     {
         return Objects.requireNonNull(this.groupTablePanel);

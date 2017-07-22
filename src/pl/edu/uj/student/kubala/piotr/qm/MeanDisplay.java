@@ -81,6 +81,11 @@ public class MeanDisplay implements View, PropertyChangeListener
         this.labProject.addPropertyChangeListener(this);
     }
 
+    @Override
+    public String getElementName() {
+        return "MeanDisplay";
+    }
+
     /**
      * Zwraca panel z JLabelem ze średnią
      * @return panel z JLabelem ze średnią

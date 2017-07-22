@@ -10,9 +10,9 @@ package pl.edu.uj.student.kubala.piotr.qm;
 
 import java.awt.event.ActionListener;
 
-public interface Controller
+public interface Controller extends EDTInitializable
 {
-    default void setup()
+    default void init()
     {
 
     }

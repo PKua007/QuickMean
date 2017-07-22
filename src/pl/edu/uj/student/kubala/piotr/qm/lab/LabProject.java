@@ -9,13 +9,14 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
+import pl.edu.uj.student.kubala.piotr.qm.EDTInitializable;
 import pl.edu.uj.student.kubala.piotr.qm.converters.Converter;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.Arrays;
 
-public class LabProject extends PropagatingListModel<SeriesGroup>
+public class LabProject extends PropagatingListModel<SeriesGroup> implements EDTInitializable
 {
     /* Etykiety właściwości */
     private static final String PREFIX = "lp";
@@ -215,7 +216,7 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
     /**
      * Metoda ustawia w projekcje domyślne dane
      */
-    public void setupDefault()
+    public void init()
     {
         Series          defaultSeries;
         SeriesGroup     defaultSeriesGroup;
@@ -274,6 +275,11 @@ public class LabProject extends PropagatingListModel<SeriesGroup>
         defaultSeriesGroup.setHighlightedSeries(2);
         this.addChild(defaultSeriesGroup);
         this.setSelectedSeriesGroup(0);
+    }
+
+    @Override
+    public String getElementName() {
+        return "LabProject";
     }
 
     @Override

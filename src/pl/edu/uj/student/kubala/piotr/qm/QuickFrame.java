@@ -16,7 +16,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class QuickFrame extends JFrame implements View, PropertyChangeListener
@@ -33,9 +32,9 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
     public static final int         BORDER_RADIUS = 14;
 
     /** Jak długo pole z niepoprawną wartością ma być czerwone */
-    public static final int ERROR_BEEP_TIME = 1000;
+    public static final int         ERROR_BEEP_TIME = 1000;
 
-    private static final int        FRAME_WIDTH = 360;
+    private static final int        FRAME_WIDTH = 380;
     private static final int        FRAME_HEIGHT = 640;
     private static final int        PANELS_GAP = 25;
     private static final int        FRAME_PADDING = 10;
@@ -44,7 +43,6 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
     private MeanDisplay             meanDisplay;        // Widok okna ze średnią
     private GroupDisplay            groupDisplay;       // Widok okna z grupą serii
     private OptionsPane             optionsPane;        // Widok panelu z opcjami
-    private View []                 allViews;           // Tablica z wszystkimi widokami
     private LabProject              labProject;         // Obecny projekt laboratorium (model)
 
     /**
@@ -62,7 +60,17 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
         this.groupDisplay = new GroupDisplay(this, this.labProject);
         this.optionsPane = new OptionsPane(this, this.labProject);
 
-        this.allViews = new View[]{this.measuresInput, this.meanDisplay, this.groupDisplay, this.optionsPane};
+        // Zarejestruj siebie, podwidoki i zależności
+        EDTInitializationManager manager = EDTInitializationManager.getInstance();
+        manager.registerElement(this);
+        manager.registerElement(this.measuresInput);
+        manager.registerElement(this.meanDisplay);
+        manager.registerElement(this.groupDisplay);
+        manager.registerElement(this.optionsPane);
+        manager.addDependency(this, this.measuresInput);
+        manager.addDependency(this, this.meanDisplay);
+        manager.addDependency(this, this.groupDisplay);
+        manager.addDependency(this, this.optionsPane);
     }
 
     /**
@@ -71,8 +79,6 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
     @Override
     public void init()
     {
-        Arrays.stream(this.allViews).forEach(View::init);
-
         this.setSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         this.setMinimumSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         //this.setResizable(false);
@@ -121,6 +127,11 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
         mainBorderPanel.add(lowerContentPanel, BorderLayout.PAGE_END);
         this.setContentPane(mainBorderPanel);
         this.setVisible(true);
+    }
+
+    @Override
+    public String getElementName() {
+        return "QuickFrame";
     }
 
     /* Gettery solo */

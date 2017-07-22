@@ -33,6 +33,10 @@ public class OptionsController implements Controller, ActionListener, ItemListen
     public OptionsController(LabProject labProject, OptionsPane optionsPane) {
         this.labProject = labProject;
         this.optionsPane = optionsPane;
+
+        EDTInitializationManager manager = EDTInitializationManager.getInstance();
+        manager.registerElement(this);
+        manager.addDependency(this, optionsPane);
     }
 
     @Override
@@ -42,7 +46,7 @@ public class OptionsController implements Controller, ActionListener, ItemListen
     }
 
     @Override
-    public void setup() {
+    public void init() {
         // Nasłuchuj check boxa osobnych niepewności
         this.optionsPane.getSeparateErrorsCheckBox().setAction(new SeparateErrorsAction());
         // Nasłuchuj check boxa współczynników t-Studenta
@@ -53,6 +57,11 @@ public class OptionsController implements Controller, ActionListener, ItemListen
         this.optionsPane.getCalibrationErrorField().setInputVerifier(new ErrorFieldVeryfier(ErrorFieldVeryfier.CALIBRATION_ERROR));
         // Nasłuchuj na zmianę wartości błędu człowieka (i sprawdź poprawność)
         this.optionsPane.getHumanErrorField().setInputVerifier(new ErrorFieldVeryfier(ErrorFieldVeryfier.HUMAN_ERROR));
+    }
+
+    @Override
+    public String getElementName() {
+        return "OptionsController";
     }
 
     @Override

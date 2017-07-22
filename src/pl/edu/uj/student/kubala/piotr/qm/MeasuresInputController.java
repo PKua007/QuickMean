@@ -27,10 +27,19 @@ public class MeasuresInputController implements Controller
     public MeasuresInputController(LabProject labProject, MeasuresInput measuresInput) {
         this.labProject = labProject;
         this.measuresInput = measuresInput;
+
+        EDTInitializationManager manager = EDTInitializationManager.getInstance();
+        manager.registerElement(this);
+        manager.addDependency(this, measuresInput);
     }
 
     @Override
-    public void setup() {
+    public void init() {
 
+    }
+
+    @Override
+    public String getElementName() {
+        return "MeasuresInputController";
     }
 }

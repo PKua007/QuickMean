@@ -89,6 +89,11 @@ public class MeasuresInput implements View, PropertyChangeListener
         this.labProject.addPropertyChangeListener(this);
     }
 
+    @Override
+    public String getElementName() {
+        return "MeasuresInput";
+    }
+
     public JButton getIndividualErrorsButton() {
         return Objects.requireNonNull(individualErrorsButton);
     }
