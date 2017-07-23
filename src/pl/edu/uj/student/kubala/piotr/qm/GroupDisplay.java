@@ -32,7 +32,7 @@ public class GroupDisplay implements View
     private static final int        MEAN_COLUMN_WIDTH = 150;         // Szerokość kolumny z nazwami serii
 
     private static final String     DELETE_GROUP_MESSAGE = "Czy na pewno chcesz usunąć wskazaną GRUPĘ POMIARÓW? Operacji "
-            + "nie da się cofnąć.\n\nJeżeli chcesz usunać zaznaczone serie pomiarów, kliknij PPM na zaznaczeniu.";
+            + "nie da się cofnąć.\n\nJeżeli chcesz usunać zaznaczone serie pomiarów, kliknij PPM na zaznaczeniu i wybierz odpowiednią opcję.";
     private static final String     DELETE_GROUP_TITLE = "Usuwanie grupy";
 
 
@@ -42,6 +42,7 @@ public class GroupDisplay implements View
     private JScrollPane     groupTablePanel;
     private JPanel          groupListPanel;
     private JComboBox<String> groupList;
+    private JButton         editButton;
     private JButton         addButton;
     private JButton         deleteButton;
 
@@ -60,16 +61,6 @@ public class GroupDisplay implements View
     {
         if (this.groupTable != null)
             throw new RuntimeException("GroupDisplay::init wywołane drugi raz");
-
-        /*new Object[]{"Seria 1", "3.09 ± 0.16 ± 0.12"},
-                new Object[]{"Seria 2", "4.12 ± 0.58 ± 0.15"},
-                new Object[]{"Seria 3", "5.53 ± 0.65 ± 0.72"},
-                new Object[]{"Seria 4", "8.06 ± 1.27 ± 0.92"},
-                new Object[]{"Seria 5", "10.46 ± 0.02 ± 0.25"},
-                new Object[]{"Seria 6", "12.23 ± 1.56 ± 0.12"},
-                new Object[]{"Seria 7", "14.42 ± 3.64 ± 0.17"},
-                new Object[]{"Seria 8", "18.14 ± 5.23 ± 0.52"},
-                new Object[]{"Seria 9", "20.85 ± 5.57 ± 0.92"}*/
 
         // Utwórz tabelę z grupami - kolumna ze średnimi nieedytowalna
         DefaultTableModel tableModel = new DefaultTableModel(new Object[][]{}, new Object[]{
@@ -91,11 +82,14 @@ public class GroupDisplay implements View
         this.groupList = new JComboBox<>(/*new String[]{"Grupa 1", "Grupa 2", "Grupa 3", "Grupa 4"}*/);
         this.groupList.setEditable(false);
 
-        // Utwórz przyciski dodawania i usuwania grup
+        // Utwórz przyciski edycji, dodawania i usuwania grup
+        this.editButton = new JButton("e");
         this.addButton = new JButton("+");
         this.deleteButton = new JButton("X");
         Insets bMargin = this.addButton.getMargin();
         bMargin.left = bMargin.right = BUTTONS_HORIZONTAL_MARGIN;
+        this.editButton.setMargin(bMargin);
+        this.editButton.setEnabled(false);
         this.addButton.setMargin(bMargin);
         this.deleteButton.setMargin(bMargin);
         this.deleteButton.setEnabled(false);
@@ -105,6 +99,8 @@ public class GroupDisplay implements View
         BoxLayout bpLayout = new BoxLayout(buttonsPanel, BoxLayout.LINE_AXIS);
         buttonsPanel.setLayout(bpLayout);
         buttonsPanel.add(this.addButton);
+        buttonsPanel.add(Box.createRigidArea(new Dimension(BUTTONS_GAP, 0)));
+        buttonsPanel.add(this.editButton);
         buttonsPanel.add(Box.createRigidArea(new Dimension(BUTTONS_GAP, 0)));
         buttonsPanel.add(this.deleteButton);
 
@@ -168,9 +164,13 @@ public class GroupDisplay implements View
                 == JOptionPane.OK_OPTION;
     }
 
+    public JButton getEditButton() {
+        return editButton;
+    }
+
     /*
-     * Wewnętrzna klasa nasłuchująca projektu
-     */
+         * Wewnętrzna klasa nasłuchująca projektu
+         */
     private class LabChangeListener implements PropertyChangeListener {
 
         /* Dodanie nowej grupy - uzupełnij listę */
@@ -199,7 +199,7 @@ public class GroupDisplay implements View
             SeriesGroup selectedGroup = (SeriesGroup) evt.getNewValue();
             groupList.setSelectedIndex(labProject.getChildIdx(selectedGroup));
             deleteButton.setEnabled(selectedGroup != null);
-            groupList.setEditable(selectedGroup != null);
+            editButton.setEnabled(selectedGroup != null);
 
             // Zmień nagłówek w tabeli
             TableColumn seriesHeader = groupTable.getColumnModel().getColumn(0);

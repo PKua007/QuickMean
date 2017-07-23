@@ -23,11 +23,6 @@ import java.util.stream.IntStream;
 
 public class GroupController implements Controller
 {
-    private static final String GROUP_NAME_ALREADY_EXISTS_MESSAGE =
-            "Istenieje już grupa o podanej nazwie. Nazwy grup muszą być unikatowe.";
-    private static final String GROUP_NAME_EMPTY_MESSAGE =
-            "Nazwa grupy musi być niepusta.";
-
     private LabProject      labProject;
     private GroupDisplay    groupDisplay;
 
@@ -48,15 +43,21 @@ public class GroupController implements Controller
     @Override
     public void init() {
         Handler handler = new Handler();
+        JButton btn;
 
         // Ustaw nasłuchiwanie na listę grup
         this.groupDisplay.getGroupList().addItemListener(handler);
-        this.groupDisplay.getGroupList().getEditor().addActionListener(handler);
         // Ustaw nasłuchiwanie na zaznaczanie w tabelce
         this.groupDisplay.getGroupTable().getSelectionModel().addListSelectionListener(handler);
+        // Ustaw nasłuchiwanie na przycisk edycji
+        btn = this.groupDisplay.getEditButton();
+        btn.setAction(new EditAction(btn.getText()));
         // Ustaw nasłuchiwanie na przycisk usunięcia
-        JButton deleteButton = this.groupDisplay.getDeleteButton();
-        deleteButton.setAction(new DeleteAction(deleteButton.getText()));
+        btn = this.groupDisplay.getDeleteButton();
+        btn.setAction(new DeleteAction(btn.getText()));
+        // Ustaw nasłuchiwanie na przycisk dodawania
+        btn = this.groupDisplay.getAddButton();
+        btn.setAction(new AddAction(btn.getText()));
         // Ustaw nasłuchiwanie na model tabeli (edycja nazw serii)
         this.groupDisplay.getGroupTable().getModel().addTableModelListener(handler);
     }
@@ -71,6 +72,7 @@ public class GroupController implements Controller
     {
         public DeleteAction(String name) {
             super(name);
+            this.enabled = false;
         }
 
         @Override
@@ -78,39 +80,65 @@ public class GroupController implements Controller
 
             if (!groupDisplay.deleteGroupConfirmationDialog())
                 return;
-            SeriesGroup selectedGroup = labProject.getSelectedSeriesGroup();
+            int idx = labProject.getSelectedSeriesGroupIdx();
+            SeriesGroup selectedGroup = labProject.getChild(idx);
             if (selectedGroup != null)
                 labProject.deleteChild(selectedGroup);
+            if (idx - 1 >= 0)
+                labProject.setSelectedSeriesGroup(idx - 1);
+            else if (labProject.getNumberOfChildren() > 0)
+                labProject.setSelectedSeriesGroup(0);
+        }
+    }
+
+    /* Akcja dodawania grupy - przycisk "+" */
+    private class AddAction extends AbstractAction
+    {
+        public AddAction(String name) {
+            super(name);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            groupDisplay.getParentFrame().getGroupDialog().showAddDialog();
+        }
+    }
+
+    /* Akcja edycji nazwy grupy - przycisk z piórem */
+    private class EditAction extends AbstractAction
+    {
+        public EditAction(String name) {
+            super(name);
+            this.enabled = false;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            SeriesGroup group = labProject.getSelectedSeriesGroup();
+            if (group != null)
+                groupDisplay.getParentFrame().getGroupDialog().showEditDialog(group);
         }
     }
 
     /* Klasa wewnętrzna obsługująca zdarzenia */
-    private class Handler implements ItemListener, ListSelectionListener, TableModelListener, ActionListener {
-        private SeriesGroup oldSelected = null;
+    private class Handler implements ItemListener, ListSelectionListener, TableModelListener {
 
         /* Wywoływane, gdy zostani wybrana nowa grupa */
         @Override
         public void itemStateChanged(ItemEvent e) {
-            // TODO rozwiązanie tymczasowe zmiany nazwy grupy - przemyśleć i przerobić
             JComboBox<String> list = groupDisplay.getGroupList();
 
             System.out.println(e);
             if (e.getSource() != list)
                 return;
 
-            if (e.getStateChange() == ItemEvent.SELECTED) {         // Wybrano inną grupę lub zmieniono nazwę starej
+            if (e.getStateChange() == ItemEvent.SELECTED) {         // Wybrano inną grupę
                 int idx = list.getSelectedIndex();
                 if (idx == -1)
                     return;
                 labProject.setSelectedSeriesGroup(list.getSelectedIndex());
-            }  else if (e.getStateChange() == ItemEvent.DESELECTED) {    // Odznaczenie grupy
-                // Zapamiętaj starą zaznaczoną grupę
-                for (int i = 0; i < labProject.getNumberOfChildren(); i++) {
-                    if (labProject.getChild(i).getName().equals(e.getItem())) {
-                        this.oldSelected = labProject.getChild(i);
-                    }
-                }
-
             }
         }
 
@@ -162,45 +190,6 @@ public class GroupController implements Controller
                 // Zaktualizuj informację czy właśnie trwa zaznaczanie
                 selectedGroup.setSelectingNow(selectionModel.getValueIsAdjusting());
             }
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-            // Zmiana nazwy grupy w edytorze
-            int sg_idx = labProject.getSelectedSeriesGroupIdx();
-            if (sg_idx == -1)
-                return;
-            SeriesGroup sel_group = labProject.getChild(sg_idx);
-            DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) groupDisplay.getGroupList().getModel();
-
-            // Pobierz nową nazwę i sprawdź, czy poprawna
-            String new_name = e.getActionCommand();
-            // Sprawdź, czy niepusta
-            if (new_name.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        groupDisplay.getParentFrame(),
-                        GROUP_NAME_EMPTY_MESSAGE,
-                        QuickFrame.ERROR_TITLE,
-                        JOptionPane.ERROR_MESSAGE);
-                SwingUtilities.invokeLater(() -> model.setSelectedItem(sel_group.getName()));
-                return;
-            }
-            // Sprawdź, czy nieużywana
-            for (int i = 0; i < labProject.getNumberOfChildren(); i++) {
-                if (i != sg_idx && labProject.getChild(i).getName().equals(new_name)) {
-                    JOptionPane.showMessageDialog(
-                            groupDisplay.getParentFrame(),
-                            GROUP_NAME_ALREADY_EXISTS_MESSAGE,
-                            QuickFrame.ERROR_TITLE,
-                            JOptionPane.ERROR_MESSAGE);
-                    // TODO tymczasowe rozwiązanie zmiany nazwy grupy - "na chamca" przywraca starą
-                    SwingUtilities.invokeLater(() -> labProject.setSelectedSeriesGroup(sg_idx));
-                    return;
-                }
-            }
-            // Wszystko ok - zmień nazwę
-            sel_group.setName(new_name);
         }
     }
 }

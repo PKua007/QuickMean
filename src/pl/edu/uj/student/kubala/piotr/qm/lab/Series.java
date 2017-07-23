@@ -320,12 +320,12 @@ public class Series extends PropagatingListModel<Measure>
      * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
     @Override
-    public void addChild(Measure measure, int index)
+    public int addChild(Measure measure, int index)
     {
         this.validateNotNull(measure);
         this.validateAddIdx(index);
         Utils.shiftIndicesAfterAddition(index, this.selectedMeasures);
-        super.addChild(measure, index);
+        return super.addChild(measure, index);
     }
 
     /**

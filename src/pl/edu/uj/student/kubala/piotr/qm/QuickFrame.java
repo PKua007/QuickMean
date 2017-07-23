@@ -10,6 +10,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm;
 
+import pl.edu.uj.student.kubala.piotr.qm.dialog.GroupDialog;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
@@ -43,6 +44,9 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
     private MeanDisplay             meanDisplay;        // Widok okna ze średnią
     private GroupDisplay            groupDisplay;       // Widok okna z grupą serii
     private OptionsPane             optionsPane;        // Widok panelu z opcjami
+
+    private GroupDialog             groupDialog;        // Dialog dodawania/zmiany nazwy grupy
+
     private LabProject              labProject;         // Obecny projekt laboratorium (model)
 
     /**
@@ -53,16 +57,18 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
     public QuickFrame(String title, LabProject labProject)
     {
         super(title);
+        EDTInitializationManager manager = EDTInitializationManager.getInstance();
+        manager.registerElement(this);
+
         this.labProject = labProject;
 
         this.measuresInput = new MeasuresInput(this, this.labProject);
         this.meanDisplay = new MeanDisplay(this, this.labProject);
         this.groupDisplay = new GroupDisplay(this, this.labProject);
         this.optionsPane = new OptionsPane(this, this.labProject);
+        this.groupDialog = new GroupDialog(this);
 
         // Zarejestruj siebie, podwidoki i zależności
-        EDTInitializationManager manager = EDTInitializationManager.getInstance();
-        manager.registerElement(this);
         manager.registerElement(this.measuresInput);
         manager.registerElement(this.meanDisplay);
         manager.registerElement(this.groupDisplay);
@@ -178,6 +184,10 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
      */
     public LabProject getLabProject() {
         return this.labProject;
+    }
+
+    public GroupDialog getGroupDialog() {
+        return groupDialog;
     }
 
     @Override

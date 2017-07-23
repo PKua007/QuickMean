@@ -139,14 +139,14 @@ public class SeriesGroup extends PropagatingListModel<Series>
      * @throws IllegalArgumentException jeśli seria jest już w grupie
      */
     @Override
-    public void addChild(Series series, int index)
+    public int addChild(Series series, int index)
     {
         this.validateNotNull(series);
         this.validateAddIdx(index);
         Utils.shiftIndicesAfterAddition(index, this.selectedSeries);
         if (index != -1 && this.highlightedSeries >= index)
             this.highlightedSeries++;
-        super.addChild(series, index);
+        return super.addChild(series, index);
     }
 
     /**

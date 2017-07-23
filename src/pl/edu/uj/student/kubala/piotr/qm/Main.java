@@ -23,7 +23,6 @@ public class Main
     private static GroupController          groupController;
     private static OptionsController        optionsController;
 
-    private static GroupDialog      groupDialog;
 
     public static void main(String [] args)
     {
@@ -33,8 +32,6 @@ public class Main
         measuresInputController = new MeasuresInputController(labProject, quickFrame.getMeasuresInput());
         groupController = new GroupController(labProject, quickFrame.getGroupDisplay());
         optionsController = new OptionsController(labProject, quickFrame.getOptionsPane());
-
-        groupDialog = new GroupDialog(quickFrame);
 
         // Zarejestruj laboratorium i utwórz zależności
         EDTInitializationManager manager = EDTInitializationManager.getInstance();

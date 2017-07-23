@@ -63,11 +63,12 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      * Metoda dodaje pomiar do listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
      * @param child pomiar do dodania
      * @param index pozyzja, na której ma być dodany. -1, jeśli na końcu
+     * @return indeks dodanego elementu
      * @throws NullPointerException jeśli measure == null
      * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfChildren()}]
      * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
-    public void addChild(E child, int index)
+    public int addChild(E child, int index)
     {
         this.validateNotNull(child);
         if (this.children.indexOf(child) != -1) {
@@ -82,17 +83,19 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
         child.addPropertyChangeListener(this);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + NEW, null, child);
         this.propertyFirer.firePropertyChange(evt);
+        return this.children.size() - 1;
     }
 
     /**
      * Metoda dodaje pomiar na końcu listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
      * @param child pomiar do dodania
+     * @return indeks dodanego elementu
      * @throws NullPointerException jeśli measure == null
      * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
-    public void addChild(E child)
+    public int addChild(E child)
     {
-        this.addChild(child, -1);
+        return this.addChild(child, -1);
     }
 
     /**

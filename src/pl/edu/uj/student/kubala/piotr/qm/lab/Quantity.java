@@ -78,7 +78,6 @@ public class Quantity implements Serializable
     public String toString() {
         FormattedMeasureFactory factory = new FormattedMeasureFactory();
         factory.setSeparateErrors(true);
-        factory.setErrorSignificantDigits(16);
         return factory.format(this).toString();
     }
 }

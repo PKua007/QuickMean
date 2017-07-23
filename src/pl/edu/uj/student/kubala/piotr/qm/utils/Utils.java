@@ -8,6 +8,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.utils;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -55,5 +56,21 @@ public class Utils
             if (value >= index)
                 it.set(value + 1);
         }
+    }
+
+    /**
+     * Kopiuje parametry jednej akcji do drugiej. Przydatne np. przy ustawianiu akcji już istniejącego przycisku z
+     * nazwą, mnemonikiem, itd.
+     * @param source źródło wartości kluczy
+     * @param dest cel do skopiowania
+     */
+    public static void copyButtonAction(AbstractButton source, Action dest)
+    {
+        dest.putValue(Action.ACTION_COMMAND_KEY, source.getActionCommand());
+        dest.putValue(Action.MNEMONIC_KEY, source.getMnemonic());
+        dest.putValue(Action.NAME, source.getText());
+        dest.putValue(Action.SHORT_DESCRIPTION, source.getToolTipText());
+        dest.putValue(Action.SMALL_ICON, source.getIcon());
+        dest.putValue("enabled", source.isEnabled());
     }
 }

@@ -54,7 +54,7 @@ public class EDTInitializationManager {
             // Zainicjuj przechowywany element
             if (INIT_DEBUG) {
                 if (instance.initStack.empty())
-                    System.out.println("Inicjacja niezależnego elementu " + this + "...");
+                    System.out.println("Inicjacja elementu " + this + "...");
                 else
                     System.out.println("Inicjacja elementu " + this + " żądanego przez "
                             + instance.initStack.peek() + "...");
@@ -67,16 +67,10 @@ public class EDTInitializationManager {
         private void throwDepsLoop(EDTInitializationManager instance, EDTInitBox box)
         {
             StringBuilder info = new StringBuilder();
-            info.append("Pętla referencji na elemencie ");
-            info.append(box);
-            info.append(". Stos wywołań:\n");
-            for (EDTInitBox stackelem : instance.initStack) {
-                info.append("\t");
-                info.append(stackelem);
-                info.append("\n");
-            }
-            info.append("Elementy żądane przez ostatni:\n\t");
-            info.append(this.deps.toString());
+            info.append("Pętla referencji na elemencie ").append(box).append(". Stos wywołań:\n");
+            for (EDTInitBox stackelem : instance.initStack)
+                info.append("\t").append(stackelem).append("\n");
+            info.append("Elementy żądane przez ostatni:\n\t").append(this.deps.toString());
             throw new RuntimeException(info.toString());
         }
 
@@ -146,7 +140,7 @@ public class EDTInitializationManager {
         if (which_box == null)
             throw new RuntimeException("Element " + which.getElementName() + " nie jest zarejestrowany");
         if (depends_on_box == null)
-            throw new RuntimeException("Element " + which.getElementName() + " nie jest zarejestrowany");
+            throw new RuntimeException("Element " + depends_on.getElementName() + " nie jest zarejestrowany");
 
         // Zarejestruj zależność, jeśli jeszcze nie zarejestrowana
         if (!which_box.deps.contains(depends_on_box))

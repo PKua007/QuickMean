@@ -13,6 +13,7 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Objects;
@@ -66,8 +67,11 @@ public class MeasuresInput implements View, PropertyChangeListener
         //this.inputPane.setPreferredSize(new Dimension(0, 50));
         this.inputPane.setFont(EDITOR_FONT);
         this.individualErrorsButton = new JButton(INDIVIDUAL_ERRORS);
+        this.individualErrorsButton.setMnemonic(KeyEvent.VK_I);
         this.deleteMeasureButton = new JButton(DELETE_MEASURE);
+        this.deleteMeasureButton.setMnemonic(KeyEvent.VK_U);
         this.nextMeasureButton = new JButton(NEXT_SERIES);
+        this.nextMeasureButton.setMnemonic(KeyEvent.VK_N);
 
         // Utwórz scroll panel na edytor i dodaj go do niego
         JScrollPane scrollPane = new JScrollPane(inputPane);

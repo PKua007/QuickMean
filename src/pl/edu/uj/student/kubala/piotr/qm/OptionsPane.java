@@ -225,11 +225,13 @@ public class OptionsPane implements View, PropertyChangeListener
                 this.significantDigitsComboBox.setEnabled(true);
 
                 // Zmień tytuł
-                if (selected_series.length == 1)
-                    this.titledBorder.setTitle(SERIES_OPTIONS + " \"" + selected_series[0].getLabel() + "\"");
-                else
-                    this.titledBorder.setTitle(SERIES_OPTIONS + " [zaznaczenie]");
-                this.panel.repaint();
+                this.updateTitle(selected_series);
+                break;
+
+            // Zmiana nazwy serii
+            case Series.LABEL:
+                Series [] sel_series = labProject.getSelectedSeries();
+                this.updateTitle(sel_series);
                 break;
         }
     }
@@ -248,6 +250,23 @@ public class OptionsPane implements View, PropertyChangeListener
         this.calibrationErrorField.setValue(null);
         this.calibrationErrorField.setEnabled(false);
         this.titledBorder.setTitle(SERIES_OPTIONS);
+    }
+
+    /* Pomoznicza metoda zmieniająca tytuł panelu opcji w zależności od zaznaczenia */
+    private void updateTitle(Series [] sel_series)
+    {
+        // Zabezpiecz przed aktualizacją, jeśli zmiana nie dotyczy bieżącej grupy
+        /*if (sel_series != null && sel_series.length > 0) {
+            SeriesGroup parent = sel_series[0];
+        }*/
+
+        if (sel_series == null || sel_series.length == 0)
+            this.titledBorder.setTitle(SERIES_OPTIONS);
+        else if (sel_series.length == 1)
+            this.titledBorder.setTitle(SERIES_OPTIONS + " \"" + sel_series[0].getLabel() + "\"");
+        else
+            this.titledBorder.setTitle(SERIES_OPTIONS + " [zaznaczenie]");
+        this.panel.repaint();
     }
 
     public QuickFrame getParentFrame() {

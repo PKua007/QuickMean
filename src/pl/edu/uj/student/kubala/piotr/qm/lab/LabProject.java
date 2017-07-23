@@ -69,13 +69,15 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
      * @throws IllegalArgumentException jeśli grupa jest już w projekcie
      */
     @Override
-    public void addChild(SeriesGroup seriesGroup, int index)
+    public int addChild(SeriesGroup seriesGroup, int index)
     {
         this.validateNotNull(seriesGroup);
         this.validateAddIdx(index);
+        if (this.getSeriesGroupByName(seriesGroup.getName()) != null)
+            throw new RuntimeException("Istnieje już grupa o nazwie nowo dodawanej - " + seriesGroup.getName());
         if (index != -1 && index <= this.selectedSeriesGroup)
             this.selectedSeriesGroup++;
-        super.addChild(seriesGroup, index);
+        return super.addChild(seriesGroup, index);
     }
 
     /**
@@ -163,6 +165,19 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
     public int getSelectedSeriesGroupIdx()
     {
         return this.selectedSeriesGroup;
+    }
+
+    /**
+     * Pobiera grupę na podstawie nazwy.
+     * @param name nazwa grupy
+     * @return grupa o podanej nazwie lub {@code null}, jeśli nie istnieje
+     */
+    public SeriesGroup getSeriesGroupByName(String name)
+    {
+        for (SeriesGroup group : this.children)
+            if (group.getName().equals(name))
+                return group;
+        return null;
     }
 
     /* Metody zapisu i otwierania */
