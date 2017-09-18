@@ -9,6 +9,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
+import pl.edu.uj.student.kubala.piotr.qm.PropagatingListModel;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
@@ -132,40 +133,40 @@ public class SeriesGroup extends PropagatingListModel<Series>
 
     /**
      * Metoda dodaje serię do listy
-     * @param series seria do dodania
+     * @param element seria do dodania
      * @param index pozyzja, na której ma być dodana. -1, jeśli na końcu
      * @throws NullPointerException jeśli series == null
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link SeriesGroup#getNumberOfChildren()}  - 1}]
+     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link SeriesGroup#getNumberOfElements()}  - 1}]
      * @throws IllegalArgumentException jeśli seria jest już w grupie
      */
     @Override
-    public int addChild(Series series, int index)
+    public int addElement(Series element, int index)
     {
-        this.validateNotNull(series);
+        this.validateNotNull(element);
         this.validateAddIdx(index);
         Utils.shiftIndicesAfterAddition(index, this.selectedSeries);
         if (index != -1 && this.highlightedSeries >= index)
             this.highlightedSeries++;
-        return super.addChild(series, index);
+        return super.addElement(element, index);
     }
 
     /**
      * Metoda usuwa serię z listy po indeksie. Jeśli usuwana seria jest właśnie podświetlona, ustawia podświetlenie na
      * -1 i wyzwalane jest zdarzenia zmiany podświetlenia
-     * @param pos pozycja serii
+     * @param index pozycja serii
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return liczba serii pozostałych po usunięciu
      */
     @Override
-    public int deleteChild(int pos)
+    public int deleteElement(int index)
     {
-        this.validateIdx(pos);
-        Utils.removeElementFromIndicesList(pos, this.selectedSeries);
-        if (this.highlightedSeries == pos)
+        this.validateIdx(index);
+        Utils.removeElementFromIndicesList(index, this.selectedSeries);
+        if (this.highlightedSeries == index)
             this.setHighlightedSeries(-1);
-        else if (this.highlightedSeries > pos)
+        else if (this.highlightedSeries > index)
             this.highlightedSeries--;
-        return super.deleteChild(pos);
+        return super.deleteElement(index);
     }
 
     /**

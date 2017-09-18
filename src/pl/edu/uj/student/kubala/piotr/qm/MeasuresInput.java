@@ -10,8 +10,10 @@
 package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import javax.swing.*;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -24,12 +26,15 @@ public class MeasuresInput implements View, PropertyChangeListener
     private static final String     DELETE_MEASURE = "<html><center>Usuń<br/>pomiar</center></html>";
     private static final String     NEXT_SERIES = "<html><center>Następna<br/>seria</center></html>";
     private static final Font       EDITOR_FONT = new Font("DialogInput", Font.BOLD, 12);
+    private static final MutableAttributeSet    FOCUS_ATTR_SET = new SimpleAttributeSet();
+    private static final MutableAttributeSet    VALUE_ATTR_SET = new SimpleAttributeSet();
 
     private static final int        INPUT_BUTTONS_GAP = 7;     // Odstęp między okienkiem i przyciskami
     private static final int        BUTTONS_GAP = 10;           // Odstęp między przyciskami
     private static final int        INPUT_WINDOW_HEIGHT = 100;  // Wysokość okna z pomiarami
 
     private LabProject  labProject;     // Projekt laboratorium
+    private MeasureInputModel   inputModel;     // Model wprowadzania pomiarów
     private QuickFrame  parentFrame;    // Główka ramka
 
     private JPanel          panel;
@@ -37,6 +42,13 @@ public class MeasuresInput implements View, PropertyChangeListener
     private JButton         individualErrorsButton;
     private JButton         deleteMeasureButton;
     private JButton         nextMeasureButton;
+
+    static {
+        // Ustaw style dla odpowiednich części pomarów
+        StyleConstants.setBackground(FOCUS_ATTR_SET, new Color(0x8ED1E0));
+
+        StyleConstants.setBackground(VALUE_ATTR_SET, new Color(0xE0E0E0));
+    }
 
     /**
      * Konstruktor okna z pomiarami. Tworzy JTextPane z zawartością i ustawia jego format.
@@ -47,6 +59,7 @@ public class MeasuresInput implements View, PropertyChangeListener
     {
         this.parentFrame = parentFrame;
         this.labProject = labProject;
+        this.inputModel = new MeasureInputModel();
     }
 
     /**
@@ -89,8 +102,9 @@ public class MeasuresInput implements View, PropertyChangeListener
         this.panel.add(scrollPane, BorderLayout.CENTER);
         this.panel.add(buttonsPanel, BorderLayout.SOUTH);
 
-        // Nasłuchuj projektu
+        // Nasłuchuj projektu i swojego modelu
         this.labProject.addPropertyChangeListener(this);
+        this.inputModel.addPropertyChangeListener(this);
     }
 
     @Override
@@ -114,8 +128,69 @@ public class MeasuresInput implements View, PropertyChangeListener
         return Objects.requireNonNull(panel);
     }
 
+    public JTextPane getInputPane() {
+        return inputPane;
+    }
+
+    public MeasureInputModel getInputModel() {
+        return inputModel;
+    }
+
+    /* Pomocnicza metoda przerenderowująca serię w oknie pomiarów */
+    public void render() {
+        this.inputPane.setText("");
+        if (this.inputModel.getNumberOfElements() == 0)
+            return;
+
+        // Zrenderuj wszystkie, oprócz ostatniego
+        for (int i = 0; i < this.inputModel.getNumberOfElements() - 1; i++) {
+            this.renderHolder(this.inputModel.getElement(i));
+            StyledDocument doc = this.inputPane.getStyledDocument();
+            this.appendText("; ", null);
+        }
+        this.renderHolder(this.inputModel.getElement(this.inputModel.getNumberOfElements() - 1));
+        if (this.inputModel.isLastMeasureAccepted())
+            this.appendText("; ", null);
+    }
+
+    /* Pomocnicza metoda renderująca pojedynczy pomiar na końcu okna */
+    private void renderHolder(MeasureHolder holder) {
+        String text = holder.getText();
+        Utils.Range vr = holder.getValueRange();
+        StyledDocument doc = this.inputPane.getStyledDocument();
+        int curr_len = doc.getLength();
+        if (text == null)
+            return;
+
+        if (holder.isFocused()) {
+            this.appendText(text, FOCUS_ATTR_SET);
+        } else {
+            this.appendText(text, null);
+            if (vr != null)
+                doc.setCharacterAttributes(curr_len + vr.getMin(), vr.getLength(), VALUE_ATTR_SET, true);
+        }
+    }
+
+    /* Pomocnicza metoda dodająca tekst na końcu okna pomiarów */
+    private void appendText(String text, AttributeSet attr) {
+        AbstractDocument doc = (AbstractDocument) this.inputPane.getDocument();
+        DocumentFilter filter = doc.getDocumentFilter();
+        doc.setDocumentFilter(null);
+        try {
+            doc.insertString(doc.getLength(), text, attr);
+        } catch (BadLocationException e) {
+            throw new AssertionError();
+        }
+        doc.setDocumentFilter(filter);
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-
+        switch (evt.getPropertyName()) {
+            // Zmiana serii w oknie - przerenderuj
+            case MeasureInputModel.BOUND_SERIES:
+                render();
+                break;
+        }
     }
 }

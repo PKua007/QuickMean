@@ -12,6 +12,7 @@ import pl.edu.uj.student.kubala.piotr.qm.Controller;
 import pl.edu.uj.student.kubala.piotr.qm.EDTInitializationManager;
 import pl.edu.uj.student.kubala.piotr.qm.QuickFrame;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
@@ -53,8 +54,12 @@ public class GroupDialogController implements Controller
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            // Utwórz nową grupę, a w niej pierwszą serię
             SeriesGroup group = new SeriesGroup(new_name);
-            int idx = project.addChild(group);
+            Series first_series = new Series();
+            group.addElement(first_series);
+            group.setHighlightedSeries(0);
+            int idx = project.addElement(group);
             project.setSelectedSeriesGroup(idx);
             groupDialog.setVisible(false);
         }

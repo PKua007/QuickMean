@@ -46,152 +46,152 @@ class SeriesGroupTest
     @Test
     void addLast()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1]);
-        seriesGroup.addChild(series[2]);
-        seriesGroup.addChild(series[3]);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1]);
+        seriesGroup.addElement(series[2]);
+        seriesGroup.addElement(series[3]);
 
-        assertEquals(series[0], seriesGroup.getChild(0));
-        assertEquals(series[3], seriesGroup.getChild(3));
+        assertEquals(series[0], seriesGroup.getElement(0));
+        assertEquals(series[3], seriesGroup.getElement(3));
     }
 
     @Test
     void addNull()
     {
-        assertThrows(NullPointerException.class, () -> seriesGroup.addChild(null));
+        assertThrows(NullPointerException.class, () -> seriesGroup.addElement(null));
     }
 
     @Test
     void addDuplicate()
     {
         IllegalArgumentException e;
-        seriesGroup.addChild(series[0]);
-        assertThrows(IllegalArgumentException.class, () -> seriesGroup.addChild(series[0]));
+        seriesGroup.addElement(series[0]);
+        assertThrows(IllegalArgumentException.class, () -> seriesGroup.addElement(series[0]));
     }
 
     @Test
     void addLastByMinusOne()
     {
-        seriesGroup.addChild(series[0], -1);
-        seriesGroup.addChild(series[1], -1);
-        seriesGroup.addChild(series[2], -1);
-        seriesGroup.addChild(series[3], -1);
+        seriesGroup.addElement(series[0], -1);
+        seriesGroup.addElement(series[1], -1);
+        seriesGroup.addElement(series[2], -1);
+        seriesGroup.addElement(series[3], -1);
 
-        assertEquals(series[0], seriesGroup.getChild(0));
-        assertEquals(series[3], seriesGroup.getChild(3));
-        assertEquals(4, seriesGroup.getNumberOfChildren());
+        assertEquals(series[0], seriesGroup.getElement(0));
+        assertEquals(series[3], seriesGroup.getElement(3));
+        assertEquals(4, seriesGroup.getNumberOfElements());
     }
 
     @Test
     void addInMiddle()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1]);
-        seriesGroup.addChild(series[3]);
-        seriesGroup.addChild(series[4]);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1]);
+        seriesGroup.addElement(series[3]);
+        seriesGroup.addElement(series[4]);
 
-        seriesGroup.addChild(series[2], 2);
-        assertEquals(series[1], seriesGroup.getChild(1));
-        assertEquals(series[2], seriesGroup.getChild(2));
-        assertEquals(series[3], seriesGroup.getChild(3));
-        assertEquals(5, seriesGroup.getNumberOfChildren());
+        seriesGroup.addElement(series[2], 2);
+        assertEquals(series[1], seriesGroup.getElement(1));
+        assertEquals(series[2], seriesGroup.getElement(2));
+        assertEquals(series[3], seriesGroup.getElement(3));
+        assertEquals(5, seriesGroup.getNumberOfElements());
     }
 
     @Test
     void addLastByIndex()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1], 1);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1], 1);
 
-        assertEquals(series[1], seriesGroup.getChild(1));
-        assertEquals(2, seriesGroup.getNumberOfChildren());
+        assertEquals(series[1], seriesGroup.getElement(1));
+        assertEquals(2, seriesGroup.getNumberOfElements());
     }
 
     @Test
     void getBadIndices()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1]);
-        seriesGroup.addChild(series[2]);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1]);
+        seriesGroup.addElement(series[2]);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.getChild(-1));
-        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.getChild(3));
-        seriesGroup.getChild(0);
-        seriesGroup.getChild(2);
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.getElement(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.getElement(3));
+        seriesGroup.getElement(0);
+        seriesGroup.getElement(2);
     }
 
     @Test
     void addBadIndices()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1]);
-        seriesGroup.addChild(series[2]);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1]);
+        seriesGroup.addElement(series[2]);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.addChild(new Series(), -2));
-        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.addChild(new Series(), 4));
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.addElement(new Series(), -2));
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.addElement(new Series(), 4));
     }
 
     @Test
     void deleteByIndex()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1]);
-        seriesGroup.addChild(series[2]);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1]);
+        seriesGroup.addElement(series[2]);
 
-        int newsize = seriesGroup.deleteChild(1);
-        assertEquals(series[0], seriesGroup.getChild(0));
-        assertEquals(series[2], seriesGroup.getChild(1));
+        int newsize = seriesGroup.deleteElement(1);
+        assertEquals(series[0], seriesGroup.getElement(0));
+        assertEquals(series[2], seriesGroup.getElement(1));
         assertEquals(2, newsize);
-        assertEquals(2, seriesGroup.getNumberOfChildren());
+        assertEquals(2, seriesGroup.getNumberOfElements());
     }
 
     @Test
     void deleteByRef()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1]);
-        seriesGroup.addChild(series[2]);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1]);
+        seriesGroup.addElement(series[2]);
 
-        int newsize = seriesGroup.deleteChild(series[1]);
-        assertEquals(series[0], seriesGroup.getChild(0));
-        assertEquals(series[2], seriesGroup.getChild(1));
+        int newsize = seriesGroup.deleteElement(series[1]);
+        assertEquals(series[0], seriesGroup.getElement(0));
+        assertEquals(series[2], seriesGroup.getElement(1));
         assertEquals(2, newsize);
-        assertEquals(2, seriesGroup.getNumberOfChildren());
+        assertEquals(2, seriesGroup.getNumberOfElements());
     }
 
     @Test
     void deleteByBadRef()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1]);
-        seriesGroup.addChild(series[2]);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1]);
+        seriesGroup.addElement(series[2]);
 
-        int newsize = seriesGroup.deleteChild(series[3]);
-        assertEquals(series[0], seriesGroup.getChild(0));
-        assertEquals(series[1], seriesGroup.getChild(1));
-        assertEquals(series[2], seriesGroup.getChild(2));
+        int newsize = seriesGroup.deleteElement(series[3]);
+        assertEquals(series[0], seriesGroup.getElement(0));
+        assertEquals(series[1], seriesGroup.getElement(1));
+        assertEquals(series[2], seriesGroup.getElement(2));
         assertEquals(3, newsize);
-        assertEquals(3, seriesGroup.getNumberOfChildren());
+        assertEquals(3, seriesGroup.getNumberOfElements());
     }
 
     @Test
     void deleteBadIndices()
     {
-        seriesGroup.addChild(series[0]);
-        seriesGroup.addChild(series[1]);
-        seriesGroup.addChild(series[2]);
+        seriesGroup.addElement(series[0]);
+        seriesGroup.addElement(series[1]);
+        seriesGroup.addElement(series[2]);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.deleteChild(-1));
-        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.getChild(3));
-        seriesGroup.deleteChild(0);
-        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.deleteChild(2));
-        seriesGroup.deleteChild(1);
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.deleteElement(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.getElement(3));
+        seriesGroup.deleteElement(0);
+        assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.deleteElement(2));
+        seriesGroup.deleteElement(1);
     }
 
     @Test
     void setBadSelectedSeries() {
         Arrays.stream(series).
-                forEach(seriesGroup::addChild);
+                forEach(seriesGroup::addElement);
 
         assertThrows(NullPointerException.class, () -> seriesGroup.setSelectedSeries(null));
         assertThrows(ArrayIndexOutOfBoundsException.class, () -> seriesGroup.setSelectedSeries(new int[]{-1, 6}));
@@ -202,23 +202,23 @@ class SeriesGroupTest
     @Test
     void deleteSelectedMeasures() {
         Arrays.stream(series).
-                forEach(seriesGroup::addChild);
+                forEach(seriesGroup::addElement);
 
         seriesGroup.setSelectedSeries(new int[]{1, 2, 4, 5});
-        seriesGroup.deleteChild(2);
-        seriesGroup.deleteChild(series[4]);
-        seriesGroup.deleteChild(series[0]);
+        seriesGroup.deleteElement(2);
+        seriesGroup.deleteElement(series[4]);
+        seriesGroup.deleteElement(series[0]);
         assertArrayEquals(new int[]{0, 2}, seriesGroup.getSelectedSeries(), Arrays.toString(seriesGroup.getSelectedSeries()));
 
-        seriesGroup.deleteChild(series[1]);
-        seriesGroup.deleteChild(series[5]);
+        seriesGroup.deleteElement(series[1]);
+        seriesGroup.deleteElement(series[5]);
         assertArrayEquals(new int[0], seriesGroup.getSelectedSeries());
     }
 
     @Test
     void setBadHighlightedSeries() {
         Arrays.stream(series).
-                forEach(seriesGroup::addChild);
+                forEach(seriesGroup::addElement);
 
         assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.setHighlightedSeries(-2));
         assertThrows(IndexOutOfBoundsException.class, () -> seriesGroup.setHighlightedSeries(6));
@@ -229,14 +229,14 @@ class SeriesGroupTest
     @Test
     void deletionHighlightedSeriesShift() {
         Arrays.stream(series).
-                forEach(seriesGroup::addChild);
+                forEach(seriesGroup::addElement);
 
         seriesGroup.setHighlightedSeries(3);
-        seriesGroup.deleteChild(4);
+        seriesGroup.deleteElement(4);
         assertEquals(3, seriesGroup.getHighlightedSeriesIdx());
-        seriesGroup.deleteChild(2);
+        seriesGroup.deleteElement(2);
         assertEquals(2, seriesGroup.getHighlightedSeriesIdx());
-        seriesGroup.deleteChild(2);
+        seriesGroup.deleteElement(2);
         assertEquals(-1, seriesGroup.getHighlightedSeriesIdx());
     }
 }

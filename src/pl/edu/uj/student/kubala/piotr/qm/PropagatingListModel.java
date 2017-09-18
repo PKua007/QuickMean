@@ -7,18 +7,13 @@
 // (C)PKua, wszystkie prawa zastrzeżone
 //---------------------------------------------------------------------
 
-package pl.edu.uj.student.kubala.piotr.qm.lab;
+package pl.edu.uj.student.kubala.piotr.qm;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Objects;
 
-
-//#############################################
-// DO ZROBIENIA:
-// - nieokreślony stan po złym wywołaniu
-//#############################################
 
 
 /**
@@ -41,7 +36,7 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
     }
 
     /**
-     * Ustawia prefiks specyficzny dla rozszerzającej klasy
+     * Ustawia prefiks specyficzny dla rozszerzającej klasy dla nazw właściwości PropertyChangeEvent.
      * @param prefix prefisk umieszczany przez nazwami właściwości przy wywoływaniu zdarzeń
      */
     protected void setPrefix(String prefix)
@@ -60,110 +55,116 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
     }
 
     /**
-     * Metoda dodaje pomiar do listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
-     * @param child pomiar do dodania
+     * Metoda dodaje element do listy i ustawia w nim rodzica na this. Niedozwolona wartość null.
+     * @param element element do dodania
      * @param index pozyzja, na której ma być dodany. -1, jeśli na końcu
      * @return indeks dodanego elementu
-     * @throws NullPointerException jeśli measure == null
-     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfChildren()}]
-     * @throws IllegalArgumentException jeśli pomiar już jest w serii
+     * @throws NullPointerException jeśli element == null
+     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link PropagatingListModel#getNumberOfElements()}]
+     * @throws IllegalArgumentException jeśli element już jest na liście
      */
-    public int addChild(E child, int index)
+    public int addElement(E element, int index)
     {
-        this.validateNotNull(child);
-        if (this.children.indexOf(child) != -1) {
-            throw new IllegalArgumentException(child.getClass().getSimpleName() + " jest już w " + this.getClass().getSimpleName());
+        this.validateNotNull(element);
+        if (this.children.indexOf(element) != -1) {
+            throw new IllegalArgumentException(element.getClass().getSimpleName() + " jest już w " + this.getClass().getSimpleName());
         } if (index == -1) {
-            this.children.add(child);
+            this.children.add(element);
         } else {
-            this.children.add(index, child);
+            this.children.add(index, element);
         }
 
-        child.setParent(this);
-        child.addPropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + NEW, null, child);
+        element.setParent(this);
+        element.addPropertyChangeListener(this);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + NEW, null, element);
         this.propertyFirer.firePropertyChange(evt);
         return this.children.size() - 1;
     }
 
     /**
-     * Metoda dodaje pomiar na końcu listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
-     * @param child pomiar do dodania
+     * Metoda dodaje element na końcu listy i ustawia w nim rodzica na this. Niedozwolona wartość null.
+     * @param element element do dodania
      * @return indeks dodanego elementu
-     * @throws NullPointerException jeśli measure == null
-     * @throws IllegalArgumentException jeśli pomiar już jest w serii
+     * @throws NullPointerException jeśli element == null
+     * @throws IllegalArgumentException jeśli element już jest na liście
      */
-    public int addChild(E child)
+    public int addElement(E element)
     {
-        return this.addChild(child, -1);
+        return this.addElement(element, -1);
     }
 
     /**
-     * Metoda pobiera pomiar
-     * @param pos pozycja pomiaru
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link Series#getNumberOfChildren()} - 1]
-     * @return pomiar z podanej pozycji
+     * Metoda zwraca element spod indeksu
+     * @param index indeks do zwrócenia elementu
+     * @throws IndexOutOfBoundsException, jeśli index jest poza [0, {@link PropagatingListModel#getNumberOfElements()} - 1]
+     * @return element z podanej pozycji
      */
-    public E getChild(int pos)
+    public E getElement(int index)
     {
-        return this.children.get(pos);
+        return this.children.get(index);
     }
 
     /**
-     * Metoda usuwa pomiar z listy po indeksie i ustawia w nim rodzica na null.
-     * @param pos pozycja pomiaru
-     * @return liczba pomiarów pozostałych po usunięciu
+     * Metoda usuwa element z listy po indeksie i ustawia w nim rodzica na null.
+     * @param index pozycja elementu
+     * @return liczba elementów pozostałych po usunięciu
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      */
-    public int deleteChild(int pos)
+    public int deleteElement(int index)
     {
-        E child = this.children.get(pos);
+        E element = this.children.get(index);
         // Usuń dzieci, jeśli posiada
-        if (child instanceof PropagatingListModel)
-            ((PropagatingListModel)child).clearChildren();
+        if (element instanceof PropagatingListModel)
+            ((PropagatingListModel)element).clear();
 
-        this.children.remove(pos);
-        child.setParent(null);
-        child.removePropertyChangeListener(this);
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + DEL, child, null);
+        this.children.remove(index);
+        element.setParent(null);
+        element.removePropertyChangeListener(this);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + DEL, element, null);
         this.propertyFirer.firePropertyChange(evt);
         return this.children.size();
     }
 
-    public int deleteChild(E child)
+
+    /**
+     * Metoda usuwa element z listy poprzez referencję.
+     * @param element element do usunięcia
+     * @return liczba elementów pozostałych po usunięciu
+     */
+    public int deleteElement(E element)
     {
-        int idx = this.getChildIdx(child);
+        int idx = this.getElementIdx(element);
         if (idx != -1)
-            deleteChild(idx);
+            deleteElement(idx);
         return this.children.size();
     }
 
     /**
-     * Metoda usuwa wszystkie dzieci na liście
+     * Metoda usuwa wszystkie elementy na liście. Powiadomienia PropertyChangeEvent są wysyłane dla każdego z osobna
      */
-    public void clearChildren()
+    public void clear()
     {
-        while (this.getNumberOfChildren() > 0)
-            deleteChild(0);
+        while (this.getNumberOfElements() > 0)
+            deleteElement(0);
     }
 
     /**
      * Metoda zwraca liczbę pomiarów w serii
      * @return liczba pomiarów w serii
      */
-    public int getNumberOfChildren()
+    public int getNumberOfElements()
     {
         return this.children.size();
     }
 
     /**
      * Metoda zwraca indeks podanego pomiaru, lub -1, jeśli nie znaleziono
-     * @param child poszukiwany pomiar
+     * @param element poszukiwany pomiar
      * @return indeks poszukiwanego pomiaru, lub -1, jeśli nie znaleziono
      */
-    public int getChildIdx(E child)
+    public int getElementIdx(E element)
     {
-        return this.children.indexOf(child);
+        return this.children.indexOf(element);
     }
 
     /**

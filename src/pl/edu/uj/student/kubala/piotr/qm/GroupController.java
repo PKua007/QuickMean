@@ -81,12 +81,12 @@ public class GroupController implements Controller
             if (!groupDisplay.deleteGroupConfirmationDialog())
                 return;
             int idx = labProject.getSelectedSeriesGroupIdx();
-            SeriesGroup selectedGroup = labProject.getChild(idx);
+            SeriesGroup selectedGroup = labProject.getElement(idx);
             if (selectedGroup != null)
-                labProject.deleteChild(selectedGroup);
+                labProject.deleteElement(selectedGroup);
             if (idx - 1 >= 0)
                 labProject.setSelectedSeriesGroup(idx - 1);
-            else if (labProject.getNumberOfChildren() > 0)
+            else if (labProject.getNumberOfElements() > 0)
                 labProject.setSelectedSeriesGroup(0);
         }
     }
@@ -153,7 +153,7 @@ public class GroupController implements Controller
                 SeriesGroup group = labProject.getSelectedSeriesGroup();
                 if (group == null)
                     return;
-                Series sel_series = group.getChild(idx);
+                Series sel_series = group.getElement(idx);
                 sel_series.setLabel(newName);
             }
         }

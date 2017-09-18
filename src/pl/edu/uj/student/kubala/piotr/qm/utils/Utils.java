@@ -8,12 +8,41 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.utils;
 
+import pl.edu.uj.student.kubala.piotr.qm.Main;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
 public class Utils
 {
+    public static class Range
+    {
+        public int beg;
+        public int end;
+
+        public Range() {
+
+        }
+
+        public Range(int value) {
+            this.beg = this.end = value;
+        }
+
+        public Range(int beg, int end) {
+            this.beg = beg;
+            this.end = end;
+        }
+
+        public int getMin() {
+            return Math.min(this.beg, this.end);
+        }
+
+        public int getLength() {
+            return Math.abs(this.end - this.beg);
+        }
+    }
+
     /**
      * Usuwa wszystkie wystąpienia elementu o podanym indeksie z listy {@code list} i zmniejsza o jeden indeksy
      * od niego większe. Funkcja przydatna, jeśli przechowujemy na liście indeksy elementów w tablicy/kolekcji, jeden

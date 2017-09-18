@@ -12,7 +12,6 @@ package pl.edu.uj.student.kubala.piotr.qm;
 import pl.edu.uj.student.kubala.piotr.qm.lab.*;
 
 import javax.swing.*;
-import javax.swing.event.ListDataListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
@@ -177,7 +176,7 @@ public class GroupDisplay implements View
         private void handleNewGroup(PropertyChangeEvent evt) {
             int idx;
             SeriesGroup newGroup = (SeriesGroup) evt.getNewValue();
-            idx = labProject.getChildIdx(newGroup);
+            idx = labProject.getElementIdx(newGroup);
             if (idx == -1)
                 throw new AssertionError();
 
@@ -189,15 +188,15 @@ public class GroupDisplay implements View
         private void handleDelGroup(PropertyChangeEvent evt) {
             DefaultComboBoxModel<String> comboBoxModel = (DefaultComboBoxModel<String>) groupList.getModel();
             comboBoxModel.removeAllElements();
-            for (int i = 0; i < labProject.getNumberOfChildren(); i++)
-                comboBoxModel.addElement(labProject.getChild(i).getName());
+            for (int i = 0; i < labProject.getNumberOfElements(); i++)
+                comboBoxModel.addElement(labProject.getElement(i).getName());
         }
 
         /* Zmiana wybranej grupy - zmień wybraną pozycję na liście i zaktualizuj tabelę */
         private void handleSelectedGroupChange(PropertyChangeEvent evt) {
             // Zmień pozycję na liście i status przycisków
             SeriesGroup selectedGroup = (SeriesGroup) evt.getNewValue();
-            groupList.setSelectedIndex(labProject.getChildIdx(selectedGroup));
+            groupList.setSelectedIndex(labProject.getElementIdx(selectedGroup));
             deleteButton.setEnabled(selectedGroup != null);
             editButton.setEnabled(selectedGroup != null);
 
@@ -219,8 +218,8 @@ public class GroupDisplay implements View
             FormattedMeasureFactory factory = new FormattedMeasureFactory();
             FormattedMeasure formattedMeasure;
 
-            for (int i = 0; i < selectedGroup.getNumberOfChildren(); i++) {
-                series = selectedGroup.getChild(i);
+            for (int i = 0; i < selectedGroup.getNumberOfElements(); i++) {
+                series = selectedGroup.getElement(i);
                 factory.setSeparateErrors(series.isSeparateErrors());
                 factory.setErrorSignificantDigits(series.getSignificantDigits());
                 quantity = series.getMeanQuantity();
@@ -244,7 +243,7 @@ public class GroupDisplay implements View
             if (selectedGroup == null)
                 return;
             Series changedSeries = (Series) evt.getSource();
-            int idx = selectedGroup.getChildIdx(changedSeries);
+            int idx = selectedGroup.getElementIdx(changedSeries);
             if (idx == -1)
                 return;
 
@@ -265,7 +264,7 @@ public class GroupDisplay implements View
         private void handleGroupName(PropertyChangeEvent evt)
         {
             SeriesGroup group = (SeriesGroup) evt.getSource();
-            int idx = labProject.getChildIdx(group);
+            int idx = labProject.getElementIdx(group);
             if (idx == -1)
                 return;
             // Usuń starą pozycję i dodaj nową (albo raczej na odwrót, żeby wybrana grupa się sama nie zmieniła

@@ -10,6 +10,8 @@
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.EDTInitializable;
+import pl.edu.uj.student.kubala.piotr.qm.Model;
+import pl.edu.uj.student.kubala.piotr.qm.PropagatingListModel;
 import pl.edu.uj.student.kubala.piotr.qm.converters.Converter;
 
 import java.beans.PropertyChangeEvent;
@@ -62,39 +64,39 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
 
     /**
      * Metoda dodaje grupę serii do listy
-     * @param seriesGroup grupa serii do dodania
+     * @param element grupa serii do dodania
      * @param index pozyzja, na której ma być dodana. -1, jeśli na końcu
      * @throws NullPointerException jeśli seriesGroup == null
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link LabProject#getNumberOfChildren()}  - 1}]
+     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link LabProject#getNumberOfElements()}  - 1}]
      * @throws IllegalArgumentException jeśli grupa jest już w projekcie
      */
     @Override
-    public int addChild(SeriesGroup seriesGroup, int index)
+    public int addElement(SeriesGroup element, int index)
     {
-        this.validateNotNull(seriesGroup);
+        this.validateNotNull(element);
         this.validateAddIdx(index);
-        if (this.getSeriesGroupByName(seriesGroup.getName()) != null)
-            throw new RuntimeException("Istnieje już grupa o nazwie nowo dodawanej - " + seriesGroup.getName());
+        if (this.getSeriesGroupByName(element.getName()) != null)
+            throw new RuntimeException("Istnieje już grupa o nazwie nowo dodawanej - " + element.getName());
         if (index != -1 && index <= this.selectedSeriesGroup)
             this.selectedSeriesGroup++;
-        return super.addChild(seriesGroup, index);
+        return super.addElement(element, index);
     }
 
     /**
      * Metoda usuwa grupę serii z listy po indeksie
-     * @param pos pozycja grupy serii
+     * @param index pozycja grupy serii
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      * @return liczba grup serii pozostałych po usunięciu
      */
     @Override
-    public int deleteChild(int pos)
+    public int deleteElement(int index)
     {
-        this.validateIdx(pos);
-        if (selectedSeriesGroup == pos)
+        this.validateIdx(index);
+        if (selectedSeriesGroup == index)
             this.setSelectedSeriesGroup(-1);
-        else if (selectedSeriesGroup > pos)
+        else if (selectedSeriesGroup > index)
             this.selectedSeriesGroup--;
-        return super.deleteChild(pos);
+        return super.deleteElement(index);
     }
 
     /**
@@ -137,7 +139,7 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
         int idx = selectedGroup.getHighlightedSeriesIdx();
         if (idx == -1)
             return null;
-        return selectedGroup.getChild(idx);
+        return selectedGroup.getElement(idx);
     }
 
     /**
@@ -154,7 +156,7 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
         if (sel_series_idx.length == 0)
             return new Series[0];
         return Arrays.stream(sel_series_idx)
-                .mapToObj(sel_group::getChild)
+                .mapToObj(sel_group::getElement)
                 .toArray(Series[]::new);
     }
 
@@ -238,57 +240,57 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
 
         /*defaultSeriesGroup = new SeriesGroup();
         defaultSeries = new Series();
-        defaultSeriesGroup.addChild(defaultSeries);
+        defaultSeriesGroup.addElement(defaultSeries);
         defaultSeriesGroup.setHighlightedSeries(0);
-        this.addChild(defaultSeriesGroup);
+        this.addElement(defaultSeriesGroup);
         this.setSelectedSeriesGroup(0);*/
 
         defaultSeriesGroup = new SeriesGroup();
 
         defaultSeries = new Series();
-        defaultSeries.addChild(new Measure(5435634, 234, 234, 0));
-        defaultSeries.addChild(new Measure(5475783, 0, 34, 0));
-        defaultSeries.addChild(new Measure(5436724, 734, 24, 0));
+        defaultSeries.addElement(new Measure(5435634, 234, 234, 0));
+        defaultSeries.addElement(new Measure(5475783, 0, 34, 0));
+        defaultSeries.addElement(new Measure(5436724, 734, 24, 0));
         defaultSeries.updateMean();
-        defaultSeriesGroup.addChild(defaultSeries);
+        defaultSeriesGroup.addElement(defaultSeries);
 
         defaultSeries = new Series();
         defaultSeries.setCalibrationError(500);
-        defaultSeries.addChild(new Measure(545634, 0, 234, 0));
-        defaultSeries.addChild(new Measure(545783, 0, 34, 0));
-        defaultSeries.addChild(new Measure(546724, 0, 24, 0));
+        defaultSeries.addElement(new Measure(545634, 0, 234, 0));
+        defaultSeries.addElement(new Measure(545783, 0, 34, 0));
+        defaultSeries.addElement(new Measure(546724, 0, 24, 0));
         defaultSeries.updateMean();
-        defaultSeriesGroup.addChild(defaultSeries);
+        defaultSeriesGroup.addElement(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeries.addChild(new Measure(0.54534, 0.0234, 0.0234, 0));
-        defaultSeries.addChild(new Measure(0.54783, 0.0, 0.034, 0));
-        defaultSeries.addChild(new Measure(0.54324, 0.0734, 0.024, 0));
+        defaultSeries.addElement(new Measure(0.54534, 0.0234, 0.0234, 0));
+        defaultSeries.addElement(new Measure(0.54783, 0.0, 0.034, 0));
+        defaultSeries.addElement(new Measure(0.54324, 0.0734, 0.024, 0));
         defaultSeries.updateMean();
-        defaultSeriesGroup.addChild(defaultSeries);
+        defaultSeriesGroup.addElement(defaultSeries);
 
         defaultSeriesGroup.setSelectedSeries(new int[]{1});
         defaultSeriesGroup.setHighlightedSeries(1);
-        this.addChild(defaultSeriesGroup);
+        this.addElement(defaultSeriesGroup);
 
 
         defaultSeriesGroup = new SeriesGroup();
 
         defaultSeries = new Series();
-        defaultSeriesGroup.addChild(defaultSeries);
+        defaultSeriesGroup.addElement(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeriesGroup.addChild(defaultSeries);
+        defaultSeriesGroup.addElement(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeriesGroup.addChild(defaultSeries);
+        defaultSeriesGroup.addElement(defaultSeries);
 
         defaultSeries = new Series();
-        defaultSeriesGroup.addChild(defaultSeries);
+        defaultSeriesGroup.addElement(defaultSeries);
 
         defaultSeriesGroup.setSelectedSeries(new int[]{2});
         defaultSeriesGroup.setHighlightedSeries(2);
-        this.addChild(defaultSeriesGroup);
+        this.addElement(defaultSeriesGroup);
         this.setSelectedSeriesGroup(0);
     }
 

@@ -94,65 +94,79 @@ public class FormattedMeasureFactory {
      * @return sformatowany pomiar
      */
     public FormattedMeasure format(Quantity quantity) {
-        FormattedMeasure result = new FormattedMeasure();
+        FormattedMeasure result;
+
+        int valueFirstDigitPos = getSignifOrZero(quantity.getValue());
+        int errFirstDigitPos = Math.max(     // pierwsza cyfra znacząca większej niepewności
+                getSignifOrIntMin(quantity.getStandardError()),
+                getSignifOrIntMin(quantity.getMaxError()));
+
+        if (valueFirstDigitPos > maxFixedExponent || valueFirstDigitPos < minFixedExponent)
+            result = formatScientific(quantity, valueFirstDigitPos, errFirstDigitPos);  // Przedstaw w postaci wykładniczej
+        else
+            result = formatDecimal(quantity, valueFirstDigitPos, errFirstDigitPos);     // Przedstaw w postaci "tradycyjnej"
+
         result.separateErrors = this.separateErrors;
+        return result;
+    }
 
-        int valueSignif = getSignifOrZero(quantity.getValue());
-        int standardSignif = getSignifOrIntMin(quantity.getStandardError());
-        int maxSignif = getSignifOrIntMin(quantity.getMaxError());
-        int firstSignif = Math.max(standardSignif, maxSignif);      // pierwsza cyfra znacząca większej niepewności
+    /* Pomocnicza metoda formatująca wielkość jako liczbę dziesiętną */
+    private FormattedMeasure formatDecimal(Quantity quantity, int valueFirstDigitPos, int errorFirstDigitPos) {
 
+        FormattedMeasure result = new FormattedMeasure();
+        result.scientificForm = false;
 
-        if (valueSignif > maxFixedExponent || valueSignif < minFixedExponent) {     // Przedstaw w postaci wykładniczej
-            result.scientificForm = true;
-            result.exponent = valueSignif;
-
-            if (firstSignif > Integer.MIN_VALUE) {      // Którykolwiek z błedów niezerowy
-                // Liczba cyfr po przecinku do wyświetlenia - taka, żeby była odpowiednia ilość cyfr znaczących większego
-                // błędu
-                int valueDotDigits = Math.max(0, valueSignif - firstSignif + this.errorSignificantDigits - 1);
-                double factor = Math.pow(10, -result.exponent);
-
-                result.value = String.format(ENGLISH_LOCALE, "%." + valueDotDigits + "f", quantity.getValue() * factor);
-                result.standardError = String.format(ENGLISH_LOCALE, "%." + valueDotDigits + "f", quantity.getStandardError() * factor);
+        if (errorFirstDigitPos > Integer.MIN_VALUE) {      // Którykolwiek z błedów niezerowy
+            // Pozycja ostatniej niezerowej cyfry - normalnie ostatnia cyfra niepewności, chyba że niepewność
+            // większa niż wynik, to pierwsa cyfra wyniku
+            int valueLastDigitPos = Math.min(valueFirstDigitPos, errorFirstDigitPos - this.errorSignificantDigits + 1);
+            if (valueLastDigitPos < 0) {  // Występuje część ułamkowa, bądź kończy się na jednościach
+                result.value = String.format(ENGLISH_LOCALE, "%." + (-valueLastDigitPos) + "f", quantity.getValue());
+                result.standardError = String.format(ENGLISH_LOCALE, "%." + (-valueLastDigitPos) + "f", quantity.getStandardError());
                 result.maxError = this.separateErrors
-                        ? String.format(ENGLISH_LOCALE, "%." + valueDotDigits + "f", quantity.getMaxError() * factor)
+                        ? String.format(ENGLISH_LOCALE, "%." + (-valueLastDigitPos) + "f", quantity.getMaxError())
                         : "";
-            } else {        // Oba błedy zerowe - walnij maksymalna dokładność
-                result.value = Double.toString(quantity.getValue() * Math.pow(10, -result.exponent));
-                result.standardError = "0.0";
-                result.maxError = this.separateErrors ? "0.0" : "";
-            }
-        } else {        // Przedstaw w postaci "tradycyjnej"
-            result.scientificForm = false;
+            } else {    // Ostatnia cyfra to cyfra dziesiątek, setek, itd. Trzeba dopisać ileś zer
+                String trailingZeros = new String(new char[valueLastDigitPos]).replace('\0', '0');
+                double factor = Math.pow(10, -valueLastDigitPos);
 
-            if (firstSignif > Integer.MIN_VALUE) {      // Którykolwiek z błedów niezerowy
-                // Pozycja ostatniej niezerowej cyfry - normalnie ostatnia cyfra niepewności, czhyba że niepewność
-                // większa niż wynik, to pierwsa cyfra wyniku
-                int valueLastDigit = Math.min(valueSignif, firstSignif - this.errorSignificantDigits + 1);
-                if (valueLastDigit < 0) {  // Występuje część ułamkowa, bądź kończy się na jednościach
-                    result.value = String.format(ENGLISH_LOCALE, "%." + (-valueLastDigit) + "f", quantity.getValue());
-                    result.standardError = String.format(ENGLISH_LOCALE, "%." + (-valueLastDigit) + "f", quantity.getStandardError());
-                    result.maxError = this.separateErrors
-                            ? String.format(ENGLISH_LOCALE, "%." + (-valueLastDigit) + "f", quantity.getMaxError())
-                            : "";
-                } else {    // Ostatnia cyfra to cyfra dziesiątek, setek, itd. Trzeba dopisać ileś zer
-                    String trailingZeros = new String(new char[valueLastDigit]).replace('\0', '0');
-                    double factor = Math.pow(10, -valueLastDigit);
-
-                    result.value = String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getValue() * factor, trailingZeros);
-                    result.standardError = String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getStandardError() * factor, trailingZeros);
-                    result.maxError = this.separateErrors
-                            ? String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getMaxError() * factor, trailingZeros)
-                            : "";
-                }
-            } else {        // Oba błedy zerowe - walnij maksymalną dokładność
-                result.value = Double.toString(quantity.getValue());
-                result.standardError = "0.0";
-                result.maxError = this.separateErrors ? "0.0" : "";
+                result.value = String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getValue() * factor, trailingZeros);
+                result.standardError = String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getStandardError() * factor, trailingZeros);
+                result.maxError = this.separateErrors
+                        ? String.format(ENGLISH_LOCALE, "%.0f%s", quantity.getMaxError() * factor, trailingZeros)
+                        : "";
             }
+        } else {        // Oba błedy zerowe - walnij maksymalną dokładność
+            result.value = Double.toString(quantity.getValue());
+            result.standardError = "0.0";
+            result.maxError = this.separateErrors ? "0.0" : "";
         }
 
+        return result;
+    }
+
+    /* Pomocnicza metoda formatująca wielkość jako liczbę w postaci naukowej (wykładniczej) */
+    private FormattedMeasure formatScientific(Quantity quantity, int valueFirstDigitPos, int errorFirstDigitPos) {
+        FormattedMeasure result = new FormattedMeasure();
+        result.scientificForm = true;
+        result.exponent = valueFirstDigitPos;
+
+        if (errorFirstDigitPos > Integer.MIN_VALUE) {      // Którykolwiek z błedów niezerowy
+            // Liczba cyfr po przecinku do wyświetlenia - taka, żeby była odpowiednia ilość cyfr znaczących większego
+            // błędu
+            int valueFractionDigits = Math.max(0, valueFirstDigitPos - errorFirstDigitPos + this.errorSignificantDigits - 1);
+            double factor = Math.pow(10, -result.exponent);
+
+            result.value = String.format(ENGLISH_LOCALE, "%." + valueFractionDigits + "f", quantity.getValue() * factor);
+            result.standardError = String.format(ENGLISH_LOCALE, "%." + valueFractionDigits + "f", quantity.getStandardError() * factor);
+            result.maxError = this.separateErrors
+                    ? String.format(ENGLISH_LOCALE, "%." + valueFractionDigits + "f", quantity.getMaxError() * factor)
+                    : "";
+        } else {        // Oba błedy zerowe - walnij maksymalna dokładność
+            result.value = Double.toString(quantity.getValue() * Math.pow(10, -result.exponent));
+            result.standardError = "0.0";
+            result.maxError = this.separateErrors ? "0.0" : "";
+        }
         return result;
     }
 

@@ -10,6 +10,7 @@ package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasure;
 import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasureFactory;
+import pl.edu.uj.student.kubala.piotr.qm.Model;
 
 import java.beans.PropertyChangeEvent;
 

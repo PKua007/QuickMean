@@ -11,6 +11,7 @@ package pl.edu.uj.student.kubala.piotr.qm.lab;
 
 import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasure;
 import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasureFactory;
+import pl.edu.uj.student.kubala.piotr.qm.PropagatingListModel;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import java.beans.PropertyChangeEvent;
@@ -313,33 +314,33 @@ public class Series extends PropagatingListModel<Measure>
 
     /**
      * Metoda dodaje pomiar do listy pomiarów i ustawia w nim rodzica na this. Niedozwolona wartość null.
-     * @param measure pomiar do dodania
+     * @param element pomiar do dodania
      * @param index pozyzja, na której ma być dodany. -1, jeśli na końcu
      * @throws NullPointerException jeśli measure == null
-     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfChildren()}]
+     * @throws IndexOutOfBoundsException jeśli index jest poza [-1, {@link Series#getNumberOfElements()}]
      * @throws IllegalArgumentException jeśli pomiar już jest w serii
      */
     @Override
-    public int addChild(Measure measure, int index)
+    public int addElement(Measure element, int index)
     {
-        this.validateNotNull(measure);
+        this.validateNotNull(element);
         this.validateAddIdx(index);
         Utils.shiftIndicesAfterAddition(index, this.selectedMeasures);
-        return super.addChild(measure, index);
+        return super.addElement(element, index);
     }
 
     /**
      * Metoda usuwa pomiar z listy po indeksie i ustawia w nim rodzica na null.
-     * @param pos pozycja pomiaru
+     * @param index pozycja pomiaru
      * @return liczba pomiarów pozostałych po usunięciu
      * @throws IndexOutOfBoundsException jeśli element pod wskazanym indeksem nie istnieje
      */
     @Override
-    public int deleteChild(int pos)
+    public int deleteElement(int index)
     {
-        this.validateIdx(pos);
-        Utils.removeElementFromIndicesList(pos, this.selectedMeasures);
-        return super.deleteChild(pos);
+        this.validateIdx(index);
+        Utils.removeElementFromIndicesList(index, this.selectedMeasures);
+        return super.deleteElement(index);
     }
 
     @Override
