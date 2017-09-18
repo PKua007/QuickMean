@@ -116,7 +116,7 @@ public class GroupDisplay implements View
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "GroupDisplay";
     }
 

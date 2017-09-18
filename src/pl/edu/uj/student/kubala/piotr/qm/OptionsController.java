@@ -60,7 +60,7 @@ public class OptionsController implements Controller, ActionListener, ItemListen
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "OptionsController";
     }
 

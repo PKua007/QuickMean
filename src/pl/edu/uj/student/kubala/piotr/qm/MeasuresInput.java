@@ -108,7 +108,7 @@ public class MeasuresInput implements View, PropertyChangeListener
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "MeasuresInput";
     }
 

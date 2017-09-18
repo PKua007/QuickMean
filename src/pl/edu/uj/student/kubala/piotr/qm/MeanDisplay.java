@@ -82,7 +82,7 @@ public class MeanDisplay implements View, PropertyChangeListener
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "MeanDisplay";
     }
 

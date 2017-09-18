@@ -14,5 +14,5 @@ package pl.edu.uj.student.kubala.piotr.qm;
 public interface EDTInitializable
 {
     void init();
-    String getElementName();
+    String getEDTInitializableName();
 }

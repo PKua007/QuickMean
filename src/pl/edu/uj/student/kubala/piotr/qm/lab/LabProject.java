@@ -295,7 +295,7 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "LabProject";
     }
 

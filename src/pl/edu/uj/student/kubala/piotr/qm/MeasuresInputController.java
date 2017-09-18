@@ -55,7 +55,7 @@ public class MeasuresInputController implements Controller
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "MeasuresInputController";
     }
 

@@ -157,7 +157,7 @@ public class GroupDialog extends AbstractDialog {
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "GroupDialog";
     }
 

@@ -78,7 +78,7 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
         element.addPropertyChangeListener(this);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + NEW, null, element);
         this.propertyFirer.firePropertyChange(evt);
-        return this.children.size() - 1;
+        return getNumberOfElements() - 1;
     }
 
     /**
@@ -122,9 +122,27 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
         element.removePropertyChangeListener(this);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + DEL, element, null);
         this.propertyFirer.firePropertyChange(evt);
-        return this.children.size();
+        return getNumberOfElements();
     }
 
+    /**
+     * Metoda usuwa zakres elementów z listy, zaczynając od początku. Dla każdego rozsyła osobne powiadomienia
+     * @param begidx początkowy indeks (włącznie)
+     * @param endidx końcowy indeks (wyłącznie)
+     * @throws IndexOutOfBoundsException jeśli indeksy leżą poza dozwolonym zakresem
+     * @throws IllegalArgumentException jesli {@code begidx > endidx}
+     * @return liczba elementów pozostałych po usunięciu
+     */
+    public int deleteElementRange(int begidx, int endidx)
+    {
+        validateIdx(begidx);
+        validateIdx(endidx - 1);
+        if (begidx > endidx)
+            throw new IllegalArgumentException("begidx > endidx");
+        while (endidx-- >= begidx)
+            this.deleteElement(begidx);
+        return getNumberOfElements();
+    }
 
     /**
      * Metoda usuwa element z listy poprzez referencję.
@@ -144,8 +162,7 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      */
     public void clear()
     {
-        while (this.getNumberOfElements() > 0)
-            deleteElement(0);
+        deleteElementRange(0, getNumberOfElements());
     }
 
     /**

@@ -123,7 +123,7 @@ public class GroupDialogController implements Controller
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "GroupDialogController";
     }
 

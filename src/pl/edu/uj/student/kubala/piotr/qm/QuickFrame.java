@@ -136,7 +136,7 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "QuickFrame";
     }
 

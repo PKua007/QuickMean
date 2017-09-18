@@ -146,7 +146,7 @@ public class OptionsPane implements View, PropertyChangeListener
     }
 
     @Override
-    public String getElementName() {
+    public String getEDTInitializableName() {
         return "OptionsPane";
     }
 

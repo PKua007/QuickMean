@@ -91,7 +91,7 @@ public class EDTInitializationManager {
 
         @Override
         public String toString() {
-            return initializable.getElementName();
+            return initializable.getEDTInitializableName();
         }
     }
 
@@ -138,9 +138,9 @@ public class EDTInitializationManager {
         EDTInitBox which_box = this.obtainBox(which);
         EDTInitBox depends_on_box = this.obtainBox(depends_on);
         if (which_box == null)
-            throw new RuntimeException("Element " + which.getElementName() + " nie jest zarejestrowany");
+            throw new RuntimeException("Element " + which.getEDTInitializableName() + " nie jest zarejestrowany");
         if (depends_on_box == null)
-            throw new RuntimeException("Element " + depends_on.getElementName() + " nie jest zarejestrowany");
+            throw new RuntimeException("Element " + depends_on.getEDTInitializableName() + " nie jest zarejestrowany");
 
         // Zarejestruj zależność, jeśli jeszcze nie zarejestrowana
         if (!which_box.deps.contains(depends_on_box))
@@ -171,7 +171,7 @@ public class EDTInitializationManager {
     {
         EDTInitBox box = this.obtainBox(initializable);
         if (box == null)
-            throw new RuntimeException("Element " + initializable.getElementName() + " nie jest zarejestrowany");
+            throw new RuntimeException("Element " + initializable.getEDTInitializableName() + " nie jest zarejestrowany");
         return box.deps.stream()
                 .map((d) -> d.initializable)
                 .collect(Collectors.toList());
