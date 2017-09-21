@@ -64,15 +64,7 @@ public class MeasuresInputController implements Controller
     {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            switch (evt.getPropertyName()) {
-                // Zmiana podświetlonej serii (lub grupy)
-                case LabProject.SELECTED_GROUP:
-                case SeriesGroup.HIGHLIGHTED_SERIES:
-                    Series hs = labProject.getHighlightedSeries();
-                    if (hs != null)
-                        measuresInput.getInputModel().setBoundSeries(hs);
-                    break;
-            }
+
         }
 
         @Override

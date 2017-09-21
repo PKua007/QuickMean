@@ -169,6 +169,18 @@ public class Measure extends Model implements Cloneable
         this.propertyFirer.firePropertyChange(evt);
     }
 
+    /**
+     * Metoda kradnie dane z innego pomiaru
+     * @param measure pomiar do okradzenia
+     */
+    public void swallowMeasure(Measure measure)
+    {
+        value = measure.value;
+        calibrationError = measure.calibrationError;
+        humanError = measure.humanError;
+        standardError = measure.standardError;
+    }
+
     @Override
     public Object clone()
     {
