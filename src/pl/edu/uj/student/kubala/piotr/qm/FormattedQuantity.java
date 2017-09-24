@@ -9,7 +9,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm;
 
-public class FormattedMeasure implements Cloneable {
+public class FormattedQuantity implements Cloneable {
     /**
      * Znak plus minus - przydatne przy wyświetlaniu
      */
@@ -50,7 +50,7 @@ public class FormattedMeasure implements Cloneable {
      */
     public boolean separateErrors;
 
-    public FormattedMeasure(String value, String standardError, String maxError, boolean scientificForm, int exponent) {
+    public FormattedQuantity(String value, String standardError, String maxError, boolean scientificForm, int exponent) {
         this.value = value;
         this.standardError = standardError;
         this.maxError = maxError;
@@ -58,7 +58,7 @@ public class FormattedMeasure implements Cloneable {
         this.exponent = exponent;
     }
 
-    public FormattedMeasure() {
+    public FormattedQuantity() {
 
     }
 

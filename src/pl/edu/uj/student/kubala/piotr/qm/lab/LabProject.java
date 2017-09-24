@@ -67,7 +67,7 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
      * @param element grupa serii do dodania
      * @param index pozyzja, na której ma być dodana. -1, jeśli na końcu
      * @throws NullPointerException jeśli seriesGroup == null
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link LabProject#getNumberOfElements()}  - 1}]
+     * @throws IndexOutOfBoundsException jeśli pos jest poza [0, {@link LabProject#getNumberOfElements()}  - 1]
      * @throws IllegalArgumentException jeśli grupa jest już w projekcie
      */
     @Override

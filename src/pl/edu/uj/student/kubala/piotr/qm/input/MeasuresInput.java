@@ -7,8 +7,10 @@
 // (C)PKua, wszystkie prawa zastrzeżone
 //---------------------------------------------------------------------
 
-package pl.edu.uj.student.kubala.piotr.qm;
+package pl.edu.uj.student.kubala.piotr.qm.input;
 
+import pl.edu.uj.student.kubala.piotr.qm.QuickFrame;
+import pl.edu.uj.student.kubala.piotr.qm.View;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
@@ -33,7 +35,7 @@ public class MeasuresInput implements View, PropertyChangeListener
     private static final int        INPUT_WINDOW_HEIGHT = 100;  // Wysokość okna z pomiarami
 
     private LabProject  labProject;     // Projekt laboratorium
-    private QuickFrame  parentFrame;    // Główka ramka
+    private QuickFrame parentFrame;    // Główka ramka
 
     private JPanel          panel;
     private JTextPane       inputPane;      // Okienko z pomiarami

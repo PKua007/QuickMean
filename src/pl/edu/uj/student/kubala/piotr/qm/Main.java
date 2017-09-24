@@ -8,7 +8,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm;
 
-import pl.edu.uj.student.kubala.piotr.qm.dialog.GroupDialog;
+import pl.edu.uj.student.kubala.piotr.qm.input.MeasuresInputController;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 public class Main

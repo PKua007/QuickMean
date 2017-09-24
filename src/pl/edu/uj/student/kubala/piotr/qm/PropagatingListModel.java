@@ -96,7 +96,7 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
     /**
      * Metoda zwraca element spod indeksu
      * @param index indeks do zwrócenia elementu
-     * @throws IndexOutOfBoundsException, jeśli index jest poza [0, {@link PropagatingListModel#getNumberOfElements()} - 1]
+     * @throws IndexOutOfBoundsException jeśli index jest poza [0, {@link PropagatingListModel#getNumberOfElements()} - 1]
      * @return element z podanej pozycji
      */
     public E getElement(int index)

@@ -215,19 +215,19 @@ public class GroupDisplay implements View
 
             Series series;
             Quantity quantity;
-            FormattedMeasureFactory factory = new FormattedMeasureFactory();
-            FormattedMeasure formattedMeasure;
+            FormattedQuantityFactory factory = new FormattedQuantityFactory();
+            FormattedQuantity formattedQuantity;
 
             for (int i = 0; i < selectedGroup.getNumberOfElements(); i++) {
                 series = selectedGroup.getElement(i);
                 factory.setSeparateErrors(series.isSeparateErrors());
                 factory.setErrorSignificantDigits(series.getSignificantDigits());
                 quantity = series.getMeanQuantity();
-                formattedMeasure = factory.format(quantity);
+                formattedQuantity = factory.format(quantity);
 
                 tableModel.addRow(new String[]{
                         series.getLabel(),
-                        formattedMeasure.toHTMLCompact()
+                        formattedQuantity.toHTMLCompact()
                 });
             }
 
@@ -248,16 +248,16 @@ public class GroupDisplay implements View
                 return;
 
             Quantity quantity;
-            FormattedMeasureFactory factory = new FormattedMeasureFactory();
-            FormattedMeasure formattedMeasure;
+            FormattedQuantityFactory factory = new FormattedQuantityFactory();
+            FormattedQuantity formattedQuantity;
 
             factory.setSeparateErrors(changedSeries.isSeparateErrors());
             factory.setErrorSignificantDigits(changedSeries.getSignificantDigits());
             quantity = changedSeries.getMeanQuantity();
-            formattedMeasure = factory.format(quantity);
+            formattedQuantity = factory.format(quantity);
 
             DefaultTableModel model = (DefaultTableModel) groupTable.getModel();
-            model.setValueAt(formattedMeasure.toHTMLCompact(), idx, 1);
+            model.setValueAt(formattedQuantity.toHTMLCompact(), idx, 1);
         }
 
         /* Zmiana nazwy grupy - zaktualizuj pozycję na liście */

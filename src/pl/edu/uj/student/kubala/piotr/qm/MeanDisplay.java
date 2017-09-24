@@ -122,11 +122,11 @@ public class MeanDisplay implements View, PropertyChangeListener
 
                 // Sformatuj średnią do wyświetlenia
                 Quantity quantity = series.getMeanQuantity();
-                FormattedMeasureFactory factory = new FormattedMeasureFactory();
+                FormattedQuantityFactory factory = new FormattedQuantityFactory();
                 factory.setErrorSignificantDigits(series.getSignificantDigits());
                 factory.setSeparateErrors(series.isSeparateErrors());
-                FormattedMeasure formattedMeasure = factory.format(quantity);
-                this.meanLabel.setText(formattedMeasure.toHTMLCompact());
+                FormattedQuantity formattedQuantity = factory.format(quantity);
+                this.meanLabel.setText(formattedQuantity.toHTMLCompact());
                 break;
         }
     }

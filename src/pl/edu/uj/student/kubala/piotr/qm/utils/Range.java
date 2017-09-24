@@ -8,10 +8,9 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.utils;
 
-public class Range
-{
-    public int beg;
-    public int end;
+public class Range {
+    private int beg;
+    private int end;
 
     /**
      * Konstuktor inicjujący oba końce zerem
@@ -22,6 +21,7 @@ public class Range
 
     /**
      * Konstruktor inicjujący tą samą wartością oba końce
+     *
      * @param value wartość do inicjacji
      */
     public Range(int value) {
@@ -30,6 +30,7 @@ public class Range
 
     /**
      * Konstruktor inicjujący końce konkretnymi wartościami
+     *
      * @param beg wartość początku
      * @param end wartość końca
      */
@@ -39,7 +40,28 @@ public class Range
     }
 
     /**
+     * Metoda wycina z przekazanego Stringa fragment wskazywany przez swoje indeksy (włącznie)
+     *
+     * @param text tekst do wycięcie
+     * @return wycięty fragment
+     */
+    public String cutSubstringInclusive(String text) {
+        return text.substring(getMin(), getMax() + 1);
+    }
+
+    /**
+     * Metoda wycina z przekazanego Stringa fragment wskazywany przez swoje indeksy (większy wyłącznie)
+     *
+     * @param text tekst do wycięcie
+     * @return wycięty fragment
+     */
+    public String cutSubstringExclusive(String text) {
+        return text.substring(getMin(), getMax());
+    }
+
+    /**
      * Zwraca koniec o mniejszej wartości
+     *
      * @return koniec o mniejszej wartości
      */
     public int getMin() {
@@ -48,26 +70,101 @@ public class Range
 
     /**
      * Zwraca koniec o większej wartości
+     *
      * @return koniec o większej wartości
      */
-    public int getMax() { return Math.max(this.beg, this.end); }
+    public int getMax() {
+        return Math.max(this.beg, this.end);
+    }
+
+    /**
+     * Zwraca true, jeśli zakres zawiera w całości drugi zakres
+     *
+     * @param range drugi zakres do sprawdzenia zawierania
+     * @return true, jeśli zakres zawiera w całości drugi zakres
+     */
+    public boolean contains(Range range) {
+        return contains(range.beg) && contains(range.end);
+    }
+
+    /**
+     * Zwraca true, jeśli zakres zawiera podaną wartość
+     *
+     * @param value wartość do sprawdzenia
+     * @return true, jeśli zakres zawiera podaną wartość
+     */
+    public boolean contains(int value) {
+        return value >= getMin() && value <= getMax();
+    }
 
     /**
      * Zwraca true, jeśli zakres przekrywa inny zakres
+     *
      * @param other inny zakres
      * @return true, jeśli zakresy się przekrywają
      */
-    public boolean overlaps(Range other)
-    {
+    public boolean overlaps(Range other) {
         return Math.min(getMax(), other.getMax()) >= Math.max(getMin(), other.getMin());
     }
 
-    public Range invert()
-    {
+    /**
+     * Zwraca zakres z odwróconymi końcami
+     *
+     * @return zakres z odwróconymi końcami
+     */
+    public Range invert() {
         return new Range(end, beg);
     }
 
+    /**
+     * Zwraca długość zakresu
+     *
+     * @return długość zakresu
+     */
     public int getLength() {
         return Math.abs(this.end - this.beg);
+    }
+
+    public int getBeg() {
+        return beg;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public Range shift(int difference) {
+        return new Range(beg + difference, end + difference);
+    }
+
+    public static Range forText(CharSequence text) {
+        if (text == null)
+            return null;
+        if (text.length() == 0)
+            return new Range(-1);
+        else
+            return new Range(0, text.length() - 1);
+    }
+
+    @Override
+    public String toString() {
+        return "[" + beg + ", " + end + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Range range = (Range) o;
+
+        return beg == range.beg && end == range.end;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = beg;
+        result = 31 * result + end;
+        return result;
     }
 }

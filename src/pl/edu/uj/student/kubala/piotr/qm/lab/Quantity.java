@@ -9,7 +9,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
-import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasureFactory;
+import pl.edu.uj.student.kubala.piotr.qm.FormattedQuantityFactory;
 
 import java.io.Serializable;
 
@@ -76,7 +76,7 @@ public class Quantity implements Serializable
 
     @Override
     public String toString() {
-        FormattedMeasureFactory factory = new FormattedMeasureFactory();
+        FormattedQuantityFactory factory = new FormattedQuantityFactory();
         factory.setSeparateErrors(true);
         return factory.format(this).toString();
     }

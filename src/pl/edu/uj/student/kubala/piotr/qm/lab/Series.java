@@ -9,8 +9,8 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
-import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasure;
-import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasureFactory;
+import pl.edu.uj.student.kubala.piotr.qm.FormattedQuantity;
+import pl.edu.uj.student.kubala.piotr.qm.FormattedQuantityFactory;
 import pl.edu.uj.student.kubala.piotr.qm.PropagatingListModel;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
@@ -39,7 +39,7 @@ public class Series extends PropagatingListModel<Measure>
     public static final String  DEL_MEASURE         = PREFIX + "." + DEL;
 
     private static int staticIdx = 0;
-    private static final FormattedMeasureFactory factory = new FormattedMeasureFactory();
+    private static final FormattedQuantityFactory factory = new FormattedQuantityFactory();
 
     private Quantity            meanQuantity;   // Średnia wyliczona wielkość
     private ArrayList<Integer>  selectedMeasures;           // Zaznaczone pomiary
@@ -346,7 +346,7 @@ public class Series extends PropagatingListModel<Measure>
     @Override
     public String toString()
     {
-        FormattedMeasure measure = factory.format(this.meanQuantity);
+        FormattedQuantity measure = factory.format(this.meanQuantity);
         return "seria \"" + this.label + "\": " + measure.toString();
     }
 }

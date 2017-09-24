@@ -8,8 +8,8 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.lab;
 
-import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasure;
-import pl.edu.uj.student.kubala.piotr.qm.FormattedMeasureFactory;
+import pl.edu.uj.student.kubala.piotr.qm.FormattedQuantity;
+import pl.edu.uj.student.kubala.piotr.qm.FormattedQuantityFactory;
 import pl.edu.uj.student.kubala.piotr.qm.Model;
 
 import java.beans.PropertyChangeEvent;
@@ -22,7 +22,7 @@ public class Measure extends Model implements Cloneable
     public static final String  HUMAN_ERROR = "m.humanError";
     public static final String  STANDARD_ERROR = "m.standardError";
 
-    private static final FormattedMeasureFactory factory = new FormattedMeasureFactory(true);
+    private static final FormattedQuantityFactory factory = new FormattedQuantityFactory(true);
 
     private double value;               // Wartość pomiaru
     private double calibrationError;    // Niepewność wzorcowania przyrządu pomiarowego
@@ -197,7 +197,7 @@ public class Measure extends Model implements Cloneable
     public String toString()
     {
         Quantity quantity = new Quantity(this.value, this.standardError, this.humanError + this.calibrationError);
-        FormattedMeasure measure = factory.format(quantity);
+        FormattedQuantity measure = factory.format(quantity);
         return "pomiar: " + measure.toString();
     }
 }

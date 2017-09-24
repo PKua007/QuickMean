@@ -6,18 +6,16 @@
 // (C)PKua, wszystkie prawa zastrzeżone
 //---------------------------------------------------------------------
 
-package pl.edu.uj.student.kubala.piotr.qm;
+package pl.edu.uj.student.kubala.piotr.qm.input;
 
+import pl.edu.uj.student.kubala.piotr.qm.Controller;
+import pl.edu.uj.student.kubala.piotr.qm.EDTInitializationManager;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
-import pl.edu.uj.student.kubala.piotr.qm.lab.Measure;
-import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
-import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;

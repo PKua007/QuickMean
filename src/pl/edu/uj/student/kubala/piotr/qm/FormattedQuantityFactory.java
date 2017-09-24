@@ -12,7 +12,7 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.Quantity;
 
 import java.util.Locale;
 
-public class FormattedMeasureFactory {
+public class FormattedQuantityFactory {
     private static final int DEFAULT_MIN_FIXED_EXPONENT = -3;
     private static final int DEFAULT_MAX_FIXED_EXPONENT = 3;
     private static final int DEFAULT_ERROR_SIGNIFICANT_DIGITS = 2;
@@ -26,7 +26,7 @@ public class FormattedMeasureFactory {
     /**
      * Konstruktor inicjujący domyślne wartości
      */
-    public FormattedMeasureFactory() {
+    public FormattedQuantityFactory() {
         this(DEFAULT_MIN_FIXED_EXPONENT, DEFAULT_MAX_FIXED_EXPONENT, DEFAULT_ERROR_SIGNIFICANT_DIGITS, false);
     }
 
@@ -34,7 +34,7 @@ public class FormattedMeasureFactory {
      * Konstruktor specyfikujący, czy rozdzielać niepewności
      * @param separateErrors czy rozdzielać neipewności
      */
-    public FormattedMeasureFactory(boolean separateErrors) {
+    public FormattedQuantityFactory(boolean separateErrors) {
         this(DEFAULT_MIN_FIXED_EXPONENT, DEFAULT_MAX_FIXED_EXPONENT, DEFAULT_ERROR_SIGNIFICANT_DIGITS, separateErrors);
     }
 
@@ -46,7 +46,7 @@ public class FormattedMeasureFactory {
      * @param errorSignificantDigits ilość cyfr znaczących w błędzie
      * @param separateErrors         czy rozdzielać niepewności
      */
-    public FormattedMeasureFactory(int minFixedExponent, int maxFixedExponent, int errorSignificantDigits, boolean separateErrors) {
+    public FormattedQuantityFactory(int minFixedExponent, int maxFixedExponent, int errorSignificantDigits, boolean separateErrors) {
         this.minFixedExponent = minFixedExponent;
         this.maxFixedExponent = maxFixedExponent;
         this.errorSignificantDigits = errorSignificantDigits;
@@ -93,8 +93,8 @@ public class FormattedMeasureFactory {
      * @param quantity wielkość do sformatowania
      * @return sformatowany pomiar
      */
-    public FormattedMeasure format(Quantity quantity) {
-        FormattedMeasure result;
+    public FormattedQuantity format(Quantity quantity) {
+        FormattedQuantity result;
 
         int valueFirstDigitPos = getSignifOrZero(quantity.getValue());
         int errFirstDigitPos = Math.max(     // pierwsza cyfra znacząca większej niepewności
@@ -111,9 +111,9 @@ public class FormattedMeasureFactory {
     }
 
     /* Pomocnicza metoda formatująca wielkość jako liczbę dziesiętną */
-    private FormattedMeasure formatDecimal(Quantity quantity, int valueFirstDigitPos, int errorFirstDigitPos) {
+    private FormattedQuantity formatDecimal(Quantity quantity, int valueFirstDigitPos, int errorFirstDigitPos) {
 
-        FormattedMeasure result = new FormattedMeasure();
+        FormattedQuantity result = new FormattedQuantity();
         result.scientificForm = false;
 
         if (errorFirstDigitPos > Integer.MIN_VALUE) {      // Którykolwiek z błedów niezerowy
@@ -146,8 +146,8 @@ public class FormattedMeasureFactory {
     }
 
     /* Pomocnicza metoda formatująca wielkość jako liczbę w postaci naukowej (wykładniczej) */
-    private FormattedMeasure formatScientific(Quantity quantity, int valueFirstDigitPos, int errorFirstDigitPos) {
-        FormattedMeasure result = new FormattedMeasure();
+    private FormattedQuantity formatScientific(Quantity quantity, int valueFirstDigitPos, int errorFirstDigitPos) {
+        FormattedQuantity result = new FormattedQuantity();
         result.scientificForm = true;
         result.exponent = valueFirstDigitPos;
 
@@ -188,11 +188,11 @@ public class FormattedMeasureFactory {
 
     public static void main(String[] args)
     {
-        FormattedMeasureFactory factory = new FormattedMeasureFactory();
+        FormattedQuantityFactory factory = new FormattedQuantityFactory();
         factory.setSeparateErrors(true);
 
         Quantity quantity = new Quantity(456.234, 4.5003, 12.023);
-        FormattedMeasure formattedMeasure = factory.format(quantity);
-        System.out.println(formattedMeasure);
+        FormattedQuantity formattedQuantity = factory.format(quantity);
+        System.out.println(formattedQuantity);
     }
 }

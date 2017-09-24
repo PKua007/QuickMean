@@ -136,7 +136,7 @@ public class SeriesGroup extends PropagatingListModel<Series>
      * @param element seria do dodania
      * @param index pozyzja, na której ma być dodana. -1, jeśli na końcu
      * @throws NullPointerException jeśli series == null
-     * @throws IndexOutOfBoundsException, jeśli pos jest poza [0, {@link SeriesGroup#getNumberOfElements()}  - 1}]
+     * @throws IndexOutOfBoundsException jeśli pos jest poza [0, {@link SeriesGroup#getNumberOfElements()}  - 1]
      * @throws IllegalArgumentException jeśli seria jest już w grupie
      */
     @Override

@@ -11,6 +11,7 @@
 package pl.edu.uj.student.kubala.piotr.qm;
 
 import pl.edu.uj.student.kubala.piotr.qm.dialog.GroupDialog;
+import pl.edu.uj.student.kubala.piotr.qm.input.MeasuresInput;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 
 import javax.swing.*;
@@ -40,7 +41,7 @@ public class QuickFrame extends JFrame implements View, PropertyChangeListener
     private static final int        PANELS_GAP = 25;
     private static final int        FRAME_PADDING = 10;
 
-    private MeasuresInput           measuresInput;      // Widok okna z pomiarami
+    private MeasuresInput measuresInput;      // Widok okna z pomiarami
     private MeanDisplay             meanDisplay;        // Widok okna ze średnią
     private GroupDisplay            groupDisplay;       // Widok okna z grupą serii
     private OptionsPane             optionsPane;        // Widok panelu z opcjami
