@@ -46,9 +46,9 @@ public class MeasureInputInfo
     {
         Objects.requireNonNull(valueRange);
         if (textRange.getMin() < 0)
-            throw new StringIndexOutOfBoundsException("textRange in negative integer semi-axis");
+            throw new StringIndexOutOfBoundsException("textRange in negative integer semi-axis: " + textRange);
         if (!textRange.contains(valueRange))
-            throw new IllegalArgumentException("valueRange not in textRange");
+            throw new IllegalArgumentException("valueRange " + valueRange + " not in textRange " + textRange);
 
         Objects.requireNonNull(measure);
         return new MeasureInputInfo(measure, textRange, valueRange, null, true);
@@ -81,11 +81,9 @@ public class MeasureInputInfo
     public static MeasureInputInfo createIncorrect(Range textRange, Range errorRange)
     {
         if (textRange.getMin() < 0)
-            throw new StringIndexOutOfBoundsException("textRange in negative integer semi-axis");
+            throw new StringIndexOutOfBoundsException("textRange in negative integer semi-axis: " + textRange);
         if (!textRange.contains(errorRange))
-            throw new IllegalArgumentException("errorRange not in TextRange");
-        if (errorRange.getMin() < 0)
-            throw new IllegalArgumentException("errorRange in negative integer semi-axis");
+            throw new IllegalArgumentException("errorRange " + errorRange + " not in textRange " + textRange);
         return new MeasureInputInfo(null, textRange, null, errorRange, false);
     }
 
@@ -101,13 +99,14 @@ public class MeasureInputInfo
     public static MeasureInputInfo createIncorrect(int textIdx, int measureTextLength, Range relativeErrorRange)
     {
         if (measureTextLength <= 0)
-            throw new IllegalArgumentException("measureTextLength <= 0");
+            throw new IllegalArgumentException("measureTextLength <= 0: " + measureTextLength);
         if (textIdx < 0)
             throw new StringIndexOutOfBoundsException(textIdx);
         Range textRange = new Range(textIdx, textIdx + measureTextLength - 1);
         Range errorRange = relativeErrorRange.shift(textIdx);
-        if (!textRange.contains(relativeErrorRange))
-            throw new IllegalArgumentException("relativeErrorRange not in valid range");
+        if (!textRange.contains(errorRange))
+            throw new IllegalArgumentException("relativeErrorRange " + relativeErrorRange + " not in valid range "
+                    + textRange.shift(-textIdx));
         return createIncorrect(textRange, errorRange);
     }
 

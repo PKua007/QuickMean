@@ -120,13 +120,24 @@ class MeasureInputInfoTest
     }
 
     @Test
-    void createIncorrectRelativePosition()
+    void createIncorrectRelativePosition1()
     {
         MeasureInputInfo measureInputInfo = MeasureInputInfo.createIncorrect(4, 16, new Range(10, 15));
         assertEquals(null, measureInputInfo.getMeasure());
         assertEquals(new Range(4, 19), measureInputInfo.getTextRange());
         assertEquals(null, measureInputInfo.getValueRange());
         assertEquals(new Range(14, 19), measureInputInfo.getErrorRange());
+        assertEquals(false, measureInputInfo.isCorrect());
+    }
+
+    @Test
+    void createIncorrectRelativePosition2()
+    {
+        MeasureInputInfo measureInputInfo = MeasureInputInfo.createIncorrect(10, 7, new Range(0, 4));
+        assertEquals(null, measureInputInfo.getMeasure());
+        assertEquals(new Range(10, 16), measureInputInfo.getTextRange());
+        assertEquals(null, measureInputInfo.getValueRange());
+        assertEquals(new Range(10, 14), measureInputInfo.getErrorRange());
         assertEquals(false, measureInputInfo.isCorrect());
     }
 
