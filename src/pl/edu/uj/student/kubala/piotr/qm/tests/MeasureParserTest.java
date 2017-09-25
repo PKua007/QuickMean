@@ -230,4 +230,12 @@ class MeasureParserTest {
                 () -> measureParser.parseMeasure("50±20±0±±60"));
         assertEquals(new Range(8), exception.getMalformedRange());
     }
+
+    @Test
+    void errorWithStandalonePlusMinusShouldThrow()
+    {
+        UnexpectedEndException exception = assertThrows(UnexpectedEndException.class,
+                () -> measureParser.parseMeasure("50±"));
+        assertEquals(new Range(2), exception.getMalformedRange());
+    }
 }

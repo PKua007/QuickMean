@@ -93,6 +93,9 @@ public class MeasureParser
     /* Pomocnicza metoda parsująca błąd aż do następnego plus-minus/końca i przesuwająca wewnętrzny wskaźnik */
     private double eatError() throws ParseException {
         index++;    // Pomiń plus-minus na początku błedu
+        // Nieoczekiwany koniec tekstu zaraz po +-
+        if (index >= text.length())
+            throw new UnexpectedEndException(text, new Range(index - 1));
         int oldIdx = index;
         double value = eatValue();
         if (value < 0)
