@@ -11,6 +11,8 @@ package pl.edu.uj.student.kubala.piotr.qm.input;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class SeriesInputInfo
@@ -44,6 +46,11 @@ public class SeriesInputInfo
 
     public boolean empty() {
         return getNumberOfInfos() == 0;
+    }
+
+    public List<MeasureInputInfo> getAllInfos()
+    {
+        return Collections.unmodifiableList(measureInputInfos);
     }
 
     /**
