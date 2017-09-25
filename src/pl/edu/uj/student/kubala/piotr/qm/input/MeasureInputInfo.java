@@ -44,8 +44,11 @@ public class MeasureInputInfo
      */
     public static MeasureInputInfo createCorrect(Measure measure, Range textRange, Range valueRange)
     {
+        Objects.requireNonNull(valueRange);
+        if (textRange.getMin() < 0)
+            throw new StringIndexOutOfBoundsException("textRange in negative integer semi-axis");
         if (!textRange.contains(valueRange))
-            throw new StringIndexOutOfBoundsException("valueRange");
+            throw new IllegalArgumentException("valueRange not in textRange");
 
         Objects.requireNonNull(measure);
         return new MeasureInputInfo(measure, textRange, valueRange, null, true);
@@ -77,8 +80,10 @@ public class MeasureInputInfo
      */
     public static MeasureInputInfo createIncorrect(Range textRange, Range errorRange)
     {
+        if (textRange.getMin() < 0)
+            throw new StringIndexOutOfBoundsException("textRange in negative integer semi-axis");
         if (!textRange.contains(errorRange))
-            throw new StringIndexOutOfBoundsException("errorRange");
+            throw new IllegalArgumentException("errorRange not in TextRange");
         if (errorRange.getMin() < 0)
             throw new IllegalArgumentException("errorRange in negative integer semi-axis");
         return new MeasureInputInfo(null, textRange, null, errorRange, false);
@@ -89,7 +94,7 @@ public class MeasureInputInfo
      * tekstu i zakres błędu względem tego indeksu - jest on przesuwany do zakresu bezwzględnego. Pomiar i zakres
      * wartości ustawiane są na null
      * @param textIdx indeks w tekście początku źle sformatowanego pomiaru
-     * @param measureTextLength sługość tekstu pomiaru
+     * @param measureTextLength długość tekstu pomiaru
      * @param relativeErrorRange zakres błędu względem początkowego indeksu
      * @return {@link MeasureInputInfo} zawierający wymienione informacje
      */
@@ -97,8 +102,8 @@ public class MeasureInputInfo
     {
         if (measureTextLength <= 0)
             throw new IllegalArgumentException("measureTextLength <= 0");
-        if (textIdx < 0 || textIdx >= measureTextLength)
-            throw new StringIndexOutOfBoundsException(measureTextLength);
+        if (textIdx < 0)
+            throw new StringIndexOutOfBoundsException(textIdx);
         Range textRange = new Range(textIdx, textIdx + measureTextLength - 1);
         Range errorRange = relativeErrorRange.shift(textIdx);
         if (!textRange.contains(relativeErrorRange))
