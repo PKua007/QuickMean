@@ -12,6 +12,8 @@ package pl.edu.uj.student.kubala.piotr.qm;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -163,6 +165,15 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
     public void clear()
     {
         deleteElementRange(0, getNumberOfElements());
+    }
+
+    /**
+     * Metoda zwraca niemodyfikowalną listę wszystkich elementów
+     * @return niemodyfikowalna lista wszystkich elementów
+     */
+    public List<E> getAllElements()
+    {
+        return Collections.unmodifiableList(children);
     }
 
     /**

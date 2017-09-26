@@ -21,6 +21,11 @@ public class SeriesInputInfo
     private Range measuresInSelection;
     private String text;
 
+    public SeriesInputInfo()
+    {
+        text = "";
+    }
+
     public SeriesInputInfo(String text) {
         this.text = Objects.requireNonNull(text);
     }

@@ -13,6 +13,7 @@ import pl.edu.uj.student.kubala.piotr.qm.input.MeasureInputInfo;
 import pl.edu.uj.student.kubala.piotr.qm.input.SeriesInputInfo;
 import pl.edu.uj.student.kubala.piotr.qm.input.SeriesParser;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Measure;
+import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +31,11 @@ class SeriesParserTest
     private void parse(String text, int selectionStart, int selectionLength)
     {
         seriesInputInfo = parser.parseSeries(text, selectionStart, selectionLength);
+    }
+
+    private void print(Series series)
+    {
+        seriesInputInfo = parser.printSeries(series);
     }
 
     private static void assertMeasure(Measure measure, double value, double calibrationError, double humanError) {
@@ -226,5 +232,38 @@ class SeriesParserTest
     {
         assertThrows(StringIndexOutOfBoundsException.class, () -> parse("123456789", 3, 7));
         assertThrows(StringIndexOutOfBoundsException.class, () -> parse("123456789", 9, 1));
+    }
+
+    @Test
+    void printEmptySeries()
+    {
+        Series series = new Series();
+        print(series);
+        assertEquals(true, seriesInputInfo.empty());
+    }
+
+    @Test
+    void printSeries()
+    {
+        Series series = new Series();
+        series.addElement(new Measure(15.2));
+        series.addElement(new Measure(14.5, 0.4, 0, 0));
+        series.addElement(new Measure(35.6, 0.8, 0, 0));
+        print(series);
+
+        assertEquals("15.2; 14.5±0.4; 35.6±0.8; ", seriesInputInfo.getText());
+        assertEquals(3, seriesInputInfo.getNumberOfInfos());
+        assertEquals(new Range(0, 3), seriesInputInfo.getMeasureInfo(0).getTextRange());
+        assertEquals(new Range(0, 3), seriesInputInfo.getMeasureInfo(0).getValueRange());
+        assertEquals(new Range(6, 13), seriesInputInfo.getMeasureInfo(1).getTextRange());
+        assertEquals(new Range(6, 9), seriesInputInfo.getMeasureInfo(1).getValueRange());
+        assertEquals(new Range(16, 23), seriesInputInfo.getMeasureInfo(2).getTextRange());
+        assertEquals(new Range(16, 19), seriesInputInfo.getMeasureInfo(2).getValueRange());
+    }
+
+    @Test
+    void nullSeriesShouldThrowInPrintSeries()
+    {
+        assertThrows(NullPointerException.class, () -> print(null));
     }
 }

@@ -27,7 +27,7 @@ public class MeasureParser
      * @param measure pomiar do stringizacji
      * @return {@link ParsedMeasure} zawierający przekazany pomiar i tekstową reprezentację
      */
-    public static ParsedMeasure printMeasure(Measure measure)
+    public ParsedMeasure printMeasure(Measure measure)
     {
         StringBuilder builder = new StringBuilder();
 

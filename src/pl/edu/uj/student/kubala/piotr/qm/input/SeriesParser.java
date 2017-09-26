@@ -8,6 +8,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.input;
 
+import pl.edu.uj.student.kubala.piotr.qm.lab.Measure;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 
@@ -94,7 +95,17 @@ public class SeriesParser
      */
     public SeriesInputInfo printSeries(Series series)
     {
-        return null;
+        SeriesInputInfo result = new SeriesInputInfo();
+        MeasureParser measureParser = new MeasureParser();
+        for (Measure measure : series.getAllElements()) {
+            ParsedMeasure parsedMeasure = measureParser.printMeasure(measure);
+            MeasureInputInfo measureInputInfo =
+                    MeasureInputInfo.createCorrect(parsedMeasure, result.getText().length());
+            result.appendText(parsedMeasure.getText());
+            result.appendText("; ");
+            result.addMeasureInfo(measureInputInfo);
+        }
+        return result;
     }
 
     /**
