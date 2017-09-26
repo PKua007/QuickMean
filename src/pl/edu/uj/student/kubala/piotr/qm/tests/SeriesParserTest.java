@@ -180,10 +180,17 @@ class SeriesParserTest
     }
 
     @Test
-    void selectionInMultipleMeasures()
+    void selectionInMultipleMeasures1()
     {
         parse("100; 200; 300; 400; 500", 11, 9);
         assertEquals(new Range(2, 3), seriesInputInfo.getMeasuresInSelection());
+    }
+
+    @Test
+    void selectionInMultipleMeasures2()
+    {
+        parse("100; 200; 300; 400; 500", 11, 10);
+        assertEquals(new Range(2, 4), seriesInputInfo.getMeasuresInSelection());
     }
 
     @Test
@@ -212,13 +219,12 @@ class SeriesParserTest
     void negativeSelectionLengthShouldThrow()
     {
         assertThrows(IllegalArgumentException.class, () -> parse("4", 5, -1));
-        assertThrows(IllegalArgumentException.class, () -> parse("4", 5, 0));
     }
 
     @Test
     void invalidSelectionRangeShouldThrow()
     {
-        assertThrows(IllegalArgumentException.class, () -> parse("123456789", 3, 7));
-        assertThrows(IllegalArgumentException.class, () -> parse("123456789", 9, 1));
+        assertThrows(StringIndexOutOfBoundsException.class, () -> parse("123456789", 3, 7));
+        assertThrows(StringIndexOutOfBoundsException.class, () -> parse("123456789", 9, 1));
     }
 }
