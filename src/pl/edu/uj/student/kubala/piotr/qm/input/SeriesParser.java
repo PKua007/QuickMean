@@ -8,6 +8,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.input;
 
+import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 
 /**
@@ -22,24 +23,25 @@ import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 public class SeriesParser
 {
     private String text;
-    private int index;
-
-    static class SelectionRangeBuilder
+    /* Pomocnicza klasa budująca zakres zaznaczonych pomiarów z zakresu zaznaczenia w parsowanym tekście */
+    private static class SelectionRangeBuilder
     {
-        private Range textSelectionRange;
 
+        private Range textSelectionRange;
         private int seriesInputInfoIndex = 0;
+
         private int selectionRangeStart = -1;
         private int selectionRangeEnd = -1;
-
-        public SelectionRangeBuilder(int selectionIndex, int selectionLength) {
+        SelectionRangeBuilder(int selectionIndex, int selectionLength) {
             if (selectionIndex == -1 || selectionLength == 0)
                 textSelectionRange = null;
             else
                 textSelectionRange = new Range(selectionIndex, selectionIndex + selectionLength - 1);
         }
 
-        public void checkNextMeasureInfo(MeasureInputInfo measureInputInfo) {
+        /* Sprawdź następny sparsowany pomiar pod kątem zaznaczenia i przesuń wewnętrzny indeks */
+
+        void checkNextMeasureInfo(MeasureInputInfo measureInputInfo) {
             if (textSelectionRange == null)
                 return;
 
@@ -51,12 +53,14 @@ public class SeriesParser
             }
             seriesInputInfoIndex++;
         }
+        /* Czy zakres jest w trakcie budowy (zaczęty, ale nie skończony) */
 
         private boolean isSelectionBeingBuilt() {
             return selectionRangeStart != -1 && selectionRangeEnd == -1;
         }
+        /* Wygeneruj zakres na podstawie zebranych danych */
 
-        public Range getRange() {
+        Range getRange() {
             if (selectionRangeStart == -1)      // Nie wybudowano zaznaczenia
                 return null;
             else if (selectionRangeEnd == -1)   // Zaczęto budować, ale nie zakończono - koniec na ostatnim pomiarze
@@ -65,7 +69,6 @@ public class SeriesParser
                 return new Range(selectionRangeStart, selectionRangeEnd);
         }
     }
-
     public SeriesParser() {
     }
 
@@ -79,6 +82,19 @@ public class SeriesParser
     public SeriesInputInfo parseSeries(String text)
     {
         return parseSeries(text, -1, 0);
+    }
+
+    private int index;
+
+    /**
+     * Przedstawia serię pomiarów w postaci tekstowej i zwraca wraz ze szczegółowymi informacjami w
+     * {@link SeriesInputInfo} w formacie z opisu klasy.
+     * @param series seria do wydrukowania
+     * @return {@link SeriesInputInfo} z wydrukowaną serią
+     */
+    public SeriesInputInfo printSeries(Series series)
+    {
+        return null;
     }
 
     /**
@@ -123,6 +139,7 @@ public class SeriesParser
         return result;
     }
 
+    /* Sprawdź poprawność zaznaczenia */
     private static void validateSelection(String text, int selectionIndex, int selectionLength) {
         if (selectionLength < 0)
             throw new IllegalArgumentException("selectionLength");
@@ -130,27 +147,32 @@ public class SeriesParser
             throw new StringIndexOutOfBoundsException("Selection exceeds string range");
     }
 
+    /* Pobierz następny pomiar i przesuń indeks poza */
     private String eatMeasure() {
         int measureStartIdx = index;
         skipMeasure();
         return text.substring(measureStartIdx, index);
     }
 
+    /* Czy jest jeszcze coś do sparsowania? */
     private boolean hasNext() {
         return index < text.length();
     }
 
+    /* Przesuń indeks poza separatory */
     private void skipSeparators() {
         while (index < text.length() && isIndexOnSeparator())
             index++;
     }
 
+    /* Przesuń indeks poza pomiar */
     private void skipMeasure() {
 
         while (index < text.length() && !isIndexOnSeparator())
             index++;
     }
 
+    /* Czy bieżący indeks jest na separatorze? */
     private boolean isIndexOnSeparator() {
         return text.charAt(index) == ' ' || text.charAt(index) == ';';
     }

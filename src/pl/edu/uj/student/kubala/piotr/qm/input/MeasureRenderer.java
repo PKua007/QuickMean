@@ -17,11 +17,6 @@ public class MeasureRenderer
 {
     private JTextPane pane;
 
-    public void renderSeries(Series series)
-    {
-
-    }
-
     public void highlightMeasureRange(SeriesInputInfo seriesInputInfo, Range range)
     {
 
