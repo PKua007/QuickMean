@@ -62,12 +62,13 @@ public class SeriesInputInfo
     }
 
     public void setMeasuresInSelection(Range measuresInSelection) {
-        Objects.requireNonNull(measuresInSelection);
-        if (measureInputInfos.isEmpty())
-            throw new IllegalArgumentException("MeasureInputInfo list empty; cannot set selection range");
-        Range validRange = new Range(0, getNumberOfInfos() - 1);
-        if (!validRange.contains(measuresInSelection))
-            throw new IllegalArgumentException("measuresInSelection " + measuresInSelection + " exceeds valid range " + validRange);
+        if (measuresInSelection != null) {
+            if (measureInputInfos.isEmpty())
+                throw new IllegalArgumentException("MeasureInputInfo list empty; cannot set selection range");
+            Range validRange = new Range(0, getNumberOfInfos() - 1);
+            if (!validRange.contains(measuresInSelection))
+                throw new IllegalArgumentException("measuresInSelection " + measuresInSelection + " exceeds valid range " + validRange);
+        }
         this.measuresInSelection = measuresInSelection;
     }
 
