@@ -82,6 +82,24 @@ public class SeriesInputInfo
         this.text += text;
     }
 
+    public int getMeasureInfoIdxForCaretPos(int caretPos)
+    {
+        Range caretTouchRange = new Range(caretPos - 1, caretPos);
+        for (int i = 0; i < measureInputInfos.size(); i++)
+            if (measureInputInfos.get(i).getTextRange().overlaps(caretTouchRange))
+                return i;
+        return -1;
+    }
+
+    public MeasureInputInfo getMeasureInfoForCaretPos(int caretPos)
+    {
+        int idx = getMeasureInfoIdxForCaretPos(caretPos);
+        if (idx == -1)
+            return null;
+        else
+            return measureInputInfos.get(idx);
+    }
+
     public String getText() {
         return text;
     }
