@@ -12,6 +12,9 @@ package pl.edu.uj.student.kubala.piotr.qm.input;
 import pl.edu.uj.student.kubala.piotr.qm.QuickFrame;
 import pl.edu.uj.student.kubala.piotr.qm.View;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
+import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
+import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -29,6 +32,7 @@ public class MeasuresInput implements View, PropertyChangeListener
     private static final Font       EDITOR_FONT = new Font("DialogInput", Font.BOLD, 12);
     private static final MutableAttributeSet    FOCUS_ATTR_SET = new SimpleAttributeSet();
     private static final MutableAttributeSet    VALUE_ATTR_SET = new SimpleAttributeSet();
+    private static final MutableAttributeSet    ERROR_ATTR_SET = new SimpleAttributeSet();
 
     private static final int        INPUT_BUTTONS_GAP = 7;     // Odstęp między okienkiem i przyciskami
     private static final int        BUTTONS_GAP = 10;           // Odstęp między przyciskami
@@ -36,6 +40,7 @@ public class MeasuresInput implements View, PropertyChangeListener
 
     private LabProject  labProject;     // Projekt laboratorium
     private QuickFrame parentFrame;    // Główka ramka
+    private SeriesInputInfo seriesInputInfo;    // Aktualna informacja o serii
 
     private JPanel          panel;
     private JTextPane       inputPane;      // Okienko z pomiarami
@@ -46,8 +51,8 @@ public class MeasuresInput implements View, PropertyChangeListener
     static {
         // Ustaw style dla odpowiednich części pomarów
         StyleConstants.setBackground(FOCUS_ATTR_SET, new Color(0x8ED1E0));
-
         StyleConstants.setBackground(VALUE_ATTR_SET, new Color(0xE0E0E0));
+        StyleConstants.setBackground(ERROR_ATTR_SET, new Color(0xFF0000));
     }
 
     /**
@@ -130,21 +135,59 @@ public class MeasuresInput implements View, PropertyChangeListener
         return inputPane;
     }
 
-    /* Pomocnicza metoda dodająca tekst na końcu okna pomiarów */
-    private void appendText(String text, AttributeSet attr) {
+    /* Metoda ustawia nowy tekst w oknie. Chwilowo odinstalowuje filtr, żeby nie łapał */
+    private void setInputText(String text)
+    {
         AbstractDocument doc = (AbstractDocument) this.inputPane.getDocument();
         DocumentFilter filter = doc.getDocumentFilter();
         doc.setDocumentFilter(null);
-        try {
-            doc.insertString(doc.getLength(), text, attr);
-        } catch (BadLocationException e) {
-            throw new AssertionError();
-        }
+        inputPane.setText(text);
         doc.setDocumentFilter(filter);
+    }
+
+    public void highlightInputPane()
+    {
+        if (seriesInputInfo == null)
+            return;
+        if (!seriesInputInfo.getText().equals(inputPane.getText()))
+            throw new RuntimeException("Measure input pane text desynchronization");
+
+        StyledDocument document = inputPane.getStyledDocument();
+        for (MeasureInputInfo measureInputInfo : seriesInputInfo.getAllInfos()) {
+            if (measureInputInfo.isCorrect()) {//https://www.usosweb.uj.edu.pl/kontroler.php?_action=dla_stud/rejestracja/zetony/index#/registration/LEK-2017.2018Z
+                Range valueRange = measureInputInfo.getValueRange();
+                document.setCharacterAttributes(valueRange.getMin(), valueRange.getLength(), VALUE_ATTR_SET, true);
+            } else {
+                Range errorRange = measureInputInfo.getErrorRange();
+                document.setCharacterAttributes(errorRange.getMin(), errorRange.getLength(), ERROR_ATTR_SET, true);
+            }
+        }
+    }
+
+    public void setSeriesInputInfo(SeriesInputInfo seriesInputInfo) {
+        this.seriesInputInfo = seriesInputInfo;
+        if (seriesInputInfo == null) {
+            setInputText("");
+        } else {
+            setInputText(seriesInputInfo.getText());
+            highlightInputPane();
+        }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-
+        switch (evt.getPropertyName())
+        {
+            case SeriesGroup.HIGHLIGHTED_SERIES:
+            case LabProject.SELECTED_GROUP:
+                Series highlightedSeries = labProject.getHighlightedSeries();
+                if (highlightedSeries == null)
+                    break;
+                SeriesParser seriesParser = new SeriesParser();
+                //SeriesInputInfo inputInfo = seriesParser.printSeries(highlightedSeries);
+                SeriesInputInfo inputInfo = seriesParser.parseSeries("15.2; 14.5±0.4±; 35.6±0.8; 35.6±0e.8; ");
+                setSeriesInputInfo(inputInfo);
+                break;
+        }
     }
 }

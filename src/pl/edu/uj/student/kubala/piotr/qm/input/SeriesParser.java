@@ -24,6 +24,7 @@ import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 public class SeriesParser
 {
     private String text;
+
     /* Pomocnicza klasa budująca zakres zaznaczonych pomiarów z zakresu zaznaczenia w parsowanym tekście */
     private static class SelectionRangeBuilder
     {
@@ -46,7 +47,7 @@ public class SeriesParser
             if (textSelectionRange == null)
                 return;
 
-            if (textSelectionRange.overlaps(measureInputInfo.getTextRange())) {
+            if (measureInputInfo.getTextRange().overlaps(textSelectionRange)) {
                 if (!isSelectionBeingBuilt())       // Napotkano na pierwszy pomiar w zaznaczeniu - zacznij budować
                     selectionRangeStart = seriesInputInfoIndex;
             } else if (isSelectionBeingBuilt()) {   // Napotkano na pierwszy pomiar poza zaznaczeniem - przestań budować
@@ -126,7 +127,7 @@ public class SeriesParser
         MeasureParser measureParser = new MeasureParser();
         SelectionRangeBuilder selectionRangeBuilder = new SelectionRangeBuilder(selectionIndex, selectionLength);
 
-        // Zresetuj do parsowanai nowego tekstu
+        // Zresetuj do parsowania nowego tekstu
         this.text = text;
         this.index = 0;
 

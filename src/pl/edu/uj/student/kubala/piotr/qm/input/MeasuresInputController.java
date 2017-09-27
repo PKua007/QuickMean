@@ -135,6 +135,13 @@ public class MeasuresInputController implements Controller
                 text = ".";
 
             if (length == 0) {
+                if ("-".equals(text)) {
+                    if (offset > 0 && content.charAt(offset - 1) == '+') {
+                        fb.replace(offset - 1, 1, "±", null);
+                        return;
+                    }
+                }
+
                 if (";".equals(text) || " ".equals(text)) {
                     if (offset == 0)
                         return;

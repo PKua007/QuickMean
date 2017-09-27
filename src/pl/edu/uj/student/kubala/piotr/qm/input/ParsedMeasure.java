@@ -21,8 +21,9 @@ public class ParsedMeasure
     private String text;
     private Range valueRange;
 
-    // TODO: sprawdzenie valueRange
     public ParsedMeasure(Measure measure, String text, Range valueRange) {
+        if (!Range.forText(text).contains(valueRange))
+            throw new IllegalArgumentException("valueRange " + valueRange + "not in text range");
         this.measure = measure;
         this.text = text;
         this.valueRange = valueRange;

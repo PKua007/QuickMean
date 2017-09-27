@@ -117,12 +117,12 @@ public class Range {
     }
 
     /**
-     * Zwraca długość zakresu
+     * Zwraca liczbę intów znajdujących się w zakresie
      *
      * @return długość zakresu
      */
     public int getLength() {
-        return Math.abs(this.end - this.beg);
+        return Math.abs(this.end - this.beg) + 1;
     }
 
     public int getBeg() {
