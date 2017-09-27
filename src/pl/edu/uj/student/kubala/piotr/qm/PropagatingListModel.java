@@ -137,13 +137,15 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      */
     public int deleteElementRange(int begidx, int endidx)
     {
-        validateIdx(begidx);
+        // TODO: fix this bullshit
+        throw new UnsupportedOperationException();
+        /*validateIdx(begidx);
         validateIdx(endidx - 1);
         if (begidx > endidx)
             throw new IllegalArgumentException("begidx > endidx");
-        while (endidx-- >= begidx)
+        while (--endidx >= begidx)
             this.deleteElement(begidx);
-        return getNumberOfElements();
+        return getNumberOfElements();*/
     }
 
     /**
@@ -164,7 +166,8 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      */
     public void clear()
     {
-        deleteElementRange(0, getNumberOfElements());
+        while (getNumberOfElements() > 0)
+            this.deleteElement(0);
     }
 
     /**
