@@ -11,10 +11,10 @@ package pl.edu.uj.student.kubala.piotr.qm.input;
 import pl.edu.uj.student.kubala.piotr.qm.Controller;
 import pl.edu.uj.student.kubala.piotr.qm.EDTInitializationManager;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
+import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.event.*;
 import javax.swing.text.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -47,9 +47,10 @@ public class MeasuresInputController implements Controller
         doc.setDocumentFilter(new MeasureDocumentFilter());
 
         Handler handler = new Handler();
-        this.labProject.addPropertyChangeListener(handler);
-        editor.getCaret().addChangeListener(handler);
-        editor.addFocusListener(handler);
+        //this.labProject.addPropertyChangeListener(handler);
+        //editor.getCaret().addChangeListener(handler);
+        //editor.addFocusListener(handler);
+        editor.addCaretListener(handler);
     }
 
     @Override
@@ -57,27 +58,28 @@ public class MeasuresInputController implements Controller
         return "MeasuresInputController";
     }
 
+    private void reparseText()
+    {
+        SeriesParser parser = new SeriesParser();
+        String text = measuresInput.getInputPane().getText();
+        SeriesInputInfo seriesInputInfo = parser.parseSeries(text);
+        measuresInput.setSeriesInputInfo(seriesInputInfo);
 
-    private class Handler implements PropertyChangeListener, ChangeListener, FocusListener
+        Series highlightedSeries = labProject.getHighlightedSeries();
+        if (highlightedSeries == null)
+            return;
+        highlightedSeries.clear();
+        for (MeasureInputInfo measureInputInfo : seriesInputInfo.getAllInfos())
+            if (measureInputInfo.isCorrect())
+                highlightedSeries.addElement(measureInputInfo.getMeasure());
+        highlightedSeries.updateMean();
+    }
+
+    private class Handler implements CaretListener
     {
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-
-        }
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-
-        }
-
-        @Override
-        public void focusGained(FocusEvent e) {
-
-        }
-
-        @Override
-        public void focusLost(FocusEvent e) {
-
+        public void caretUpdate(CaretEvent e) {
+            SwingUtilities.invokeLater(measuresInput::highlightInputPane);
         }
     }
 
@@ -86,7 +88,24 @@ public class MeasuresInputController implements Controller
         @Override
         public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
             System.out.println("remove [offset = " + offset + ", length = " + length + "]");
+            removeImpl(fb, offset, length);
+            SwingUtilities.invokeLater(MeasuresInputController.this::reparseText);
+        }
 
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            System.out.println("insert [string = \"" + string + "\", offset = " + offset + "]");
+            fb.insertString(offset, string, attr);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            System.out.println("replace [text = \"" + text + "\", offset = " + offset + ", length = " + length + "]");
+            replaceImpl(fb, offset, length, text, attrs);
+            SwingUtilities.invokeLater(MeasuresInputController.this::reparseText);
+        }
+
+        private void removeImpl(FilterBypass fb, int offset, int length) throws BadLocationException {
             Document doc = fb.getDocument();
             String content = doc.getText(0, doc.getLength());
 
@@ -117,16 +136,7 @@ public class MeasuresInputController implements Controller
             fb.remove(offset, length);
         }
 
-        @Override
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-            System.out.println("insert [string = \"" + string + "\", offset = " + offset + "]");
-            fb.insertString(offset, string, attr);
-        }
-
-        @Override
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-            System.out.println("replace [text = \"" + text + "\", offset = " + offset + ", length = " + length + "]");
-
+        private void replaceImpl(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
             Document doc = fb.getDocument();
             String content = doc.getText(0, doc.getLength());
             JEditorPane editorPane = measuresInput.getInputPane();
