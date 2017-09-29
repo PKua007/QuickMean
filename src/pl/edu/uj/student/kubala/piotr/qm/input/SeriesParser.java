@@ -14,8 +14,8 @@ import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 
 /**
  * <p>Klasa służąca do parsowania serii pomiarów z tekstu, a także przedstawiania serii w postaci tekstu w tym samym
- * formacie - pomiary w formacie przyjmowanym przez {@link MeasureParser} rozdzielone <quote>; </quote>:
- * {@code 30.3±0.4; 70.3; 60±1; }
+ * formacie - pomiary w formacie przyjmowanym przez {@link MeasureParser} rozdzielone <code>"; "</code>:
+ * {@code 30.3±0.4; 70.3; 60±1; }.
  * <p>Pozwala także na dowolną kombinację dowolnej liczby spacji i średników jako rozdzielenie oraz na początku i na
  * końcu. Zapewnia to większą odporność na błędy.
  * <p>Umożliwia także wygenerowanie pełnego {@link SeriesInputInfo} z istniejącej serii - powstały tekst jest podanym
@@ -75,7 +75,7 @@ public class SeriesParser
     }
 
     /**
-     * Parsuje tekst reprezentujący serię pomiarów rozdzielonych <quote>; </quote> (jak w opisie klasy). Zwraca instncję
+     * Parsuje tekst reprezentujący serię pomiarów rozdzielonych <code>"; "</code> (jak w opisie klasy). Zwraca instncję
      * {@link SeriesInputInfo} zawierającą sparsowane pomiary, a także informację o ich położeniu w tekście i miejscach,
      * które nie mogły zostać sparsowane. Zakłada brak zaznaczenia w tekście.
      * @param text tekst do sparsowania
@@ -110,7 +110,7 @@ public class SeriesParser
     }
 
     /**
-     * Parsuje tekst reprezentujący serię pomiarów rozdzielonych <quote>; </quote> (jak w opisie klasy). Zwraca instncję
+     * Parsuje tekst reprezentujący serię pomiarów rozdzielonych <code>"; "</code> (jak w opisie klasy). Zwraca instncję
      * {@link SeriesInputInfo} zawierającą sparsowane pomiary, a także informację o ich położeniu w tekście i miejscach,
      * które nie mogły zostać sparsowane. W zwróconej informacji znajduje się zakres pomiarów, które znalazły się
      * częściowo w zaznaczeniu.
