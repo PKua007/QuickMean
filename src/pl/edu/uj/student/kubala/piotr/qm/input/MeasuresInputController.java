@@ -45,9 +45,6 @@ public class MeasuresInputController implements Controller
         doc.setDocumentFilter(new MeasureDocumentFilter(measuresInput.getInputPane()));
 
         Handler handler = new Handler();
-        //this.labProject.addPropertyChangeListener(handler);
-        //editor.getCaret().addChangeListener(handler);
-        //editor.addFocusListener(handler);
         editor.addCaretListener(handler);
     }
 
@@ -88,11 +85,11 @@ public class MeasuresInputController implements Controller
      *     <li>wpisanie "," lub "." powoduje zamianę na "."</li>
      *     <li>wpisanie "+-" powoduje zamianę na "±"</li>
      *     <li>wciśnięcie " " lub ";" powoduje wstawienie pełnego odstępu "; "</li>
-     *     <li>wstawianie drugiego pełnego odstępu powoduje jedynie przesunięcie karety</li>
+     *     <li>wstawianie drugiego pełnego odstępu w istniejącym powoduje jedynie przesunięcie karety</li>
      *     <li>wklejany tekst również jest przetwarzany tak, jak poprzednie podpkunty. Wynik wklejenia / wycięcia /
-     *     usunięcia zaznaczenia również również zachowa format</li>
-     *     <li>zmazanie pojedynczego znaku odstępu scala sąsiednie pomiary</li>
+     *     usunięcia zaznaczenia również zachowa format</li>
      *     <li>również odstępy powstałe na brzegach wklejenia/wycięcia są w intuicyjny sposób przetwarzane</li>
+     *     <li>zmazanie pojedynczego znaku odstępu scala sąsiednie pomiary</li>
      *     <li>odstęp nie może się znaleźć na początku okna. Na końcu może być wstawiony, ale nie musi</li>
      *     <li>wstawienie nowego pomiaru między ";" i " " zamienia rozdzielony pełny odstęp na 2 pełne odstępy</li>
      *     <li>zmazanie całego pomiaru powoduje scalenie dwóch pełnych odstępów w 1 pełny odstęp</li>
@@ -131,14 +128,19 @@ public class MeasuresInputController implements Controller
                 return;
             }
 
-            StringBuilder replaceSimulation = new StringBuilder(originalText);
+            // Initially prepare replace text. Add additional spaces on ends when replaced range is surrounded by
+            // spaces - it will make sure this spaces won't vanish after further processing. Normalize spaces.
             String initialReplace = selectionTouchesSpaces(originalText, offset, length)
                     ? normalizeSpaces(" " + text + " ")
                     : normalizeSpaces(text);
-            replaceSimulation.replace(offset, offset + length, initialReplace);
 
+            // Simulate replace result and expand inserted range to swallow as much spaces, as it can. Cut result.
+            StringBuilder replaceSimulation = new StringBuilder(originalText);
+            replaceSimulation.replace(offset, offset + length, initialReplace);
             Range toReplaceRange = getExpandedOnSpacesRange(replaceSimulation, offset, initialReplace.length());
             String finalReplace = toReplaceRange.cutSubstringExclusive(replaceSimulation);
+
+            // Make remaining normalization and replacements
             finalReplace = normalizeSurroundingSpaces(finalReplace, offset);
             finalReplace = replaceCommas(finalReplace);
             finalReplace = replacePlusMinus(finalReplace);
@@ -152,10 +154,6 @@ public class MeasuresInputController implements Controller
                 pane.getCaret().setDot(replacedRange.getBeg() + finalReplace.length() - 2);
         }
 
-        private boolean textEndsWithSpace(String text) {
-            return text.endsWith(" ") || text.endsWith(";");
-        }
-
         private String replacePlusMinus(String text) {
             return text.replace("+-", "±");
         }
@@ -164,10 +162,12 @@ public class MeasuresInputController implements Controller
             return text.replace(',', '.');
         }
 
+        /* Returns text where all spaces are change to "; " */
         private String normalizeSpaces(String text) {
             return normalizationPattern.matcher(text).replaceAll("; ");
         }
 
+        /* Deletes single spaces on ends, longer spaces on ends are normalized. */
         private String normalizeSurroundingSpaces(String text, int selectionStart) {
             // Fast bypass
             if (text.length() == 0)
@@ -186,6 +186,7 @@ public class MeasuresInputController implements Controller
             return trim;
         }
 
+        /* Trim range so that it doesn't have spaces on ends */
         private Range getShrunkOnSpacesRange(CharSequence text, int offset, int length) {
             int beg = offset, end = beg + length;
             while (beg < text.length() && isSpace(text.charAt(beg)))
@@ -195,10 +196,7 @@ public class MeasuresInputController implements Controller
             return new Range(beg, end);
         }
 
-        private boolean isSpace(char c) {
-            return c == ' ' || c == ';';
-        }
-
+        /* Expand range so that it has as much spaces on ends as it can have */
         private Range getExpandedOnSpacesRange(CharSequence text, int offset, int length) {
             int beg = offset, end = offset + length;
             while (beg > 0 && isSpace(text.charAt(beg - 1)))    // expand on the left
@@ -208,14 +206,19 @@ public class MeasuresInputController implements Controller
             return new Range(beg, end);
         }
 
+        private boolean isSpace(char c) {
+            return c == ' ' || c == ';';
+        }
+
+        private boolean textEndsWithSpace(String text) {
+            return text.endsWith(" ") || text.endsWith(";");
+        }
+
+        /* Check weather selection in text touches spaces on its both ends, eg. "; [--selection--] 55" */
         private boolean selectionTouchesSpaces(String text, int offset, int length) {
             return text.length() >= 2       // length at least 2 required for touching
                     && offset != 0 && isSpace(text.charAt(offset - 1))      // left end touches?
                     && offset + length < text.length() && isSpace(text.charAt(offset + length));  // right end touches?
-        }
-
-        public JTextPane getPane() {
-            return pane;
         }
     }
 }
