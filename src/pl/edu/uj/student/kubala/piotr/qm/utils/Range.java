@@ -45,8 +45,8 @@ public class Range {
      * @param text tekst do wycięcie
      * @return wycięty fragment
      */
-    public String cutSubstringInclusive(String text) {
-        return text.substring(getMin(), getMax() + 1);
+    public String cutSubstringInclusive(CharSequence text) {
+        return text.subSequence(getMin(), getMax() + 1).toString();
     }
 
     /**
@@ -55,8 +55,8 @@ public class Range {
      * @param text tekst do wycięcie
      * @return wycięty fragment
      */
-    public String cutSubstringExclusive(String text) {
-        return text.substring(getMin(), getMax());
+    public String cutSubstringExclusive(CharSequence text) {
+        return text.subSequence(getMin(), getMax()).toString();
     }
 
     /**
@@ -125,6 +125,15 @@ public class Range {
         return Math.abs(this.end - this.beg) + 1;
     }
 
+    /**
+     * Zwraca liczbę intów znajdujących się w zakresie. Końcówka nie jest zawarta
+     *
+     * @return długość zakresu
+     */
+    public int getLengthExclusive() {
+        return Math.abs(this.end - this.beg);
+    }
+
     public int getBeg() {
         return beg;
     }
@@ -144,6 +153,13 @@ public class Range {
             return new Range(-1);
         else
             return new Range(0, text.length() - 1);
+    }
+
+    public static Range forTextExclusive(CharSequence text) {
+        if (text == null)
+            return null;
+        else
+            return new Range(0, text.length());
     }
 
     @Override
