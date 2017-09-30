@@ -15,6 +15,7 @@ public class Main
 {
     public static final String  TITLE = "QuickMean 1.0";
     public static final boolean DEBUG = true;
+    public static final boolean PARSE_AND_HIGHLIGHT_DEBUG = true;
 
     private static LabProject   labProject;
     private static QuickFrame   quickFrame;

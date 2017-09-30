@@ -108,6 +108,16 @@ public class Range {
     }
 
     /**
+     * Zwraca true, jeśli zakres dotyka (lub przekrywa) inny zakres
+     *
+     * @param other inny zakres
+     * @return true, jeśli zakresy się przekrywają
+     */
+    public boolean touches(Range other) {
+        return Math.min(getMax(), other.getMax()) >= Math.max(getMin(), other.getMin()) - 1;
+    }
+
+    /**
      * Zwraca zakres z odwróconymi końcami
      *
      * @return zakres z odwróconymi końcami

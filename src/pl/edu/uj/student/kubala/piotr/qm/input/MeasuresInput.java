@@ -9,6 +9,7 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.input;
 
+import pl.edu.uj.student.kubala.piotr.qm.Main;
 import pl.edu.uj.student.kubala.piotr.qm.QuickFrame;
 import pl.edu.uj.student.kubala.piotr.qm.View;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
@@ -30,12 +31,16 @@ public class MeasuresInput implements View, PropertyChangeListener
     private static final String     DELETE_MEASURE = "<html><center>Usuń<br/>pomiar</center></html>";
     private static final String     NEXT_SERIES = "<html><center>Następna<br/>seria</center></html>";
     private static final Font       EDITOR_FONT = new Font("DialogInput", Font.BOLD, 12);
-    private static final MutableAttributeSet    FOCUS_ATTR_SET = new SimpleAttributeSet();
     private static final MutableAttributeSet    VALUE_ATTR_SET = new SimpleAttributeSet();
     private static final MutableAttributeSet    ERROR_ATTR_SET = new SimpleAttributeSet();
-    private static final Color                  FOCUS_BG_COLOR = new Color(0xB9E8EE);
+    private static final MutableAttributeSet    FOCUS_ATTR_SET = new SimpleAttributeSet();
+    private static final MutableAttributeSet    FOCUS_ERROR_ATTR_SET = new SimpleAttributeSet();
+    private static final MutableAttributeSet    FOCUS_VALUE_ATTR_SET = new SimpleAttributeSet();
     private static final Color                  VALUE_BG_COLOR = new Color(0xF0EDD7);
     private static final Color                  ERROR_BG_COLOR = new Color(0xECC6C0);
+    private static final Color                  FOCUS_BG_COLOR = new Color(0xDDF3F5);
+    private static final Color                  FOCUS_ERROR_BG_COLOR = new Color(0xD5918D);
+    private static final Color                  FOCUS_VALUE_BG_COLOR = new Color(0x9AEBF3);
 
     private static final int        INPUT_BUTTONS_GAP = 7;     // Odstęp między okienkiem i przyciskami
     private static final int        BUTTONS_GAP = 10;           // Odstęp między przyciskami
@@ -56,6 +61,8 @@ public class MeasuresInput implements View, PropertyChangeListener
         StyleConstants.setBackground(FOCUS_ATTR_SET, FOCUS_BG_COLOR);
         StyleConstants.setBackground(VALUE_ATTR_SET, VALUE_BG_COLOR);
         StyleConstants.setBackground(ERROR_ATTR_SET, ERROR_BG_COLOR);
+        StyleConstants.setBackground(FOCUS_ERROR_ATTR_SET, FOCUS_ERROR_BG_COLOR);
+        StyleConstants.setBackground(FOCUS_VALUE_ATTR_SET, FOCUS_VALUE_BG_COLOR);
     }
 
     /**
@@ -150,30 +157,58 @@ public class MeasuresInput implements View, PropertyChangeListener
 
     public void highlightInputPane()
     {
+        if (seriesInputInfo.getNumberOfInfos() == 0)
+            highlightInputPane(null);
+        else
+            highlightInputPane(new Range(0, seriesInputInfo.getNumberOfInfos() - 1));
+    }
+
+    public void highlightInputPane(Range range)
+    {
+        if (range == null)
+            return;
         if (seriesInputInfo == null)
             return;
         if (!seriesInputInfo.getText().equals(inputPane.getText()))
-            return;//throw new RuntimeException("Measure input pane text desynchronization");
+            throw new RuntimeException("Measure input pane text desynchronization");
 
         MeasureInputInfo caretInfo = seriesInputInfo.getMeasureInfoForCaretPos(inputPane.getCaretPosition());
         StyledDocument document = inputPane.getStyledDocument();
-        document.setCharacterAttributes(0, document.getLength(), new SimpleAttributeSet(), true);
-        for (MeasureInputInfo measureInputInfo : seriesInputInfo.getAllInfos()) {
-            if (measureInputInfo == caretInfo) {
-                Range textRange = measureInputInfo.getTextRange();
-                document.setCharacterAttributes(textRange.getMin(), textRange.getLength(), FOCUS_ATTR_SET, true);
-            }
-            else if (measureInputInfo.isCorrect()) {
-                Range valueRange = measureInputInfo.getValueRange();
-                document.setCharacterAttributes(valueRange.getMin(), valueRange.getLength(), VALUE_ATTR_SET, true);
-            }
 
-            if (!measureInputInfo.isCorrect())
-            {
-                Range errorRange = measureInputInfo.getErrorRange();
-                document.setCharacterAttributes(errorRange.getMin(), errorRange.getLength(), ERROR_ATTR_SET, true);
+        resetPreviousAttr(document, range);
+        for (int i = range.getMin(); i <= range.getMax(); i++) {
+            MeasureInputInfo measureInputInfo = seriesInputInfo.getMeasureInfo(i);
+            if (measureInputInfo == caretInfo) {
+                setAttrInRange(document, measureInputInfo.getTextRange(), FOCUS_ATTR_SET);
+                if (measureInputInfo.isCorrect())
+                    setAttrInRange(document, measureInputInfo.getValueRange(), FOCUS_VALUE_ATTR_SET);
+                else
+                    setAttrInRange(document, measureInputInfo.getErrorRange(), FOCUS_ERROR_ATTR_SET);
+            } else {
+                if (measureInputInfo.isCorrect())
+                    setAttrInRange(document, measureInputInfo.getValueRange(), VALUE_ATTR_SET);
+                else
+                    setAttrInRange(document, measureInputInfo.getErrorRange(), ERROR_ATTR_SET);
             }
         }
+    }
+
+    private void setAttrInRange(StyledDocument document, Range textRange, MutableAttributeSet set) {
+        document.setCharacterAttributes(textRange.getMin(), textRange.getLength(), set, true);
+    }
+
+    /* Zresetuj poprzednie atrybuty */
+    private void resetPreviousAttr(StyledDocument document, Range resetRange) {
+        // Expand text range to surrounding spaces
+        int affectedTextBeg = seriesInputInfo.getMeasureInfo(resetRange.getMin()).getTextRange().getMin();
+        int affectedTextEnd = seriesInputInfo.getMeasureInfo(resetRange.getMax()).getTextRange().getMax();
+        if (affectedTextBeg > 1)
+            affectedTextBeg -= 2;
+        if (affectedTextEnd < seriesInputInfo.getText().length() - 2)
+            affectedTextEnd += 2;
+
+        document.setCharacterAttributes(affectedTextBeg, affectedTextEnd - affectedTextBeg + 1,
+                new SimpleAttributeSet(), true);
     }
 
     public void setSeriesInputInfo(SeriesInputInfo seriesInputInfo) {
@@ -183,7 +218,6 @@ public class MeasuresInput implements View, PropertyChangeListener
         } else {
             if (!inputPane.getText().equals(seriesInputInfo.getText()))
                 setInputText(seriesInputInfo.getText());
-            highlightInputPane();
         }
     }
 
@@ -199,7 +233,15 @@ public class MeasuresInput implements View, PropertyChangeListener
                 SeriesParser seriesParser = new SeriesParser();
                 SeriesInputInfo inputInfo = seriesParser.printSeries(highlightedSeries);
                 setSeriesInputInfo(inputInfo);
+
+                if (Main.PARSE_AND_HIGHLIGHT_DEBUG)
+                    System.out.println("highlighting after printing series");
+                highlightInputPane();
                 break;
         }
+    }
+
+    public SeriesInputInfo getSeriesInputInfo() {
+        return seriesInputInfo;
     }
 }

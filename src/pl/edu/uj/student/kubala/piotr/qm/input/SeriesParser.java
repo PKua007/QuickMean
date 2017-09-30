@@ -34,15 +34,15 @@ public class SeriesParser
 
         private int selectionRangeStart = -1;
         private int selectionRangeEnd = -1;
+
         SelectionRangeBuilder(int selectionIndex, int selectionLength) {
-            if (selectionIndex == -1 || selectionLength == 0)
+            if (selectionIndex == -1)
                 textSelectionRange = null;
             else
-                textSelectionRange = new Range(selectionIndex, selectionIndex + selectionLength - 1);
+                textSelectionRange = new Range(selectionIndex - 1, selectionIndex + selectionLength);
         }
 
         /* Sprawdź następny sparsowany pomiar pod kątem zaznaczenia i przesuń wewnętrzny indeks */
-
         void checkNextMeasureInfo(MeasureInputInfo measureInputInfo) {
             if (textSelectionRange == null)
                 return;
@@ -55,13 +55,13 @@ public class SeriesParser
             }
             seriesInputInfoIndex++;
         }
-        /* Czy zakres jest w trakcie budowy (zaczęty, ale nie skończony) */
 
+        /* Czy zakres jest w trakcie budowy (zaczęty, ale nie skończony) */
         private boolean isSelectionBeingBuilt() {
             return selectionRangeStart != -1 && selectionRangeEnd == -1;
         }
-        /* Wygeneruj zakres na podstawie zebranych danych */
 
+        /* Wygeneruj zakres na podstawie zebranych danych */
         Range getRange() {
             if (selectionRangeStart == -1)      // Nie wybudowano zaznaczenia
                 return null;
@@ -71,6 +71,7 @@ public class SeriesParser
                 return new Range(selectionRangeStart, selectionRangeEnd);
         }
     }
+
     public SeriesParser() {
     }
 
@@ -113,9 +114,9 @@ public class SeriesParser
      * Parsuje tekst reprezentujący serię pomiarów rozdzielonych <code>"; "</code> (jak w opisie klasy). Zwraca instncję
      * {@link SeriesInputInfo} zawierającą sparsowane pomiary, a także informację o ich położeniu w tekście i miejscach,
      * które nie mogły zostać sparsowane. W zwróconej informacji znajduje się zakres pomiarów, które znalazły się
-     * częściowo w zaznaczeniu.
+     * częściowo w zaznaczeniu (wystarczy, że go dotykają)
      * @param text tekst do sparsowania
-     * @param selectionIndex indeks początku zaznaczenia (-1 jeśli brak)
+     * @param selectionIndex indeks początku zaznaczenia (-1 lub text.length() jeśli brak)
      * @param selectionLength długość zaznaczenia (0 jeśli brak)
      * @return {@link SeriesInputInfo} opisujący wyniki parsowania
      */
@@ -155,7 +156,7 @@ public class SeriesParser
     private static void validateSelection(String text, int selectionIndex, int selectionLength) {
         if (selectionLength < 0)
             throw new IllegalArgumentException("selectionLength");
-        if (selectionIndex < -1 || selectionIndex >= text.length() || selectionIndex + selectionLength > text.length())
+        if (selectionIndex < -1 || selectionIndex > text.length() || selectionIndex + selectionLength > text.length())
             throw new StringIndexOutOfBoundsException("Selection exceeds string range");
     }
 

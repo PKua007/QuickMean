@@ -275,8 +275,6 @@ public class GroupDisplay implements View
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            System.out.println(evt);
-
             switch (evt.getPropertyName()) {
                 // Dodanie nowej grupy - uzupełnij listę
                 case LabProject.NEW_GROUP:

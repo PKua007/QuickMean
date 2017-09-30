@@ -21,7 +21,8 @@ class MeasureDocumentFilterTest
 {
     private Bypass bypass;
     private JTextPane pane = new JTextPane();
-    private MeasuresInputController.MeasureDocumentFilter filter = new MeasuresInputController.MeasureDocumentFilter(pane);
+    private MeasuresInputController.MeasureDocumentFilter filter
+            = new MeasuresInputController.MeasureDocumentFilter(pane, (mock1, mock2) -> {}, () -> {});
 
     class Bypass extends DocumentFilter.FilterBypass
     {

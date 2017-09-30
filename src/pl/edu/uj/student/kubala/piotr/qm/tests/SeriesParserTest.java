@@ -175,21 +175,21 @@ class SeriesParserTest
     void selectionInSingleMeasureWithSpaces()
     {
         parse("100; 200; 300; 400; 500", 3, 7);
-        assertEquals(new Range(1), seriesInputInfo.getMeasuresInSelection());
+        assertEquals(new Range(0, 2), seriesInputInfo.getMeasuresInSelection());
     }
 
     @Test
     void selectionInSpaces()
     {
         parse("100; 200; 300; 400; 500", 8, 2);
-        assertEquals(null, seriesInputInfo.getMeasuresInSelection());
+        assertEquals(new Range(1, 2), seriesInputInfo.getMeasuresInSelection());
     }
 
     @Test
     void selectionInMultipleMeasures1()
     {
         parse("100; 200; 300; 400; 500", 11, 9);
-        assertEquals(new Range(2, 3), seriesInputInfo.getMeasuresInSelection());
+        assertEquals(new Range(2, 4), seriesInputInfo.getMeasuresInSelection());
     }
 
     @Test
@@ -203,6 +203,8 @@ class SeriesParserTest
     void zeroLengthSelection()
     {
         parse("100; 200; 300; 400; 500", 1, 0);
+        assertEquals(new Range(0), seriesInputInfo.getMeasuresInSelection());
+        parse("100; 200; 300; 400; 500", 4, 0);
         assertEquals(null, seriesInputInfo.getMeasuresInSelection());
     }
 

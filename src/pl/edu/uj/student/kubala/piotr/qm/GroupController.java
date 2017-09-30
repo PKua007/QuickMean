@@ -130,7 +130,6 @@ public class GroupController implements Controller
         public void itemStateChanged(ItemEvent e) {
             JComboBox<String> list = groupDisplay.getGroupList();
 
-            System.out.println(e);
             if (e.getSource() != list)
                 return;
 

@@ -10,6 +10,7 @@ package pl.edu.uj.student.kubala.piotr.qm.input;
 
 import pl.edu.uj.student.kubala.piotr.qm.Controller;
 import pl.edu.uj.student.kubala.piotr.qm.EDTInitializationManager;
+import pl.edu.uj.student.kubala.piotr.qm.Main;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
@@ -23,6 +24,11 @@ public class MeasuresInputController implements Controller
 {
     private LabProject      labProject;
     private MeasuresInput   measuresInput;
+    private Handler         handler;
+
+    // TODO: naprawić po zmianie serii
+    private int lastCaretMeasureInfoIdx = -1;
+    private MeasureDocumentFilter filter;
 
     /**
      * Konstruktor kontrolera okna z pomiarami przyjmujący model i widok
@@ -42,10 +48,15 @@ public class MeasuresInputController implements Controller
     public void init() {
         JEditorPane editor = this.measuresInput.getInputPane();
         AbstractDocument doc = (AbstractDocument) editor.getDocument();
-        doc.setDocumentFilter(new MeasureDocumentFilter(measuresInput.getInputPane()));
+        filter = new MeasureDocumentFilter(measuresInput.getInputPane(), this::reparseText, this::disableFilter);
+        doc.setDocumentFilter(filter);
 
-        Handler handler = new Handler();
+        handler = new Handler();
         editor.addCaretListener(handler);
+    }
+
+    private void disableFilter() {
+        filter.setEditingBlocked(true);
     }
 
     @Override
@@ -53,13 +64,23 @@ public class MeasuresInputController implements Controller
         return "MeasuresInputController";
     }
 
-    public void reparseText()
+    private void reparseText(int selectionIndex, int selectionLength)
     {
+        SwingUtilities.invokeLater(() -> reparseText0(selectionIndex, selectionLength));
+    }
+
+    private void reparseText0(int selectionIndex, int selectionLength) {
+        if (Main.PARSE_AND_HIGHLIGHT_DEBUG)
+            System.out.println("Reparsing text...");
+
+        // Parse and highlight
         SeriesParser parser = new SeriesParser();
         String text = measuresInput.getInputPane().getText();
-        SeriesInputInfo seriesInputInfo = parser.parseSeries(text);
+        SeriesInputInfo seriesInputInfo = parser.parseSeries(text, selectionIndex, selectionLength);
         measuresInput.setSeriesInputInfo(seriesInputInfo);
+        measuresInput.highlightInputPane(seriesInputInfo.getMeasuresInSelection());
 
+        // Add parsed measures to Series
         Series highlightedSeries = labProject.getHighlightedSeries();
         if (highlightedSeries == null)
             return;
@@ -68,13 +89,36 @@ public class MeasuresInputController implements Controller
             if (measureInputInfo.isCorrect())
                 highlightedSeries.addElement(measureInputInfo.getMeasure());
         highlightedSeries.updateMean();
+
+        // Unlock text input and save measure input info with text caret
+        JTextPane pane = measuresInput.getInputPane();
+        lastCaretMeasureInfoIdx = seriesInputInfo.getMeasureInfoIdxForCaretPos(pane.getCaretPosition());
+        filter.setEditingBlocked(false);
     }
 
     private class Handler implements CaretListener
     {
         @Override
         public void caretUpdate(CaretEvent e) {
-            SwingUtilities.invokeLater(measuresInput::highlightInputPane);
+            if (filter.isEditingBlocked())   // do not handle caret, if editing blocked - wait for parsing end
+                return;
+
+            SeriesInputInfo currentSeriesInfo = measuresInput.getSeriesInputInfo();
+            Caret caret = measuresInput.getInputPane().getCaret();
+
+            int currentMeasureInfoIdx = currentSeriesInfo.getMeasureInfoIdxForCaretPos(caret.getDot());
+            if (lastCaretMeasureInfoIdx != currentMeasureInfoIdx) {
+                if (Main.PARSE_AND_HIGHLIGHT_DEBUG)
+                    System.out.println("Unhighlighting: " + lastCaretMeasureInfoIdx + ", highlighting: " + currentMeasureInfoIdx);
+
+                final int lastCaretMeasureInfoIdx1 = lastCaretMeasureInfoIdx;  // finalize for invoking later
+
+                if (lastCaretMeasureInfoIdx1 != -1)
+                    measuresInput.highlightInputPane(new Range(lastCaretMeasureInfoIdx1));
+                if (currentMeasureInfoIdx != -1)
+                    measuresInput.highlightInputPane(new Range(currentMeasureInfoIdx));
+                lastCaretMeasureInfoIdx = currentMeasureInfoIdx;
+            }
         }
     }
 
@@ -97,12 +141,23 @@ public class MeasuresInputController implements Controller
      */
     public static class MeasureDocumentFilter extends DocumentFilter
     {
+        @FunctionalInterface
+        public interface ParseExecutor
+        {
+            void parse(int selectionStart, int selectionEnd);
+        }
+
         private final Pattern normalizationPattern = Pattern.compile("[; ]+");
 
         private JTextPane pane;
+        private ParseExecutor parseExecutor;
+        private Runnable runBeforeEdit;
+        private boolean editingBlocked = false;
 
-        public MeasureDocumentFilter(JTextPane pane) {
+        public MeasureDocumentFilter(JTextPane pane, ParseExecutor parseExecutor, Runnable runBeforeEdit) {
             this.pane = pane;
+            this.parseExecutor = parseExecutor;
+            this.runBeforeEdit = runBeforeEdit;
         }
 
         @Override
@@ -119,12 +174,20 @@ public class MeasuresInputController implements Controller
 
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            if (editingBlocked)    // Ignored edits while editing is blocked
+                return;
+            runBeforeEdit.run();
+            replace0(fb, offset, length, text, attrs);
+        }
+
+        private void replace0(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
             Document document = fb.getDocument();
             String originalText = document.getText(0, document.getLength());
 
             // Inserting minus preceded by plus - change to plus-minus
             if (length == 0 && "-".equals(text) && offset > 0 && originalText.charAt(offset - 1) == '+') {
                 fb.replace(offset - 1, 1, "±", attrs);
+                parseExecutor.parse(offset - 1, 1);
                 return;
             }
 
@@ -146,12 +209,15 @@ public class MeasuresInputController implements Controller
             finalReplace = replacePlusMinus(finalReplace);
 
             Range replacedRange = getExpandedOnSpacesRange(originalText, offset, length);
-            fb.replace(replacedRange.getBeg(), replacedRange.getLengthExclusive(), finalReplace, attrs);
+            fb.replace(replacedRange.getBeg(), replacedRange.getLengthExclusive(), finalReplace, null);
 
             // Original insertion didn't end with space, but computed insertion does - user doesn't intend to move caret
             // to next measure, so it should be corrected
-            if (!textEndsWithSpace(text) && textEndsWithSpace(finalReplace))
+            if (!deletingWholeMeasure(originalText, offset, length)
+                    && !textEndsWithSpace(text) && textEndsWithSpace(finalReplace))
                 pane.getCaret().setDot(replacedRange.getBeg() + finalReplace.length() - 2);
+
+            parseExecutor.parse(replacedRange.getBeg(), finalReplace.length());
         }
 
         private String replacePlusMinus(String text) {
@@ -214,11 +280,36 @@ public class MeasuresInputController implements Controller
             return text.endsWith(" ") || text.endsWith(";");
         }
 
-        /* Check weather selection in text touches spaces on its both ends, eg. "; [--selection--] 55" */
+        private boolean textStartsWithSpace(String text) {
+            return text.startsWith(" ") || text.startsWith(";");
+        }
+
+
+        private boolean deletingWholeMeasure(String text, int offset, int length) {
+            String selectionText = text.substring(offset, offset + length);
+            return selectionTouchesSpacesOrEnds(text, offset, length) && length > 0
+                    && !textStartsWithSpace(selectionText) && !textEndsWithSpace(selectionText);
+        }
+
+        /* Check weather selection in text touches spaces on its both ends, eg. "; [--selection--]; 55" */
         private boolean selectionTouchesSpaces(String text, int offset, int length) {
             return text.length() >= 2       // length at least 2 required for touching
                     && offset != 0 && isSpace(text.charAt(offset - 1))      // left end touches?
                     && offset + length < text.length() && isSpace(text.charAt(offset + length));  // right end touches?
+        }
+
+        /* Check weather selection in text touches spaces or string ends on its both ends, eg. "[--selection--] 55" */
+        private boolean selectionTouchesSpacesOrEnds(String text, int offset, int length) {
+            return (offset == 0 || isSpace(text.charAt(offset - 1)))      // left end touches?
+                    && (offset + length >= text.length() || isSpace(text.charAt(offset + length)));  // right end touches?
+        }
+
+        public boolean isEditingBlocked() {
+            return editingBlocked;
+        }
+
+        public void setEditingBlocked(boolean editingBlocked) {
+            this.editingBlocked = editingBlocked;
         }
     }
 }
