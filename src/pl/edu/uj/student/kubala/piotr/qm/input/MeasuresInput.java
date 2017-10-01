@@ -145,14 +145,10 @@ public class MeasuresInput implements View, PropertyChangeListener
         return inputPane;
     }
 
-    /* Metoda ustawia nowy tekst w oknie. Chwilowo odinstalowuje filtr, żeby nie łapał */
+    /* Metoda ustawia nowy tekst w oknie */
     private void setInputText(String text)
     {
-        AbstractDocument doc = (AbstractDocument) this.inputPane.getDocument();
-        DocumentFilter filter = doc.getDocumentFilter();
-        doc.setDocumentFilter(null);
         inputPane.setText(text);
-        doc.setDocumentFilter(filter);
     }
 
     public void highlightInputPane()
@@ -223,22 +219,7 @@ public class MeasuresInput implements View, PropertyChangeListener
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName())
-        {
-            case SeriesGroup.HIGHLIGHTED_SERIES:
-            case LabProject.SELECTED_GROUP:
-                Series highlightedSeries = labProject.getHighlightedSeries();
-                if (highlightedSeries == null)
-                    break;
-                SeriesParser seriesParser = new SeriesParser();
-                SeriesInputInfo inputInfo = seriesParser.printSeries(highlightedSeries);
-                setSeriesInputInfo(inputInfo);
 
-                if (Main.PARSE_AND_HIGHLIGHT_DEBUG)
-                    System.out.println("highlighting after printing series");
-                highlightInputPane();
-                break;
-        }
     }
 
     public SeriesInputInfo getSeriesInputInfo() {

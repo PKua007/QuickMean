@@ -13,11 +13,14 @@ import pl.edu.uj.student.kubala.piotr.qm.EDTInitializationManager;
 import pl.edu.uj.student.kubala.piotr.qm.Main;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
+import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.regex.Pattern;
 
 public class MeasuresInputController implements Controller
@@ -53,6 +56,7 @@ public class MeasuresInputController implements Controller
 
         handler = new Handler();
         editor.addCaretListener(handler);
+        labProject.addPropertyChangeListener(handler);
     }
 
     private void disableFilter() {
@@ -96,8 +100,10 @@ public class MeasuresInputController implements Controller
         filter.setEditingBlocked(false);
     }
 
-    private class Handler implements CaretListener
+    /* Private inner class handling all Events */
+    private class Handler implements CaretListener, PropertyChangeListener
     {
+        /* Invoked when caret moves in series. Change highlighted measure */
         @Override
         public void caretUpdate(CaretEvent e) {
             if (filter.isEditingBlocked())   // do not handle caret, if editing blocked - wait for parsing end
@@ -117,6 +123,41 @@ public class MeasuresInputController implements Controller
                     measuresInput.highlightInputPane(new Range(currentMeasureInfoIdx));
                 lastCaretMeasureInfoIdx = currentMeasureInfoIdx;
             }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            switch (evt.getPropertyName())
+            {
+                // Invoked when highlighted series changes (including group change). Print and colorize new series
+                case SeriesGroup.HIGHLIGHTED_SERIES:
+                case LabProject.SELECTED_GROUP:
+                    Series highlightedSeries = labProject.getHighlightedSeries();
+                    if (highlightedSeries == null)
+                        break;
+                    SeriesParser seriesParser = new SeriesParser();
+                    SeriesInputInfo inputInfo = seriesParser.printSeries(highlightedSeries);
+                    installChangedSeries(inputInfo);
+                    break;
+            }
+        }
+
+        /* Installs new chosen series and colorizes it */
+        private void installChangedSeries(SeriesInputInfo inputInfo) {
+            JTextPane pane = measuresInput.getInputPane();
+            AbstractDocument paneDoc = (AbstractDocument) pane.getDocument();
+
+            // Remove caret listener and document filter - they'll go crazy otherwise. Restore afterwards
+            pane.removeCaretListener(this);
+            paneDoc.setDocumentFilter(null);
+            measuresInput.setSeriesInputInfo(inputInfo);
+            lastCaretMeasureInfoIdx = -1;   // Reset current highlighted measure
+            paneDoc.setDocumentFilter(filter);
+            pane.addCaretListener(this);
+
+            if (Main.PARSE_AND_HIGHLIGHT_DEBUG)
+                System.out.println("highlighting after printing series");
+            measuresInput.highlightInputPane();
         }
     }
 
