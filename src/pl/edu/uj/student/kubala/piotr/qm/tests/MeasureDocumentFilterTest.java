@@ -458,13 +458,4 @@ class MeasureDocumentFilterTest
         replace(0, 0, "1,3; 4,5; ");
         expectText("1.3; 4.5; ");
     }
-
-    /*@Test
-    void spaceMovingCaret() throws BadLocationException {
-        setupBypass("56; ");
-        replace(0, 0, "15; ");
-        expectText("15; 56; ");
-        assertEquals(4, pane.getCaret().getDot());
-        assertEquals(4, pane.getCaret().getMark());
-    }*/
 }

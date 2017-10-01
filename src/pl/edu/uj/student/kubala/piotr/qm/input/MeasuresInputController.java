@@ -111,10 +111,8 @@ public class MeasuresInputController implements Controller
                 if (Main.PARSE_AND_HIGHLIGHT_DEBUG)
                     System.out.println("Unhighlighting: " + lastCaretMeasureInfoIdx + ", highlighting: " + currentMeasureInfoIdx);
 
-                final int lastCaretMeasureInfoIdx1 = lastCaretMeasureInfoIdx;  // finalize for invoking later
-
-                if (lastCaretMeasureInfoIdx1 != -1)
-                    measuresInput.highlightInputPane(new Range(lastCaretMeasureInfoIdx1));
+                if (lastCaretMeasureInfoIdx != -1)
+                    measuresInput.highlightInputPane(new Range(lastCaretMeasureInfoIdx));
                 if (currentMeasureInfoIdx != -1)
                     measuresInput.highlightInputPane(new Range(currentMeasureInfoIdx));
                 lastCaretMeasureInfoIdx = currentMeasureInfoIdx;
@@ -197,11 +195,11 @@ public class MeasuresInputController implements Controller
                     ? normalizeSpaces(" " + text + " ")
                     : normalizeSpaces(text);
 
-            // Simulate replace result and expand inserted range to swallow as much spaces, as it can. Cut result.
-            StringBuilder replaceSimulation = new StringBuilder(originalText);
-            replaceSimulation.replace(offset, offset + length, initialReplace);
-            Range toReplaceRange = getExpandedOnSpacesRange(replaceSimulation, offset, initialReplace.length());
-            String finalReplace = toReplaceRange.cutSubstringExclusive(replaceSimulation);
+            // Add spaces surrounding "text to replace" to "replace text"
+            Range toReplaceRange = getExpandedOnSpacesRange(originalText, offset, length);
+            String finalReplace = originalText.substring(toReplaceRange.getBeg(), offset) +
+                    initialReplace +
+                    originalText.substring(offset + length, toReplaceRange.getEnd());
 
             // Make remaining normalization and replacements
             finalReplace = normalizeSurroundingSpaces(finalReplace, offset);
@@ -213,7 +211,7 @@ public class MeasuresInputController implements Controller
 
             // Original insertion didn't end with space, but computed insertion does - user doesn't intend to move caret
             // to next measure, so it should be corrected
-            if (!deletingWholeMeasure(originalText, offset, length)
+            if (!deletingMeasureBeginning(originalText, offset, length)
                     && !textEndsWithSpace(text) && textEndsWithSpace(finalReplace))
                 pane.getCaret().setDot(replacedRange.getBeg() + finalReplace.length() - 2);
 
@@ -280,15 +278,10 @@ public class MeasuresInputController implements Controller
             return text.endsWith(" ") || text.endsWith(";");
         }
 
-        private boolean textStartsWithSpace(String text) {
-            return text.startsWith(" ") || text.startsWith(";");
-        }
-
-
-        private boolean deletingWholeMeasure(String text, int offset, int length) {
-            String selectionText = text.substring(offset, offset + length);
-            return selectionTouchesSpacesOrEnds(text, offset, length) && length > 0
-                    && !textStartsWithSpace(selectionText) && !textEndsWithSpace(selectionText);
+        private boolean deletingMeasureBeginning(String text, int offset, int length) {
+            return (offset == 0 || isSpace(text.charAt(offset - 1)))  // left end of selection touches space/text beg
+                    && length > 0  // replacing anything
+                    && offset < text.length() && !isSpace(text.charAt(offset));  // first replaced char is not space
         }
 
         /* Check weather selection in text touches spaces on its both ends, eg. "; [--selection--]; 55" */
