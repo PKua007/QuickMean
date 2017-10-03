@@ -17,6 +17,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class GroupDisplay implements View
@@ -172,6 +173,8 @@ public class GroupDisplay implements View
          */
     private class LabChangeListener implements PropertyChangeListener {
 
+        private FormattedQuantityFactory quantityFactory = new FormattedQuantityFactory();
+
         /* Dodanie nowej grupy - uzupełnij listę */
         private void handleNewGroup(PropertyChangeEvent evt) {
             int idx;
@@ -213,27 +216,26 @@ public class GroupDisplay implements View
             if (selectedGroup == null)
                 return;
 
-            Series series;
-            Quantity quantity;
-            FormattedQuantityFactory factory = new FormattedQuantityFactory();
-            FormattedQuantity formattedQuantity;
-
-            for (int i = 0; i < selectedGroup.getNumberOfElements(); i++) {
-                series = selectedGroup.getElement(i);
-                factory.setSeparateErrors(series.isSeparateErrors());
-                factory.setErrorSignificantDigits(series.getSignificantDigits());
-                quantity = series.getMeanQuantity();
-                formattedQuantity = factory.format(quantity);
-
-                tableModel.addRow(new String[]{
-                        series.getLabel(),
-                        formattedQuantity.toHTMLCompact()
-                });
-            }
+            for (int i = 0; i < selectedGroup.getNumberOfElements(); i++)
+                tableModel.addRow(getTableRowForSeries(selectedGroup.getElement(i)));
 
             int highlighted = selectedGroup.getHighlightedSeriesIdx();
             if (highlighted != -1)
                 groupTable.setRowSelectionInterval(highlighted, highlighted);
+        }
+
+        private String[] getTableRowForSeries(Series series) {
+            Quantity quantity;
+            FormattedQuantity formattedQuantity;
+            quantityFactory.setSeparateErrors(series.isSeparateErrors());
+            quantityFactory.setErrorSignificantDigits(series.getSignificantDigits());
+            quantity = series.getMeanQuantity();
+            formattedQuantity = quantityFactory.format(quantity);
+
+            return new String[]{
+                    series.getLabel(),
+                    formattedQuantity.toHTMLCompact()
+            };
         }
 
         /* Zmiana opcji lub wartości średniej serii - zaktualizuj dane w tabeli */
@@ -273,6 +275,31 @@ public class GroupDisplay implements View
             model.removeElementAt(idx + 1);
         }
 
+        private void handleNewSeries(PropertyChangeEvent evt) {
+            Series newSeries = (Series) evt.getNewValue();
+            SeriesGroup group = (SeriesGroup) newSeries.getParent();
+            if (labProject.getSelectedSeriesGroup() != group)
+                return;
+            DefaultTableModel model = (DefaultTableModel) groupTable.getModel();
+            model.insertRow(group.getElementIdx(newSeries), getTableRowForSeries(newSeries));
+        }
+
+        // TODO: nie sprawdza, czy grupa poprawna, gdy puste; ponawia robione zaznaczenie
+        private void handleSelectedSeriesChange(PropertyChangeEvent evt) {
+            SeriesGroup selectedGroup = labProject.getSelectedSeriesGroup();
+            if (selectedGroup.isSelectingNow())
+                return;
+
+            @SuppressWarnings("unchecked")
+            ArrayList<Series> selectedSeries = (ArrayList<Series>) evt.getNewValue();
+            groupTable.clearSelection();
+            ListSelectionModel selectionModel = groupTable.getSelectionModel();
+            selectedSeries.stream()
+                    .mapToInt(selectedGroup::getElementIdx)
+                    .filter((i) -> i != -1)
+                    .forEach((i) -> selectionModel.addSelectionInterval(i, i));
+        }
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             switch (evt.getPropertyName()) {
@@ -303,7 +330,12 @@ public class GroupDisplay implements View
                     this.handleSeriesMeanChange(evt);
                     break;
 
+                case SeriesGroup.SELECTED_SERIES:
+                    this.handleSelectedSeriesChange(evt);
+                    break;
+
                 case SeriesGroup.NEW_SERIES:
+                    this.handleNewSeries(evt);
                     break;
             }
         }

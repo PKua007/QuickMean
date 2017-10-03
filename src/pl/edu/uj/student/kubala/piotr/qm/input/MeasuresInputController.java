@@ -15,10 +15,14 @@ import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
 import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
 import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
+import pl.edu.uj.student.kubala.piotr.qm.utils.Utils;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.regex.Pattern;
@@ -29,7 +33,6 @@ public class MeasuresInputController implements Controller
     private MeasuresInput   measuresInput;
     private Handler         handler;
 
-    // TODO: naprawić po zmianie serii
     private int lastCaretMeasureInfoIdx = -1;
     private MeasureDocumentFilter filter;
 
@@ -57,6 +60,12 @@ public class MeasuresInputController implements Controller
         handler = new Handler();
         editor.addCaretListener(handler);
         labProject.addPropertyChangeListener(handler);
+
+        NextSeriesAction nextSeriesAction = new NextSeriesAction();
+        Utils.copyButtonAction(measuresInput.getNextSeriesButton(), nextSeriesAction);
+        final KeyStroke enterStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
+        measuresInput.getInputPane().getKeymap().addActionForKeyStroke(enterStroke, nextSeriesAction);
+        measuresInput.getNextSeriesButton().setAction(nextSeriesAction);
     }
 
     private void disableFilter() {
@@ -88,6 +97,7 @@ public class MeasuresInputController implements Controller
         Series highlightedSeries = labProject.getHighlightedSeries();
         if (highlightedSeries == null)
             return;
+
         highlightedSeries.clear();
         for (MeasureInputInfo measureInputInfo : seriesInputInfo.getAllInfos())
             if (measureInputInfo.isCorrect())
@@ -99,6 +109,24 @@ public class MeasuresInputController implements Controller
         lastCaretMeasureInfoIdx = seriesInputInfo.getMeasureInfoIdxForCaretPos(pane.getCaretPosition());
         filter.setEditingBlocked(false);
     }
+
+    private class NextSeriesAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Series highlightedSeries = labProject.getHighlightedSeries();
+            if (highlightedSeries == null)
+                return;
+
+            SeriesGroup group = (SeriesGroup) highlightedSeries.getParent();
+            Series newSeries = new Series();
+            int newIdx = group.addElement(newSeries, group.getElementIdx(highlightedSeries) + 1);
+            group.setHighlightedSeries(newIdx);
+            group.setSelectedSeries(new int[]{newIdx});
+            measuresInput.getInputPane().requestFocusInWindow();
+        }
+    }
+
 
     /* Private inner class handling all Events */
     private class Handler implements CaretListener, PropertyChangeListener

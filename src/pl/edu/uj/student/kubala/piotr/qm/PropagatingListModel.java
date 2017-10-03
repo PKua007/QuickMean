@@ -67,20 +67,23 @@ public abstract class PropagatingListModel<E extends Model> extends Model implem
      */
     public int addElement(E element, int index)
     {
+        int idx;
         this.validateNotNull(element);
         if (this.children.indexOf(element) != -1) {
             throw new IllegalArgumentException(element.getClass().getSimpleName() + " jest już w " + this.getClass().getSimpleName());
         } if (index == -1) {
             this.children.add(element);
+            idx = getNumberOfElements() - 1;
         } else {
             this.children.add(index, element);
+            idx = index;
         }
 
         element.setParent(this);
         element.addPropertyChangeListener(this);
         PropertyChangeEvent evt = new PropertyChangeEvent(this, prefix + "." + NEW, null, element);
         this.propertyFirer.firePropertyChange(evt);
-        return getNumberOfElements() - 1;
+        return idx;
     }
 
     /**

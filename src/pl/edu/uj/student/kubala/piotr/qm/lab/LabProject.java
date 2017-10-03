@@ -143,6 +143,19 @@ public class LabProject extends PropagatingListModel<SeriesGroup> implements EDT
     }
 
     /**
+     * Metoda zwraca index obecnie podświetlonek serię w obecnie wybranej grupie. Jeśli którakolwiek część hierarchii nie
+     * jest wybrana - {@code -1}.
+     * @return index obecnie podświetlonej serii w obecnie wybranej grupie lub {@code -1}
+     */
+    public int getHighlightedSeriesIdx()
+    {
+        SeriesGroup selectedGroup = this.getSelectedSeriesGroup();
+        if (selectedGroup == null)
+            return -1;
+        return selectedGroup.getHighlightedSeriesIdx();
+    }
+
+    /**
      * Metoda zwraca obecnie zaznaczone serie w obecnie wybranej grupie. Jeśli którakolwiek część hierarchii nie jest
      * wybrana, tablicę zero elementową
      * @return obecnie zaznaczone serie w obecnie wybranej grupie lub {@code null}

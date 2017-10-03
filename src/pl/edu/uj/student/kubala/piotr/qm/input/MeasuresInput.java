@@ -133,7 +133,7 @@ public class MeasuresInput implements View, PropertyChangeListener
         return Objects.requireNonNull(deleteMeasureButton);
     }
 
-    public JButton getNextMeasureButton() {
+    public JButton getNextSeriesButton() {
         return Objects.requireNonNull(nextMeasureButton);
     }
 

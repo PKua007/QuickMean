@@ -176,18 +176,19 @@ public class GroupController implements Controller
                     return;
 
                 SeriesGroup selectedGroup = labProject.getSelectedSeriesGroup();
+                // TODO to nie działa za dobrze
                 // Jeżeli pierwsze kliknięcie przy zaznaczaniu, albo puszczenie myszki, zaktualizuj podświetloną serię
                 if (!selectedGroup.isSelectingNow() || !selectionModel.getValueIsAdjusting())
                     selectedGroup.setHighlightedSeries(selectionModel.getLeadSelectionIndex());
+
+                // Zaktualizuj informację czy właśnie trwa zaznaczanie
+                selectedGroup.setSelectingNow(selectionModel.getValueIsAdjusting());
 
                 // Zaktualizuj zaznaczone serie w grupie
                 int [] selectedIndices = IntStream.rangeClosed(selectionModel.getMinSelectionIndex(), selectionModel.getMaxSelectionIndex())
                         .filter(selectionModel::isSelectedIndex)
                         .toArray();
                 selectedGroup.setSelectedSeries(selectedIndices);
-
-                // Zaktualizuj informację czy właśnie trwa zaznaczanie
-                selectedGroup.setSelectingNow(selectionModel.getValueIsAdjusting());
             }
         }
     }
