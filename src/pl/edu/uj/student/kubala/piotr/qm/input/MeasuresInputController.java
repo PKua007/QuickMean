@@ -61,10 +61,14 @@ public class MeasuresInputController implements Controller
         editor.addCaretListener(handler);
         labProject.addPropertyChangeListener(handler);
 
-        NextSeriesAction nextSeriesAction = new NextSeriesAction();
+        Action deleteMeasureAction = new DeleteMeasureAction();
+        Utils.copyButtonAction(measuresInput.getDeleteMeasureButton(), deleteMeasureAction);
+        Action nextSeriesAction = new NextSeriesAction();
         Utils.copyButtonAction(measuresInput.getNextSeriesButton(), nextSeriesAction);
+
         final KeyStroke enterStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
         measuresInput.getInputPane().getKeymap().addActionForKeyStroke(enterStroke, nextSeriesAction);
+        measuresInput.getDeleteMeasureButton().setAction(deleteMeasureAction);
         measuresInput.getNextSeriesButton().setAction(nextSeriesAction);
     }
 
@@ -110,6 +114,7 @@ public class MeasuresInputController implements Controller
         filter.setEditingBlocked(false);
     }
 
+    /* Akcja dodawania następnej serii za obecnie podświetloną */
     private class NextSeriesAction extends AbstractAction {
 
         @Override
@@ -127,6 +132,46 @@ public class MeasuresInputController implements Controller
         }
     }
 
+    /* Akcja usuwania pomiarów, na którym jest kursor (lub zaznaczenie) */
+    private class DeleteMeasureAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Series highlightedSeries = labProject.getHighlightedSeries();
+            if (highlightedSeries == null)
+                return;
+            SeriesInputInfo seriesInputInfo = measuresInput.getSeriesInputInfo();
+            if (seriesInputInfo == null)
+                return;
+
+            final JTextPane pane = measuresInput.getInputPane();
+            Range selectedMeasures = getSelectedMeasuresFromCaret(seriesInputInfo, pane.getCaret());
+            if (selectedMeasures == null)
+                return;
+
+            Range measuresTextRange = getMeasuresTextRange(seriesInputInfo, selectedMeasures);
+            try {
+                pane.getDocument()
+                        .remove(measuresTextRange.getBeg(), measuresTextRange.getLength());
+            } catch (BadLocationException e1) {
+                throw new RuntimeException(e1);
+            }
+            pane.requestFocusInWindow();
+        }
+
+        /* Constructs text range containing range of measures */
+        private Range getMeasuresTextRange(SeriesInputInfo seriesInputInfo, Range selectedMeasures) {
+            return new Range(
+                    seriesInputInfo.getMeasureInfo(selectedMeasures.getMin()).getTextRange().getBeg(),
+                    seriesInputInfo.getMeasureInfo(selectedMeasures.getMax()).getTextRange().getEnd());
+        }
+
+        /* Fetches selectd measures range based on selection computed form caret object */
+        private Range getSelectedMeasuresFromCaret(SeriesInputInfo seriesInputInfo, Caret caret) {
+            return seriesInputInfo.getMeasureInfosRangeForSelection(
+                    Math.min(caret.getDot(), caret.getMark()), Math.abs(caret.getDot() - caret.getMark()));
+        }
+    }
 
     /* Private inner class handling all Events */
     private class Handler implements CaretListener, PropertyChangeListener

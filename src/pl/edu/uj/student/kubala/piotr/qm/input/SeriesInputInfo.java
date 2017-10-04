@@ -100,6 +100,29 @@ public class SeriesInputInfo
             return measureInputInfos.get(idx);
     }
 
+    public Range getMeasureInfosRangeForSelection(int beg, int length)
+    {
+        if (length < 0)
+            throw new IllegalArgumentException("length < 0");
+        Range selectionTouchRange = new Range(beg - 1, beg + length);
+        int selBeg = -1, selEnd = -1;
+        for (int i = 0; i < measureInputInfos.size(); i++) {
+            if (measureInputInfos.get(i).getTextRange().overlaps(selectionTouchRange)) {
+                if (selBeg == -1)
+                    selBeg = i;
+            } else if (selBeg != -1 && selEnd == -1) {
+                selEnd = i - 1;
+            }
+        }
+
+        if (selBeg == -1)
+            return null;
+        else if (selEnd == -1)
+            return new Range(selBeg, getNumberOfInfos() - 1);
+        else
+            return new Range(selBeg, selEnd);
+    }
+
     public String getText() {
         return text;
     }

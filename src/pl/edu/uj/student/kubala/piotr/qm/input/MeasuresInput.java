@@ -9,12 +9,9 @@
 
 package pl.edu.uj.student.kubala.piotr.qm.input;
 
-import pl.edu.uj.student.kubala.piotr.qm.Main;
 import pl.edu.uj.student.kubala.piotr.qm.QuickFrame;
 import pl.edu.uj.student.kubala.piotr.qm.View;
 import pl.edu.uj.student.kubala.piotr.qm.lab.LabProject;
-import pl.edu.uj.student.kubala.piotr.qm.lab.Series;
-import pl.edu.uj.student.kubala.piotr.qm.lab.SeriesGroup;
 import pl.edu.uj.student.kubala.piotr.qm.utils.Range;
 
 import javax.swing.*;
@@ -54,7 +51,7 @@ public class MeasuresInput implements View, PropertyChangeListener
     private JTextPane       inputPane;      // Okienko z pomiarami
     private JButton         individualErrorsButton;
     private JButton         deleteMeasureButton;
-    private JButton         nextMeasureButton;
+    private JButton nextSeriesButton;
 
     static {
         // Ustaw style dla odpowiednich części pomarów
@@ -97,8 +94,8 @@ public class MeasuresInput implements View, PropertyChangeListener
         this.individualErrorsButton.setMnemonic(KeyEvent.VK_I);
         this.deleteMeasureButton = new JButton(DELETE_MEASURE);
         this.deleteMeasureButton.setMnemonic(KeyEvent.VK_U);
-        this.nextMeasureButton = new JButton(NEXT_SERIES);
-        this.nextMeasureButton.setMnemonic(KeyEvent.VK_N);
+        this.nextSeriesButton = new JButton(NEXT_SERIES);
+        this.nextSeriesButton.setMnemonic(KeyEvent.VK_N);
 
         // Utwórz scroll panel na edytor i dodaj go do niego
         JScrollPane scrollPane = new JScrollPane(inputPane);
@@ -109,7 +106,7 @@ public class MeasuresInput implements View, PropertyChangeListener
         //JPanel buttonsPanel = new JPanel(new GridLayout(1, 3, BUTTONS_GAP, 0));
         buttonsPanel.add(this.individualErrorsButton);
         buttonsPanel.add(this.deleteMeasureButton);
-        buttonsPanel.add(this.nextMeasureButton);
+        buttonsPanel.add(this.nextSeriesButton);
 
         // Utwórz główny panel na wszystkie bajery i dodaj do niego pole z pomiarami i panel z przyciskami
         this.panel = new JPanel(new BorderLayout(0, INPUT_BUTTONS_GAP));
@@ -134,7 +131,7 @@ public class MeasuresInput implements View, PropertyChangeListener
     }
 
     public JButton getNextSeriesButton() {
-        return Objects.requireNonNull(nextMeasureButton);
+        return Objects.requireNonNull(nextSeriesButton);
     }
 
     public JPanel getPanel() {
@@ -219,7 +216,13 @@ public class MeasuresInput implements View, PropertyChangeListener
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-
+        switch (evt.getPropertyName()) {
+            case LabProject.SELECTED_GROUP:
+                final boolean enableButtons = (evt.getNewValue() != null);
+                nextSeriesButton.getAction().setEnabled(enableButtons);
+                deleteMeasureButton.getAction().setEnabled(enableButtons);
+                break;
+        }
     }
 
     public SeriesInputInfo getSeriesInputInfo() {
